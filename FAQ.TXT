@@ -1,0 +1,22 @@
+LLFI-3.9 Installation general FAQ
+=================================
+
+ 1. How to clang version?
+    In terminal, type command "clang --version"
+
+ 2. I installed clang-3.9 as per installation procedure, but the clang version shows 3.4,  how to change to clang-3.9?
+    a) Once you install clang-3.9, the execution file is stored under /usr/bin folder
+    b) There will be different clang version(if previously installed. It will be mentioned like clang-3.X and clang++-3.X(X is version)
+    c) The default clang will be mentioned as "clang" and "clang++". (This is current verion running in machine)
+    d) To change the current verion to clang-3.9, follow the below steps:
+        (i)   Go to terminal, type "cd /usr/bin"
+        (ii)  Rename the default clang to its version
+              ~$: sudo mv clang clang-3.X
+              ~$: sudo mv clang++ clang++-3.X
+        (iii) Rename the clang to clang-3.9 version
+              ~$: sudo mv clang-3.9 clang
+              ~$: sudo mv clang++-3.9 clang++
+ 
+ 3. The llfi is not getting built after building LLVM in autoinstaller?
+    Check the llfi-gcc that is clang is correctly installed and if other error message, repond accordingly.
+    

@@ -1,3 +1,10 @@
+Some of majorfiles are modified
+================================
+ 1. Installer.py to meet the LLVM-3.9 version and temporarily i have put llfi master file as branch link.
+ 2. CMakeLists.txt files in llfisrc parent folder, in llvm-passes folder
+ 3. In llvm_passes.cmake file in the config folder, the link to folders are changed as per LLVM3.9
+ 4. The C++ files inside llvm_passes/core is modified as per LLVM3.9.
+ 
 LLFI
 ====
 

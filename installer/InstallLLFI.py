@@ -14,22 +14,14 @@ import xml.etree.ElementTree as ET
 import argparse
 
 #Update These to change download targets
-LLVM34DOWNLOAD = {'URL':"http://llvm.org/releases/3.4/llvm-3.4.src.tar.gz",
-                'FILENAME':"llvm-3.4.src.tar.gz",
-                'MD5':"46ed668a1ce38985120dbf6344cf6116",
+LLVM39DOWNLOAD = {'URL':"http://llvm.org/releases/3.9.0/llvm-3.9.0.src.tar.xz",
+                'FILENAME':"llvm-3.9.0.src.tar.xz",
+                'MD5':"f2093e98060532449eb7d2fcfd0bc6c6",
                 'EXTRACTPATH':"llvmsrc",
-                'EXTRACTEDNAME':'llvm-3.4',
-                'ARCHIVETYPE':'.tar.gz',
+                'EXTRACTEDNAME':'llvm-3.9.0.src',
+                'ARCHIVETYPE':'.tar.xz',
                 'EXTRACTFLAG':True,
                 'DOWNLOADFLAG':True}
-CLANG34DOWNLOAD = {'URL':"http://llvm.org/releases/3.4/clang-3.4.src.tar.gz",
-                 'FILENAME':"clang-3.4.src.tar.gz",
-                 'MD5':"b378f1e2c424e03289effc75268d3d2c",
-                 'EXTRACTPATH':"llvmsrc/tools/clang",
-                 'EXTRACTEDNAME':'clang-3.4',
-                 'ARCHIVETYPE':'.tar.gz',
-                 'EXTRACTFLAG':True,
-                 'DOWNLOADFLAG':True}
 PYAML311DOWNLOAD = {'URL':"http://pyyaml.org/download/pyyaml/PyYAML-3.11.tar.gz",
                  'FILENAME':"PyYAML-3.11.tar.gz",
                  'MD5':"f50e08ef0fe55178479d3a618efe21db",
@@ -38,14 +30,7 @@ PYAML311DOWNLOAD = {'URL':"http://pyyaml.org/download/pyyaml/PyYAML-3.11.tar.gz"
                  'ARCHIVETYPE':'.tar.gz',
                  'EXTRACTFLAG':True,
                  'DOWNLOADFLAG':True}
-LLFIDOWNLOAD = {'URL':'https://github.com/scoult3r/LLFI/archive/master.zip', #"https://github.com/DependableSystemsLab/LLFI/archive/master.zip",
-                'FILENAME':"master.zip",
-                'MD5':"fc3ba3cfea7ae3236bf027b847058105", #"c9a8c3ffcbd033a4d3cf1dc9a25de09c" #You will have to change this outside of the git repo
-                'EXTRACTPATH':"llfisrc",                                                      #If you change this md5 within the repo, the md5 of the
-                'EXTRACTEDNAME':'LLFI-master',                                                #repo will change
-                'ARCHIVETYPE':'.zip',
-                'EXTRACTFLAG':True,
-                'DOWNLOADFLAG':True}
+
 
 #LLVM33 Targets:
 LLVM33DOWNLOAD = {'URL':"http://llvm.org/releases/3.3/llvm-3.3.src.tar.gz",
@@ -65,25 +50,16 @@ CLANG33DOWNLOAD = {'URL':"http://llvm.org/releases/3.3/cfe-3.3.src.tar.gz",
                  'EXTRACTFLAG':True,
                  'DOWNLOADFLAG':True}
 #Primary Repository LLFI
-LLFIPUBLICDOWNLOAD = {'URL':'https://github.com/DependableSystemsLab/LLFI/archive/master.zip',
-                      'FILENAME':"master.zip",
-                      'MD5':"04fcd2c0dc23b97f72eaf6b76e021821",
+LLFIBRANCHDOWNLOAD = {'URL':'https://github.com/DependableSystemsLab/LLFI/archive/llfi3.9.zip',
+                      'FILENAME':"llfi3.9.zip",
+                      'MD5':"0472dd35602a1ebdb18098819a25865b",
                       'EXTRACTPATH':"llfisrc",
-                      'EXTRACTEDNAME':'LLFI-master',
+                      'EXTRACTEDNAME':'LLFI-llfi3.9',
                       'ARCHIVETYPE':'.zip',
                       'EXTRACTFLAG':True,
                       'DOWNLOADFLAG':True}
 
-LLFIMERGEDOWNLOAD = {'URL':'https://github.com/DependableSystemsLab/LLFI/archive/merge.zip',
-                      'FILENAME':"merge.zip",
-                      'MD5':"04fcd2c0dc23b97f72eaf6b76e021821",
-                      'EXTRACTPATH':"llfisrc",
-                      'EXTRACTEDNAME':'LLFI-merge',
-                      'ARCHIVETYPE':'.zip',
-                      'EXTRACTFLAG':True,
-                      'DOWNLOADFLAG':True}
-
-DOWNLOADTARGETS = [LLVM34DOWNLOAD, CLANG34DOWNLOAD, PYAML311DOWNLOAD, LLFIPUBLICDOWNLOAD]
+DOWNLOADTARGETS = [LLVM39DOWNLOAD, PYAML311DOWNLOAD, LLFIBRANCHDOWNLOAD]
 DOWNLOADSDIRECTORY = "./downloads/"
 LLFIROOTDIRECTORY = "."
 
@@ -210,6 +186,8 @@ def DownloadSources(targets, downloadDirectory):
       CheckAndDownload(target['FILENAME'], target['MD5'], target['URL'])
 
 def CheckAndDownload(filename, md5, url):
+  print(md5)
+  print("\n")
   md5new = ""
   filepath = os.path.abspath("./downloads/" + filename)
   if os.path.isfile(filepath):
@@ -217,6 +195,7 @@ def CheckAndDownload(filename, md5, url):
     with open(filepath, 'rb') as check:
       data = check.read()
       md5new = hashlib.md5(data).hexdigest()
+      print(md5new)
     if md5 == md5new:
       print("MD5 Verified")
       return True
@@ -298,7 +277,11 @@ def ExtractSources(targets, downloadsDirectory, extractionDirectory):
       os.chdir(fullExtractionPath)
 
 def ExtractArchive(archiveType, archivePath):
+  if archiveType == ".tar.xz":
+    print("llvmsrc \n")
+    subprocess.call(["tar", "-xf", archivePath])
   if archiveType == ".tar.gz":
+    print("llvmsrc \n")
     subprocess.call(["tar", "-xf", archivePath])
   if archiveType == ".zip":
     archivePath = archivePath[:-4]
@@ -358,7 +341,7 @@ def build(buildLLVM, forceMakeLLVM, noGUI):
 
   print("Running ./setup for LLFI:")
   os.chdir("llfisrc")
-  setup = ["./setup", "-LLVM_DST_ROOT", "../llvm", "-LLVM_SRC_ROOT", "../llvmsrc", "-LLFI_BUILD_ROOT", "../llfi", "-LLVM_GXX_BIN_DIR", "../llvm/bin"]
+  setup = ["./setup", "-LLVM_DST_ROOT", "../llvm", "-LLVM_SRC_ROOT", "../llvmsrc", "-LLFI_BUILD_ROOT", "../llfi"]
   if noGUI:
     setup.append("--no_gui")
   p = subprocess.call(setup)

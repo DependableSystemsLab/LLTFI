@@ -17,6 +17,7 @@ Dependencies:
   5. tcsh (for GUI)
   6. GraphViz package (for visualizing error propagation)
   7. Internet Connection
+  8. clang-3.9(Refer README.TXT file for installation details)
 
 GUI Dependencies:
   1. JDK7/JDK8 with JavaFX
@@ -44,7 +45,7 @@ Dependencies:
   2. CMake (minimum v2.8)
   3. Python 3 and above
   4. Python YAML library (PyYAML)
-  5. Clang v3.9
+  5. Clang v3.9 (Refer README.TXT file for installation details)
   6. LLVM v3.9, built with CMake
     * Build llvm-3.9 
     * Remember to run `make` in the llvm build directory after running `cmake`.

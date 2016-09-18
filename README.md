@@ -44,9 +44,9 @@ Dependencies:
   2. CMake (minimum v2.8)
   3. Python 3 and above
   4. Python YAML library (PyYAML)
-  5. Clang v3.4
-  6. LLVM v3.4, built with CMake
-    * Build llvm-3.4 **WITH CMAKE** using flag `-DLLVM_REQUIRES_RTTI=1`. [Instructions](http://llvm.org/docs/CMake.html)
+  5. Clang v3.9
+  6. LLVM v3.9, built with CMake
+    * Build llvm-3.9 
     * Remember to run `make` in the llvm build directory after running `cmake`.
   9. GraphViz package (for visualizing error propagation)
 
@@ -79,13 +79,13 @@ Building:
 
   Here is a sample build command if `clang` and `javac` are already in $PATH:
 ```
-  ./setup -LLFI_BUILD_ROOT $BUILD/LLFI -LLVM_SRC_ROOT $SRC/llvm-3.4 -LLVM_DST_ROOT $BUILD/llvm-3.4
+  ./setup -LLFI_BUILD_ROOT $BUILD/LLFI -LLVM_SRC_ROOT $SRC/llvm-3.9 -LLVM_DST_ROOT $BUILD/llvm-3.9
 ```
 
 Build without GUI:
 To build LLFI without GUI, just add option: `--no_gui` in the command line for setup, for example:
 ```
-./setup -LLFI_BUILD_ROOT $BUILD/LLFI -LLVM_SRC_ROOT $SRC/llvm-3.4 -LLVM_DST_ROOT $BUILD/llvm-3.4 --no_gui
+./setup -LLFI_BUILD_ROOT $BUILD/LLFI -LLVM_SRC_ROOT $SRC/llvm-3.9 -LLVM_DST_ROOT $BUILD/llvm-3.9 --no_gui
 ```
 
 Running tests:

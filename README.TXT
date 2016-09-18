@@ -4,20 +4,42 @@ LLVM Fault Injector - LLFI
 ======
 Pre-requisites
   1. CMake installed 
-  2. LLVM version 3.4, built with CMake
+  2. LLVM version 3.9, built with CMake
   3. Python 3
   4. Python YAML library installed (PyYAML)
-  5. clang-3.4 ( frontend for llvm 3.4 )
-  6. 64 bit Machines with 64 bit Linux/OS X.
+  5. 64 bit Machines with 64 bit Linux/OS X.
+  6. clang-3.9 ( frontend for llvm 3.9 )
+        a)Install LLVM nightly package from website (http://apt.llvm.org/)
+	b)Go to terminal window and do the following:
+          :~$ cd /etc/apt/
+          :~$ sudo gedit sources.list
+        c)The sources.list text file opens and paste the following at end of the file
+        d)For example, for Ubuntu 16.04, add these to end of text file and save the file
+             deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main
+             deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main
+ 	e)Then type the following in terminal:                                                                               		
+          :~$ wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
+          :~$ sudo apt-get update
+       f)To install just clang and lldb (3.9 release):                                        
+          :~$ sudo apt-get install clang-3.9 lldb-3.9
 
 ======
 Installation
   A. Install CMake, Python, PyYAML library
 
-  B. Install llvm-3.4 and clang 3.4
-    1. Go to "http://llvm.org/releases/download.html#3.4" to download LLVM source code and clang source code/binaries for your system.
-    2. If building clang from source code, copy the source code under tools/. Access "http://llvm.org/releases/3.4/docs/GettingStarted.html#installcf" for instructions.
-    2. Build llvm-3.4 ***WITH CMAKE*** 'using flag -DLLVM_REQUIRES_RTTI=1'. Access "http://llvm.org/docs/CMake.html" for instructions.
+  B. Install llvm-3.9 
+    1.Download LLVM-3.9 souce package: http://llvm.org/releases/download.html
+    2.Extract the LLVM-3.9 source file and remane the folder as llvmsrc.
+    3.Create a folder llvm (which is build for LLVM-3.9) and build the LLVM-3.9 souce file by typing the following in terminal window
+    4.Go to llfi folder by typing : 
+       :~$ cd llfi
+    5.Then type : 
+       :~$ cmake ../llvmsrc
+      (This takes bit of time and llvm will be built)
+
+
+Step-3 : LLFI buiding
+Access "http://llvm.org/docs/CMake.html" for instructions.
 	
   C. Build LLFI
     1. Extract the code from LLFI archive (/LLFI)

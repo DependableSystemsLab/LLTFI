@@ -4,18 +4,17 @@
 #include "Controller.h"
 #include "FIRegSelector.h"
 namespace llfi {
-class RegLocBasedFIRegSelector: public HardwareFIRegSelector {
- public:
-  RegLocBasedFIRegSelector(FIRegLoc filoc): firegloc(filoc) {}
+class RegLocBasedFIRegSelector : public HardwareFIRegSelector {
+public:
+  RegLocBasedFIRegSelector(FIRegLoc filoc) : firegloc(filoc) {}
 
- private:
-  virtual bool isRegofInstFITarget(Value *reg, Instruction *inst);
-  virtual bool isRegofInstFITarget(Value *reg, Instruction *inst, int pos);
- private:
+private:
+  bool isRegofInstFITarget(Value *reg, Instruction *inst) override;
+  bool isRegofInstFITarget(Value *reg, Instruction *inst, int pos) override;
+
+private:
   FIRegLoc firegloc;
 };
 }
-
-
 
 #endif

@@ -129,7 +129,7 @@ def checkEnvironment():
     print("ERROR: You need to install CMake before build LLFI.\n", file=sys.stderr)
     has_error = True
   elif not os.path.exists(os.path.join(required_configs['LLVM_DST_ROOT'], 
-                                       "share/llvm/cmake")):
+                                       "lib/cmake/llvm")):
     print(("ERROR: You need to pass LLVM CMake build root "
                           "directory to -LLVM_DST_ROOT. See how to build LLVM "
                           "with CMake on http://llvm.org\n"), file=sys.stderr)

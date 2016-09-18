@@ -1,29 +1,29 @@
-//This pass is run after the transform pass for inserting hooks for fault injection 
+// This pass is run after the transform pass for inserting hooks for fault
+// injection
 #ifndef PROFILING_PASS_H
 #define PROFILING_PASS_H
 
 #include "llvm/IR/Constants.h"
-#include "llvm/Pass.h"
 #include "llvm/IR/Module.h"
-
-#include <iostream>
+#include "llvm/Pass.h"
 
 using namespace llvm;
 namespace llfi {
-class ProfilingPass: public ModulePass {
- public:
+class ProfilingPass : public ModulePass {
+public:
   ProfilingPass() : ModulePass(ID) {}
-	virtual bool runOnModule(Module &M);
-	static char ID;
+  bool runOnModule(Module &M) override;
+  static char ID;
 
- private: 
+private:
   void addEndProfilingFuncCall(Module &M);
- private:
+
+private:
   Constant *getLLFILibProfilingFunc(Module &M);
   Constant *getLLFILibEndProfilingFunc(Module &M);
 };
 
-char ProfilingPass::ID=0;
+char ProfilingPass::ID = 0;
 }
 
 #endif

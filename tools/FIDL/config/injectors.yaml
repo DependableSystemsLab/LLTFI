@@ -1,3 +1,75 @@
 DO_NOT_MODIFY: DO_NOT_MODIFY
 custom: {}
-default: {}
+default:
+  BufferOverflow(API): {code: 'static RegisterFaultInjector _API_BufferOverflowFIDLInjector("BufferOverflow(API)",
+      new ChangeValueInjector(45, false));', selectorfilename: _API_BufferOverflowSelector.cpp}
+  BufferOverflowMalloc(Data): {code: 'static RegisterFaultInjector _Data_BufferOverflowMallocFIDLInjector("BufferOverflowMalloc(Data)",
+      new ChangeValueInjector(-40, false));', selectorfilename: _Data_BufferOverflowMallocSelector.cpp}
+  BufferOverflowMemmove(Data): {code: 'static RegisterFaultInjector _Data_BufferOverflowMemmoveFIDLInjector("BufferOverflowMemmove(Data)",
+      new ChangeValueInjector(45, false));', selectorfilename: _Data_BufferOverflowMemmoveSelector.cpp}
+  BufferUnderflow(API): {code: 'static RegisterFaultInjector _API_BufferUnderflowFIDLInjector("BufferUnderflow(API)",
+      new ChangeValueInjector(-40, false));', selectorfilename: _API_BufferUnderflowSelector.cpp}
+  CPUHog(Res): {code: 'static RegisterFaultInjector _Res_CPUHogFIDLInjector("CPUHog(Res)",
+      new SleepInjector());', selectorfilename: _Res_CPUHogSelector.cpp}
+  DataCorruption(Data): {code: 'static RegisterFaultInjector _Data_DataCorruptionFIDLInjector("DataCorruption(Data)",
+      BitCorruptionInjector::getBitCorruptionInjector());', selectorfilename: _Data_DataCorruptionSelector.cpp}
+  DeadLock(MPI): {code: 'static RegisterFaultInjector _MPI_DeadLockFIDLInjector("DeadLock(MPI)",
+      BitCorruptionInjector::getBitCorruptionInjector());', selectorfilename: _MPI_DeadLockSelector.cpp}
+  DeadLock(Res): {code: 'static RegisterFaultInjector _Res_DeadLockFIDLInjector("DeadLock(Res)",
+      new PthreadDeadLockInjector());', selectorfilename: _Res_DeadLockSelector.cpp}
+  InappropriateClose(API): {code: 'static RegisterFaultInjector _API_InappropriateCloseFIDLInjector("InappropriateClose(API)",
+      new InappropriateCloseInjector(true));', selectorfilename: _API_InappropriateCloseSelector.cpp}
+  IncorrectOutput(API): {code: 'static RegisterFaultInjector _API_IncorrectOutputFIDLInjector("IncorrectOutput(API)",
+      BitCorruptionInjector::getBitCorruptionInjector());', selectorfilename: _API_IncorrectOutputSelector.cpp}
+  InvalidMessage(MPI): {code: 'static RegisterFaultInjector _MPI_InvalidMessageFIDLInjector("InvalidMessage(MPI)",
+      new ChangeValueInjector(1024, false));', selectorfilename: _MPI_InvalidMessageSelector.cpp}
+  InvalidPointer(Res): {code: 'static RegisterFaultInjector _Res_InvalidPointerFIDLInjector("InvalidPointer(Res)",
+      BitCorruptionInjector::getBitCorruptionInjector());', selectorfilename: _Res_InvalidPointerSelector.cpp}
+  InvalidSender(MPI): {code: 'static RegisterFaultInjector _MPI_InvalidSenderFIDLInjector("InvalidSender(MPI)",
+      BitCorruptionInjector::getBitCorruptionInjector());', selectorfilename: _MPI_InvalidSenderSelector.cpp}
+  LowMemory(Res): {code: 'static RegisterFaultInjector _Res_LowMemoryFIDLInjector("LowMemory(Res)",
+      new MemoryExhaustionInjector(false));', selectorfilename: _Res_LowMemorySelector.cpp}
+  MemoryExhaustion(Res): {code: 'static RegisterFaultInjector _Res_MemoryExhaustionFIDLInjector("MemoryExhaustion(Res)",
+      new MemoryExhaustionInjector(true));', selectorfilename: _Res_MemoryExhaustionSelector.cpp}
+  MemoryLeak(Res): {code: 'static RegisterFaultInjector _Res_MemoryLeakFIDLInjector("MemoryLeak(Res)",
+      new MemoryLeakInjector());', selectorfilename: _Res_MemoryLeakSelector.cpp}
+  NoAck(MPI): {code: 'static RegisterFaultInjector _MPI_NoAckFIDLInjector("NoAck(MPI)",
+      new HangInjector());', selectorfilename: _MPI_NoAckSelector.cpp}
+  NoClose(API): {code: 'static RegisterFaultInjector _API_NoCloseFIDLInjector("NoClose(API)",
+      new InappropriateCloseInjector(false));', selectorfilename: _API_NoCloseSelector.cpp}
+  NoDrain(MPI): {code: 'static RegisterFaultInjector _MPI_NoDrainFIDLInjector("NoDrain(MPI)",
+      new ChangeValueInjector(5000, true));', selectorfilename: _MPI_NoDrainSelector.cpp}
+  NoMessage(MPI): {code: 'static RegisterFaultInjector _MPI_NoMessageFIDLInjector("NoMessage(MPI)",
+      new HangInjector());', selectorfilename: _MPI_NoMessageSelector.cpp}
+  NoOpen(API): {code: 'static RegisterFaultInjector _API_NoOpenFIDLInjector("NoOpen(API)",
+      BitCorruptionInjector::getBitCorruptionInjector());', selectorfilename: _API_NoOpenSelector.cpp}
+  NoOutput(API): {code: 'static RegisterFaultInjector _API_NoOutputFIDLInjector("NoOutput(API)",
+      new HangInjector());', selectorfilename: _API_NoOutputSelector.cpp}
+  PacketStorm(MPI): {code: 'static RegisterFaultInjector _MPI_PacketStormFIDLInjector("PacketStorm(MPI)",
+      new ChangeValueInjector(-40, false));', selectorfilename: _MPI_PacketStormSelector.cpp}
+  RaceCondition(Timing): {code: 'static RegisterFaultInjector _Timing_RaceConditionFIDLInjector("RaceCondition(Timing)",
+      new PthreadRaceConditionInjector());', selectorfilename: _Timing_RaceConditionSelector.cpp}
+  StalePointer(Res): {code: 'static RegisterFaultInjector _Res_StalePointerFIDLInjector("StalePointer(Res)",
+      new StalePointerInjector());', selectorfilename: _Res_StalePointerSelector.cpp}
+  ThreadKiller(Res): {code: 'static RegisterFaultInjector _Res_ThreadKillerFIDLInjector("ThreadKiller(Res)",
+      new PthreadThreadKillerInjector());', selectorfilename: _Res_ThreadKillerSelector.cpp}
+  UnderAccumulator(Res): {code: 'static RegisterFaultInjector _Res_UnderAccumulatorFIDLInjector("UnderAccumulator(Res)",
+      new ChangeValueInjector(45, false));', selectorfilename: _Res_UnderAccumulatorSelector.cpp}
+  WrongAPI(API): {code: 'static RegisterFaultInjector _API_WrongAPIFIDLInjector("WrongAPI(API)",
+      BitCorruptionInjector::getBitCorruptionInjector());', selectorfilename: _API_WrongAPISelector.cpp}
+  WrongDestination(Data): {code: 'static RegisterFaultInjector _Data_WrongDestinationFIDLInjector("WrongDestination(Data)",
+      BitCorruptionInjector::getBitCorruptionInjector());', selectorfilename: _Data_WrongDestinationSelector.cpp}
+  WrongMode(API): {code: 'static RegisterFaultInjector _API_WrongModeFIDLInjector("WrongMode(API)",
+      BitCorruptionInjector::getBitCorruptionInjector());', selectorfilename: _API_WrongModeSelector.cpp}
+  WrongPointer(Data): {code: 'static RegisterFaultInjector _Data_WrongPointerFIDLInjector("WrongPointer(Data)",
+      BitCorruptionInjector::getBitCorruptionInjector());', selectorfilename: _Data_WrongPointerSelector.cpp}
+  WrongRetrievedAddress(IO): {code: 'static RegisterFaultInjector _IO_WrongRetrievedAddressFIDLInjector("WrongRetrievedAddress(IO)",
+      BitCorruptionInjector::getBitCorruptionInjector());', selectorfilename: _IO_WrongRetrievedAddressSelector.cpp}
+  WrongRetrievedFormat(IO): {code: 'static RegisterFaultInjector _IO_WrongRetrievedFormatFIDLInjector("WrongRetrievedFormat(IO)",
+      new WrongFormatInjector());', selectorfilename: _IO_WrongRetrievedFormatSelector.cpp}
+  WrongSavedAddress(IO): {code: 'static RegisterFaultInjector _IO_WrongSavedAddressFIDLInjector("WrongSavedAddress(IO)",
+      BitCorruptionInjector::getBitCorruptionInjector());', selectorfilename: _IO_WrongSavedAddressSelector.cpp}
+  WrongSavedFormat(IO): {code: 'static RegisterFaultInjector _IO_WrongSavedFormatFIDLInjector("WrongSavedFormat(IO)",
+      new WrongFormatInjector());', selectorfilename: _IO_WrongSavedFormatSelector.cpp}
+  WrongSource(Data): {code: 'static RegisterFaultInjector _Data_WrongSourceFIDLInjector("WrongSource(Data)",
+      BitCorruptionInjector::getBitCorruptionInjector());', selectorfilename: _Data_WrongSourceSelector.cpp}

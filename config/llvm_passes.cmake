@@ -11,7 +11,7 @@ endif()
 
 set(LLVM_INCLUDE_DIRS_LLFI ${LLVM_DST_ROOT}/include ${LLVM_SRC_ROOT}/include)
 set(LLVM_LIBRARY_DIRS_LLFI ${LLVM_DST_ROOT}/lib)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${LLVM_DST_ROOT}/share/llvm/cmake")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${LLVM_DST_ROOT}/lib/cmake/llvm")
 
 include(LLVMConfig)
 include(AddLLVM)

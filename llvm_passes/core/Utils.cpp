@@ -1,5 +1,6 @@
 
 #include "Utils.h"
+#include "llvm/IR/IntrinsicInst.h"
 
 namespace llfi {
 
@@ -60,7 +61,7 @@ void getProgramExitInsts(Module &M, std::set<Instruction*> &exitinsts) {
   for (Module::iterator m_it = M.begin(); m_it != M.end(); ++m_it) {
     if (!m_it->isDeclaration()) {
       //m_it is a function
-      for (inst_iterator f_it = inst_begin(m_it); f_it != inst_end(m_it);
+      for (inst_iterator f_it = inst_begin(*m_it); f_it != inst_end(*m_it);
            ++f_it) {
         Instruction *inst = &(*f_it);
         if (CallInst *ci = dyn_cast<CallInst>(inst)) {
@@ -88,9 +89,9 @@ Instruction *getInsertPtrforRegsofInst(Value *reg, Instruction *inst) {
           << *inst << ", change isRegofInstInjectable() to fix it\n";
       exit(2);
     } else {
-      BasicBlock::iterator bb_it = inst;
+      BasicBlock::iterator bb_it = inst->getParent()->begin();
       while (isa<PHINode>(++bb_it)) ;
-      return bb_it;
+      return &(*bb_it);
     }
   } else {
     // Assume the reg is the src of inst, insert before inst
@@ -104,16 +105,21 @@ Instruction *getInsertPtrforRegsofInst(Value *reg, Instruction *inst) {
 }
 
 Instruction* changeInsertPtrIfInjectFaultInst(Instruction *inst) {
-  MDNode *mdnode = inst->getMetadata("llfi_injectfault");
+  //auto *mdnode = dyn_cast<MDString>(inst->getMetadata("llfi_index"));
+  auto *mdnode = dyn_cast<MDString>(inst->getMetadata("llfi_injectfault"));
   if (mdnode) {
-    if (((MDString*)mdnode->getOperand(0))->getString() == "after") {
-      return ++((BasicBlock::iterator) inst);
+    if (mdnode->getString() == "after") {
+      //return ++((BasicBlock::iterator) inst);
+      for (auto i = inst->getParent()->begin(), e = inst->getParent()->end();
+           i != e; ++i) {
+        if (&(*i) == inst)
+          return &(*++i);
+      }
     } else {
       return inst;
     }
-  } else {
-    return inst;
-  }
+   }
+  return inst;
 }
 
 void setInjectFaultInst(Value *reg, Instruction *inst, Instruction *ficall) {
@@ -132,26 +138,34 @@ void setInjectFaultInst(Value *reg, Instruction *inst, Instruction *ficall) {
 }
 
 long getLLFIIndexofInst(Instruction *inst) {
+  // We ignore DbgInfoIntrinsic's, so return 0, an invalid index, if we see one.
+  if (dyn_cast<DbgInfoIntrinsic>(inst))
+    return 0;
+
   MDNode *mdnode = inst->getMetadata("llfi_index");
   if (mdnode) {
-    ConstantInt *cns_index = dyn_cast<ConstantInt>(mdnode->getOperand(0));
-    return cns_index->getSExtValue();
-  } else {
-    errs() << "ERROR: LLFI indices for instructions are required for the pass, "
-        << "please run genllfiindexpass first\n";
-    exit(3);
+    ConstantInt *CI = mdconst::extract<ConstantInt>(mdnode->getOperand(0));
+    return CI->getValue().getZExtValue();
   }
+  errs() << "ERROR: LLFI indices for instructions are required for the pass, "
+         << "please run genllfiindexpass first\n";
+  exit(3);
 }
 
-static long fi_index = 1;
-void setLLFIIndexofInst(Instruction *inst) {
-  assert (fi_index >= 0 && "static instruction number exceeds index max");
+static uint64_t fi_index = 1;
+uint64_t setLLFIIndexofInst(Instruction *inst) {
+  // We ignore DbgInfoIntrinsic's, so return 0, an invalid index, if we see one.
+  if (dyn_cast<DbgInfoIntrinsic>(inst))
+    return 0;
+
+  assert(fi_index >= 0 && "static instruction number exceeds index max");
   Function *func = inst->getParent()->getParent();
   LLVMContext &context = func->getContext();
-  std::vector<Value*> llfiindex(1);
-  llfiindex[0] = ConstantInt::get(Type::getInt64Ty(context), fi_index++);
-  MDNode *mdnode = MDNode::get(context, llfiindex);
+  MDNode *mdnode =
+      MDNode::get(context, ValueAsMetadata::get(ConstantInt::get(
+                               Type::getInt64Ty(context), fi_index)));
   inst->setMetadata("llfi_index", mdnode);
+  return fi_index++;
 }
 
 void genFullNameOpcodeMap(

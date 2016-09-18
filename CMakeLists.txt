@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
+SET(CMAKE_CXX_FLAGS "-std=c++0x")
+
 option(NO_GUI "Skip building GUI" OFF)
 
 add_subdirectory(llvm_passes)

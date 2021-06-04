@@ -19,15 +19,13 @@ namespace llfi {
 /**
  * Inject Instruction
  */
-static cl::list< FIInstSelMethod > fiinstselmethod(
+static cl::list<FIInstSelMethod> fiinstselmethod(
     cl::desc("Choose how to specify the fault injection target instructions"),
-    cl::values(
-      clEnumVal(insttype, "Specify through instruction type/opcode"),
-      clEnumVal(funcname, "Specify through function name"),
-      clEnumVal(sourcecode, "Specify through source code"),
-      clEnumVal(custominstselector, 
-                "Specify through custom instruction selector"),
-      clEnumValEnd),
+    cl::values(clEnumVal(insttype, "Specify through instruction type/opcode"),
+               clEnumVal(funcname, "Specify through function name"),
+               clEnumVal(sourcecode, "Specify through source code"),
+               clEnumVal(custominstselector,
+                         "Specify through custom instruction selector")),
     cl::ZeroOrMore);
 
 // inst type
@@ -63,26 +61,24 @@ static cl::opt< bool > includeforwardtrace("includeforwardtrace",
 /**
  * Inject Register
  */
-static cl::opt< FIRegSelMethod > firegselmethod(
+static cl::opt<FIRegSelMethod> firegselmethod(
     cl::desc("Choose how to specify the fault injection target registers"),
     cl::init(regloc),
     cl::values(
-      clEnumVal(regloc, 
-                "Specify through register location, e.g. dstreg, srcreg1."),
-      clEnumVal(customregselector, "Specify through custom register selector"),
-      clEnumValEnd));
+        clEnumVal(regloc,
+                  "Specify through register location, e.g. dstreg, srcreg1."),
+        clEnumVal(customregselector,
+                  "Specify through custom register selector")));
 
-static cl::opt< FIRegLoc > fireglocation(
-    cl::desc("Choose fault injection register location:"),
-    cl::init(dstreg),
-    cl::values(
-      clEnumVal(dstreg, "Inject into destination register"),
-      clEnumVal(allsrcreg, "Inject randomly into one of all source registers"),
-      clEnumVal(srcreg1, "Inject into 1st source register"),
-      clEnumVal(srcreg2, "Inject into 2nd source register"),
-      clEnumVal(srcreg3, "Inject into 3rd source register"),
-      clEnumVal(srcreg4, "Inject into 4th source register"),
-      clEnumValEnd));
+static cl::opt<FIRegLoc> fireglocation(
+    cl::desc("Choose fault injection register location:"), cl::init(dstreg),
+    cl::values(clEnumVal(dstreg, "Inject into destination register"),
+               clEnumVal(allsrcreg,
+                         "Inject randomly into one of all source registers"),
+               clEnumVal(srcreg1, "Inject into 1st source register"),
+               clEnumVal(srcreg2, "Inject into 2nd source register"),
+               clEnumVal(srcreg3, "Inject into 3rd source register"),
+               clEnumVal(srcreg4, "Inject into 4th source register")));
 
 static cl::opt < std::string > firegselectorname("firegselectorname",
     cl::desc("Custom fault injection register selector name"));
@@ -207,9 +203,9 @@ void Controller::processRegSelArgs() {
 
 void Controller::processCmdArgs() {
   // clear the log file
-  std::string err;
+  std::error_code err;
   raw_fd_ostream logFile(llfilogfile.c_str(), err, sys::fs::F_Append);
-  if (err == "") {
+  if (!err) {
     logFile << "\n\nStart of a pass\n";
   } else {
     errs() << "Unable to output logging information to file " << llfilogfile

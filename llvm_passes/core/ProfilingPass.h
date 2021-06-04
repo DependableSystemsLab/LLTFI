@@ -19,8 +19,8 @@ class ProfilingPass: public ModulePass {
  private: 
   void addEndProfilingFuncCall(Module &M);
  private:
-  Constant *getLLFILibProfilingFunc(Module &M);
-  Constant *getLLFILibEndProfilingFunc(Module &M);
+   FunctionCallee getLLFILibProfilingFunc(Module &M);
+   FunctionCallee getLLFILibEndProfilingFunc(Module &M);
 };
 
 char ProfilingPass::ID=0;

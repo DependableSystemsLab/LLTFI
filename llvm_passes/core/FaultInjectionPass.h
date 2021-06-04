@@ -20,9 +20,6 @@ class FaultInjectionPass: public ModulePass {
   FaultInjectionPass() : ModulePass(ID) { }
   virtual bool runOnModule(Module &M);	
   static char ID;
-  virtual void getAnalysisUsage(AnalysisUsage &AU) const {
-    AU.addRequired<DataLayout>();
-  }
 
  private: 
   void checkforMainFunc(Module &M);
@@ -30,19 +27,20 @@ class FaultInjectionPass: public ModulePass {
 
   void insertInjectionFuncCall(
       std::map<Instruction*, std::list< int >* > *inst_regs_map, Module &M);
-  void createInjectionFuncforType(Module &M, Type *functype, 
-                                  std::string &funcname, Constant *fi_func, 
-                                  Constant *pre_func);
-	void createInjectionFunctions(Module &M);
+  void createInjectionFuncforType(Module &M, Type *functype,
+                                  std::string &funcname, FunctionCallee fi_func,
+                                  FunctionCallee pre_func);
+  void createInjectionFunctions(Module &M);
 
- private:
+private:
   std::string getFIFuncNameforType(const Type* type);
-  
-  Constant *getLLFILibPreFIFunc(Module &M);
-  Constant *getLLFILibFIFunc(Module &M);
-  Constant *getLLFILibInitInjectionFunc(Module &M);
-  Constant *getLLFILibPostInjectionFunc(Module &M);
- private:
+
+  FunctionCallee getLLFILibPreFIFunc(Module &M);
+  FunctionCallee getLLFILibFIFunc(Module &M);
+  FunctionCallee getLLFILibInitInjectionFunc(Module &M);
+  FunctionCallee getLLFILibPostInjectionFunc(Module &M);
+
+private:
   std::map<const Type*, std::string> fi_rettype_funcname_map;
 };
 

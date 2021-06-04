@@ -1,8 +1,8 @@
-#include "llvm/Pass.h"
 #include "llvm/IR/Function.h"
-#include "llvm/IR/Module.h"
-#include "llvm/Support/InstIterator.h"
+#include "llvm/IR/InstIterator.h"
 #include "llvm/IR/Instruction.h"
+#include "llvm/IR/Module.h"
+#include "llvm/Pass.h"
 #include <cstdio>
 
 #include "Utils.h"
@@ -26,8 +26,8 @@ bool GenLLFIIndexPass::runOnModule(Module &M) {
 
   for (Module::iterator m_it = M.begin(); m_it != M.end(); ++m_it) {
     if (!m_it->isDeclaration()) {
-      //m_it is a function  
-      for (inst_iterator f_it = inst_begin(m_it); f_it != inst_end(m_it);
+      // m_it is a function
+      for (inst_iterator f_it = inst_begin(&*m_it); f_it != inst_end(&*m_it);
            ++f_it) {
         currinst = &(*f_it);
         setLLFIIndexofInst(currinst);

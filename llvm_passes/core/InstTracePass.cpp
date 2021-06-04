@@ -14,18 +14,18 @@ Author: Sam Coulter
 #include <cmath>
 
 #include "llvm/IR/Constants.h"
+#include "llvm/IR/DataLayout.h"
 #include "llvm/IR/DerivedTypes.h"
-#include "llvm/IR/GlobalValue.h"
-#include "llvm/Pass.h"
 #include "llvm/IR/Function.h"
-#include "llvm/IR/Module.h"
+#include "llvm/IR/GlobalValue.h"
+#include "llvm/IR/InstIterator.h"
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/Instructions.h"
+#include "llvm/IR/Module.h"
+#include "llvm/Pass.h"
+#include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/Support/InstIterator.h"
-#include "llvm/Support/CommandLine.h"
-#include "llvm/IR/DataLayout.h"
 
 #include "Utils.h"
 
@@ -46,11 +46,6 @@ struct InstTrace : public FunctionPass {
 
   InstTrace() : FunctionPass(ID) {}
 
-  //Add AnalysisUsage Pass as prerequisite for InstTrace Pass
-  virtual void getAnalysisUsage(AnalysisUsage &AU) const {
-    AU.addRequired<DataLayout>();
-  }
-
   virtual bool doInitialization(Module &M) {
     return false;
   }
@@ -65,10 +60,10 @@ struct InstTrace : public FunctionPass {
     }
 
     LLVMContext &context = M.getContext();
-    FunctionType *postinjectfunctype = FunctionType::get(
-        Type::getVoidTy(context), false); 
-    Constant *postracingfunc = M.getOrInsertFunction("postTracing",
-                                             postinjectfunctype);
+    FunctionType *postinjectfunctype =
+        FunctionType::get(Type::getVoidTy(context), false);
+    FunctionCallee postracingfunc =
+        M.getOrInsertFunction("postTracing", postinjectfunctype);
 
     std::set<Instruction*> exitinsts;
     getProgramExitInsts(M, exitinsts);
@@ -145,15 +140,17 @@ struct InstTrace : public FunctionPass {
         AllocaInst* ptrInst;
         if (inst->getType() != Type::getVoidTy(context)) {
           //insert an instruction Allocate stack memory to store/pass instruction value
-          ptrInst = new AllocaInst(inst->getType(), "llfi_trace", alloca_insertPoint);
+          ptrInst = new AllocaInst(inst->getType(), 0, "llfi_trace",
+                                   alloca_insertPoint);
           //Insert an instruction to Store the instruction Value!
           new StoreInst(inst, ptrInst, insertPoint);
 
-          DataLayout &td = getAnalysis<DataLayout>();
+          const DataLayout &td = F.getParent()->getDataLayout();
           bitSize = (float)td.getTypeSizeInBits(inst->getType());
         }
         else {
-          ptrInst = new AllocaInst(Type::getInt32Ty(context), "llfi_trace", alloca_insertPoint);
+          ptrInst = new AllocaInst(Type::getInt32Ty(context), 0, "llfi_trace",
+                                   alloca_insertPoint);
           new StoreInst(ConstantInt::get(IntegerType::get(context, 32), 0), 
                         ptrInst, insertPoint);
           bitSize = 32;
@@ -169,8 +166,8 @@ struct InstTrace : public FunctionPass {
         llvm::Value* OPCodeName = llvm::ConstantDataArray::get(context, opcode_name_array_ref);
         /********************************/
 
-        AllocaInst* OPCodePtr = new AllocaInst(OPCodeName->getType(),
-                                               "llfi_trace", alloca_insertPoint);
+        AllocaInst *OPCodePtr = new AllocaInst(
+            OPCodeName->getType(), 0, "llfi_trace", alloca_insertPoint);
         new StoreInst(OPCodeName, OPCodePtr, insertPoint);
 
         //Create the decleration of the printInstTracer Function
@@ -189,7 +186,8 @@ struct InstTrace : public FunctionPass {
 
         FunctionType* traceFuncType = FunctionType::get(Type::getVoidTy(context), 
                                                         parameterVector_array_ref, false);
-        Constant *traceFunc = M->getOrInsertFunction("printInstTracer", traceFuncType); 
+        FunctionCallee traceFunc =
+            M->getOrInsertFunction("printInstTracer", traceFuncType);
 
         //Insert the tracing function, passing it the proper arguments
         std::vector<Value*> traceArgs;

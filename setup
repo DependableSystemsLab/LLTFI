@@ -129,7 +129,7 @@ def checkEnvironment():
     print("ERROR: You need to install CMake before build LLFI.\n", file=sys.stderr)
     has_error = True
   elif not os.path.exists(os.path.join(required_configs['LLVM_DST_ROOT'], 
-                                       "share/llvm/cmake")):
+                                       "lib/cmake/llvm")):
     print(("ERROR: You need to pass LLVM CMake build root "
                           "directory to -LLVM_DST_ROOT. See how to build LLVM "
                           "with CMake on http://llvm.org\n"), file=sys.stderr)
@@ -159,15 +159,15 @@ def build():
   java_paths_py = os.path.join(script_path, "config/java_paths.py")
   
   # build all default software failures
-  fidl_path =  os.path.join(script_path, 'tools/FIDL/FIDL-Algorithm.py')
-  execlist = [fidl_path, '-a', 'default']
-  print('-- Generating default software failures with %s...' % (fidl_path))
-  p = subprocess.call(execlist, stdout = open(os.devnull, 'wb'))
-  if p != 0:
-    print('-- Failed!')
-    sys.exit(p)
-  else:
-    print('-- Success!')
+  #fidl_path =  os.path.join(script_path, 'tools/FIDL/FIDL-Algorithm.py')
+  #execlist = [fidl_path, '-a', 'default']
+  #print('-- Generating default software failures with %s...' % (fidl_path))
+  #p = subprocess.call(execlist, stdout = open(os.devnull, 'wb'))
+  #if p != 0:
+  #  print('-- Failed!')
+  #  sys.exit(p)
+  #else:
+  #  print('-- Success!')
   
   # write cmake config file for llvm paths
   cmake_File = open(llvm_paths_cmake, "w")

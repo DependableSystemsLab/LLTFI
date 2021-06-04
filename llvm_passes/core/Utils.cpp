@@ -60,7 +60,7 @@ void getProgramExitInsts(Module &M, std::set<Instruction*> &exitinsts) {
   for (Module::iterator m_it = M.begin(); m_it != M.end(); ++m_it) {
     if (!m_it->isDeclaration()) {
       //m_it is a function
-      for (inst_iterator f_it = inst_begin(m_it); f_it != inst_end(m_it);
+      for (inst_iterator f_it = inst_begin(&*m_it); f_it != inst_end(&*m_it);
            ++f_it) {
         Instruction *inst = &(*f_it);
         if (CallInst *ci = dyn_cast<CallInst>(inst)) {
@@ -88,9 +88,9 @@ Instruction *getInsertPtrforRegsofInst(Value *reg, Instruction *inst) {
           << *inst << ", change isRegofInstInjectable() to fix it\n";
       exit(2);
     } else {
-      BasicBlock::iterator bb_it = inst;
+      BasicBlock::iterator bb_it(inst);
       while (isa<PHINode>(++bb_it)) ;
-      return bb_it;
+      return &*bb_it;
     }
   } else {
     // Assume the reg is the src of inst, insert before inst
@@ -106,8 +106,8 @@ Instruction *getInsertPtrforRegsofInst(Value *reg, Instruction *inst) {
 Instruction* changeInsertPtrIfInjectFaultInst(Instruction *inst) {
   MDNode *mdnode = inst->getMetadata("llfi_injectfault");
   if (mdnode) {
-    if (((MDString*)mdnode->getOperand(0))->getString() == "after") {
-      return ++((BasicBlock::iterator) inst);
+    if (((MDString *)mdnode->getOperand(0).get())->getString() == "after") {
+      return inst->getNextNonDebugInstruction();
     } else {
       return inst;
     }
@@ -134,7 +134,9 @@ void setInjectFaultInst(Value *reg, Instruction *inst, Instruction *ficall) {
 long getLLFIIndexofInst(Instruction *inst) {
   MDNode *mdnode = inst->getMetadata("llfi_index");
   if (mdnode) {
-    ConstantInt *cns_index = dyn_cast<ConstantInt>(mdnode->getOperand(0));
+    Constant *cns =
+        dyn_cast<ConstantAsMetadata>(mdnode->getOperand(0))->getValue();
+    ConstantInt *cns_index = dyn_cast<ConstantInt>(cns);
     return cns_index->getSExtValue();
   } else {
     errs() << "ERROR: LLFI indices for instructions are required for the pass, "
@@ -148,9 +150,11 @@ void setLLFIIndexofInst(Instruction *inst) {
   assert (fi_index >= 0 && "static instruction number exceeds index max");
   Function *func = inst->getParent()->getParent();
   LLVMContext &context = func->getContext();
-  std::vector<Value*> llfiindex(1);
-  llfiindex[0] = ConstantInt::get(Type::getInt64Ty(context), fi_index++);
-  MDNode *mdnode = MDNode::get(context, llfiindex);
+  std::vector<Metadata *> llfiindex(1);
+  llfiindex[0] = ConstantAsMetadata::get(
+      ConstantInt::get(Type::getInt64Ty(context), fi_index++));
+  ArrayRef<Metadata *> llfiarr(llfiindex);
+  MDNode *mdnode = MDNode::get(context, llfiarr);
   inst->setMetadata("llfi_index", mdnode);
 }
 

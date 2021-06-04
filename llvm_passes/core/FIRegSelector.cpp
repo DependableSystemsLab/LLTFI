@@ -15,7 +15,7 @@ extern cl::opt< std::string > llfilogfile;
 void FIRegSelector::getFIInstRegMap(
     const std::set< Instruction* > *instset, 
     std::map<Instruction*, std::list< int >* > *instregmap) {
-  std::string err;
+  std::error_code err;
   raw_fd_ostream logFile(llfilogfile.c_str(), err, sys::fs::F_Append);
 
   for (std::set<Instruction*>::const_iterator inst_it = instset->begin();
@@ -26,7 +26,7 @@ void FIRegSelector::getFIInstRegMap(
     if (isRegofInstFITarget(inst, inst)) {
       if (isRegofInstInjectable(inst, inst))
         reglist->push_back(DST_REG_POS);
-      else if (err == "") {
+      else if (!err) {
         logFile << "LLFI cannot inject faults in destination reg of " << *inst
               << "\n";
       }
@@ -40,7 +40,7 @@ void FIRegSelector::getFIInstRegMap(
         if (isRegofInstInjectable(src, inst)) {
           reglist->push_back(pos);
           //dbgs()<<"srcreg "<<" inst:"<<*inst<<" reg:"<<*inst->getOperand(pos)<<" pos:"<<pos<<"\n";
-        } else if (err == "") {
+        } else if (!err) {
           logFile << "LLFI cannot inject faults in source reg ";
           if (isa<BasicBlock>(src)) 
             logFile << src->getName();
@@ -54,7 +54,7 @@ void FIRegSelector::getFIInstRegMap(
     if (reglist->size() != 0) {
       instregmap->insert(
           std::pair<Instruction*, std::list< int >* >(inst, reglist));
-    } else if (err == "") {
+    } else if (!err) {
       logFile << "The selected instruction " << *inst << 
           "does not have any valid registers for fault injection\n";
     }
@@ -67,7 +67,7 @@ bool FIRegSelector::isRegofInstInjectable(Value *reg, Instruction *inst) {
   // if we find anything that can be covered, remove them from the checks
   // if we find new cases that we cannot handle, add them to the checks
   if (reg == inst) {
-    if (inst->getType()->isVoidTy() || isa<TerminatorInst>(inst)) {
+    if (inst->getType()->isVoidTy() || inst->isTerminator()) {
       return false;
     }
   } else {

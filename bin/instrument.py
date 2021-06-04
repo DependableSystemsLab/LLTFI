@@ -326,7 +326,7 @@ def compileProg():
   fifile = progbin + "-faultinjection"
   tmpfiles = []
 
-  execlist = [optbin, '-load', llfilib, '-genllfiindexpass','-o', 
+  execlist = [optbin, '-load', llfilib, '-genllfiindexpass', '-enable-new-pm=0', '-o',
               llfi_indexed_file + _suffixOfIR(), options['source']]
   if options["readable"]:
     execlist.append('-S')
@@ -335,7 +335,7 @@ def compileProg():
   retcode = execCompilation(execlist)
   
   if retcode == 0:
-    execlist = [optbin, '-load', llfilib, '-profilingpass']
+    execlist = [optbin, '-load', llfilib, '-profilingpass', '-enable-new-pm=0']
     execlist2 = ['-o', proffile + _suffixOfIR(), llfi_indexed_file + _suffixOfIR()]
     execlist.extend(compileOptions)
     execlist.extend(execlist2)
@@ -344,7 +344,7 @@ def compileProg():
     retcode = execCompilation(execlist)
 
   if retcode == 0:
-    execlist = [optbin, '-load', llfilib, '-faultinjectionpass']
+    execlist = [optbin, '-load', llfilib, '-faultinjectionpass', '-enable-new-pm=0']
     execlist2 = ['-o', fifile + _suffixOfIR(), llfi_indexed_file + _suffixOfIR()]
     execlist.extend(compileOptions)
     execlist.extend(execlist2)

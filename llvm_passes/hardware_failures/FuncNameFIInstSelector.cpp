@@ -7,7 +7,7 @@
 namespace llfi {
 
 bool FuncNameFIInstSelector::isInstFITarget(Instruction *inst) {
-  std::string func = inst->getParent()->getParent()->getName();
+  std::string func = inst->getParent()->getParent()->getName().str();
   func = demangleFuncName(func);
 
   if (funclist->find(func) != funclist->end()) {

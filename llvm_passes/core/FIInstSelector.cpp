@@ -1,5 +1,5 @@
+#include "llvm/IR/InstIterator.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/Support/InstIterator.h"
 
 #include "FIInstSelector.h"
 
@@ -24,8 +24,8 @@ void FIInstSelector::getInitFIInsts(Module &M,
                                     std::set<Instruction*> *fiinsts) {
   for (Module::iterator m_it = M.begin(); m_it != M.end(); ++m_it) {
     if (!m_it->isDeclaration()) {
-      //m_it is a function  
-      for (inst_iterator f_it = inst_begin(m_it); f_it != inst_end(m_it);
+      // m_it is a function
+      for (inst_iterator f_it = inst_begin(&*m_it); f_it != inst_end(&*m_it);
            ++f_it) {
         Instruction *inst = &(*f_it);
         if (isInstFITarget(inst)) {
@@ -70,13 +70,13 @@ void FIInstSelector::getBackwardTraceofInst(Instruction *inst,
 
 void FIInstSelector::getForwardTraceofInst(Instruction *inst,
                                            std::set<Instruction*> *fs) {
-  for (Value::use_iterator use_it = inst->use_begin();
-       use_it != inst->use_end(); ++use_it) {
-    User *use = *use_it;
-    if (Instruction *use_inst = dyn_cast<Instruction>(use)) {
-      if (fs->find(use_inst) == fs->end()) {
-        fs->insert(use_inst);
-        getForwardTraceofInst(use_inst, fs);
+  for (Value::user_iterator user_it = inst->user_begin();
+       user_it != inst->user_end(); ++user_it) {
+    User *user = *user_it;
+    if (Instruction *user_inst = dyn_cast<Instruction>(user)) {
+      if (fs->find(user_inst) == fs->end()) {
+        fs->insert(user_inst);
+        getForwardTraceofInst(user_inst, fs);
       }
     }
   }

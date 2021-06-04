@@ -57,7 +57,8 @@ void FaultInjectionPass::insertInjectionFuncCall(
       bool continue_flag=false;
       for (std::list<int>::iterator reg_pos_it_mem = fi_reg_pos_list->begin();
        	(reg_pos_it_mem != fi_reg_pos_list->end()) && (*reg_pos_it_mem != DST_REG_POS); ++reg_pos_it_mem) {
-        std::string reg_mem = fi_inst->getOperand(*reg_pos_it_mem)->getName();
+        std::string reg_mem =
+            fi_inst->getOperand(*reg_pos_it_mem)->getName().str();
         if ((reg_mem.find("memcpy") != std::string::npos) || (reg_mem.find("memset") != std::string::npos) || (reg_mem.find("expect") != std::string::npos) || (reg_mem.find("memmove") != std::string::npos)){
           continue_flag=true;
           break;
@@ -71,7 +72,6 @@ void FaultInjectionPass::insertInjectionFuncCall(
     if(current_opcode.find("landingpad") != std::string::npos){
       continue;
     }
-
 
     unsigned reg_index = 0;
     unsigned total_reg_num = fi_reg_pos_list->size();
@@ -114,7 +114,8 @@ void FaultInjectionPass::insertInjectionFuncCall(
       FunctionType* injectfunctype = FunctionType::get(returntype, paramtypes_array_ref, false);
 
       std::string funcname = getFIFuncNameforType(returntype);
-      Constant *injectfunc = M.getOrInsertFunction(funcname, injectfunctype);
+      FunctionCallee injectfunc =
+          M.getOrInsertFunction(funcname, injectfunctype);
 
       // argument preparation for calling function
       // since the source register is another way of simulating fault
@@ -137,7 +138,12 @@ void FaultInjectionPass::insertInjectionFuncCall(
       indices_for_gep[0] = ConstantInt::get(Type::getInt32Ty(context),0);
       indices_for_gep[1] = ConstantInt::get(Type::getInt32Ty(context),0);
       ArrayRef<Constant*> indices_for_gep_array_ref(indices_for_gep);
-      Constant* gep_expr = ConstantExpr::getGetElementPtr(opcode_str_gv, indices_for_gep_array_ref, true);
+      Constant *opc_str = dyn_cast<Constant>(opcode_str_gv);
+      Type *ty =
+          dyn_cast<PointerType>(opcode_str_gv->getType()->getScalarType())
+              ->getElementType();
+      Constant *gep_expr = ConstantExpr::getGetElementPtr(
+          ty, opc_str, indices_for_gep_array_ref, true);
       args[6] = gep_expr; // opcode in string
       //================================================
 
@@ -145,26 +151,26 @@ void FaultInjectionPass::insertInjectionFuncCall(
       ArrayRef<Value*> args_array_ref(args);
 
       Instruction *insertptr = getInsertPtrforRegsofInst(fi_reg, fi_inst);
-      Instruction* ficall = CallInst::Create(
-          injectfunc, args_array_ref, "fi", insertptr);
+      Instruction *ficall =
+          CallInst::Create(injectfunc, args_array_ref, "fi", insertptr);
       setInjectFaultInst(fi_reg, fi_inst, ficall); // sets the instruction metadata
 
       // redirect the data dependencies
       if (fi_reg == fi_inst) {
         // inject into destination
         std::list<User*> inst_uses;
-        for (Value::use_iterator use_it = fi_inst->use_begin();
-             use_it != fi_inst->use_end(); ++use_it) {
-          User *user = *use_it;
-          
+        for (Value::user_iterator user_it = fi_inst->user_begin();
+             user_it != fi_inst->user_end(); ++user_it) {
+          User *user = *user_it;
+
           if (user != ficall) {
             inst_uses.push_back(user);
           }
         }
-        
-        for (std::list<User*>::iterator use_it = inst_uses.begin();
-             use_it != inst_uses.end(); ++use_it) {
-          User *user = *use_it;
+
+        for (std::list<User *>::iterator user_it = inst_uses.begin();
+             user_it != inst_uses.end(); ++user_it) {
+          User *user = *user_it;
           user->replaceUsesOfWith(fi_inst, ficall);
           
           // update the selected inst pool
@@ -181,7 +187,7 @@ void FaultInjectionPass::insertInjectionFuncCall(
             }
           }*/
         }
-        
+
       } else {
         // inject into source
         //fi_inst->replaceUsesOfWith(fi_reg, ficall);
@@ -192,8 +198,8 @@ void FaultInjectionPass::insertInjectionFuncCall(
 }
 
 void FaultInjectionPass::createInjectionFuncforType(
-    Module &M, Type *fitype, std::string &fi_name, Constant *injectfunc,
-    Constant *pre_fi_func) {
+    Module &M, Type *fitype, std::string &fi_name, FunctionCallee injectfunc,
+    FunctionCallee pre_fi_func) {
   LLVMContext &context = M.getContext();
   Function *f = M.getFunction(fi_name);
   std::vector<Value*> args;
@@ -204,7 +210,7 @@ void FaultInjectionPass::createInjectionFuncforType(
 
   BasicBlock* entryblock = BasicBlock::Create(context, "entry", f);
   // store the value of target instruction to memory
-  AllocaInst *tmploc = new AllocaInst(fitype, "tmploc", entryblock);
+  AllocaInst *tmploc = new AllocaInst(fitype, 0, "tmploc", entryblock);
   new StoreInst(args[1], tmploc, entryblock);
 
   std::vector<Value*> pre_fi_args(4);
@@ -226,7 +232,7 @@ void FaultInjectionPass::createInjectionFuncforType(
 
   std::vector<Value*> fi_args(6);
   fi_args[0] = args[0]; //LLFI index
-  DataLayout &td = getAnalysis<DataLayout>();
+  const DataLayout &td = M.getDataLayout();
   int size = td.getTypeSizeInBits(fitype);
   fi_args[1] = ConstantInt::get(Type::getInt32Ty(context), size); //size
   fi_args[2] = new BitCastInst(tmploc, 
@@ -244,14 +250,14 @@ void FaultInjectionPass::createInjectionFuncforType(
   CallInst::Create(injectfunc, fi_args_array_ref, "",
                    fi2exit_branch);
 
-  LoadInst *updateval = new LoadInst(tmploc, "updateval", exitblock);
+  LoadInst *updateval = new LoadInst(fitype, tmploc, "updateval", exitblock);
   ReturnInst::Create(context, updateval, exitblock);
 }
 
 void FaultInjectionPass::createInjectionFunctions(Module &M) {
-  Constant *pre_fi_func = getLLFILibPreFIFunc(M);
-  Constant *injectfunc = getLLFILibFIFunc(M);
-  
+  FunctionCallee pre_fi_func = getLLFILibPreFIFunc(M);
+  FunctionCallee injectfunc = getLLFILibFIFunc(M);
+
   for (std::map<const Type*, std::string>::const_iterator fi = 
        fi_rettype_funcname_map.begin();
        fi != fi_rettype_funcname_map.end(); ++fi) {
@@ -292,11 +298,11 @@ void FaultInjectionPass::finalize(Module &M) {
   BasicBlock *entryblock = &mainfunc->front();
 
   // function call for initInjections
-  Constant *initfunc = getLLFILibInitInjectionFunc(M);
+  FunctionCallee initfunc = getLLFILibInitInjectionFunc(M);
   CallInst::Create(initfunc, "", entryblock->getFirstNonPHI());
   
   // function call for postInjections
-  Constant *postfifunc = getLLFILibPostInjectionFunc(M);
+  FunctionCallee postfifunc = getLLFILibPostInjectionFunc(M);
 
   std::set<Instruction*> exitinsts;
   getProgramExitInsts(M, exitinsts);
@@ -311,7 +317,7 @@ void FaultInjectionPass::finalize(Module &M) {
   createInjectionFunctions(M);
 }
 
-Constant *FaultInjectionPass::getLLFILibPreFIFunc(Module &M) {
+FunctionCallee FaultInjectionPass::getLLFILibPreFIFunc(Module &M) {
   std::vector<Type*> pre_fi_func_param_types(4);
   LLVMContext& context = M.getContext();
   pre_fi_func_param_types[0] = Type::getInt64Ty(context);// index
@@ -324,11 +330,12 @@ Constant *FaultInjectionPass::getLLFILibPreFIFunc(Module &M) {
 
   FunctionType *pre_fi_func_type = FunctionType::get(
       Type::getInt1Ty(context), pre_fi_func_param_types_array_ref, false);
-  Constant *pre_fi_func = M.getOrInsertFunction("preFunc", pre_fi_func_type);
+  FunctionCallee pre_fi_func =
+      M.getOrInsertFunction("preFunc", pre_fi_func_type);
   return pre_fi_func;
 }
 
-Constant *FaultInjectionPass::getLLFILibFIFunc(Module &M) {
+FunctionCallee FaultInjectionPass::getLLFILibFIFunc(Module &M) {
   LLVMContext& context = M.getContext();
   std::vector<Type*> fi_func_param_types(6);
   fi_func_param_types[0] = Type::getInt64Ty(context); // index
@@ -345,25 +352,26 @@ Constant *FaultInjectionPass::getLLFILibFIFunc(Module &M) {
 
   FunctionType *injectfunctype = FunctionType::get(
       Type::getVoidTy(context), fi_func_param_types_array_ref, false);
-  Constant *injectfunc = M.getOrInsertFunction("injectFunc", injectfunctype);
+  FunctionCallee injectfunc =
+      M.getOrInsertFunction("injectFunc", injectfunctype);
   return injectfunc;
-} 
+}
 
-Constant *FaultInjectionPass::getLLFILibInitInjectionFunc(Module &M) {
+FunctionCallee FaultInjectionPass::getLLFILibInitInjectionFunc(Module &M) {
   LLVMContext &context = M.getContext();
-  FunctionType *fi_init_func_type = 
-      FunctionType::get(Type::getVoidTy(context), false); 
-  Constant *initfunc = M.getOrInsertFunction("initInjections",
-                                              fi_init_func_type);
+  FunctionType *fi_init_func_type =
+      FunctionType::get(Type::getVoidTy(context), false);
+  FunctionCallee initfunc =
+      M.getOrInsertFunction("initInjections", fi_init_func_type);
   return initfunc;
 }
 
-Constant *FaultInjectionPass::getLLFILibPostInjectionFunc(Module &M) {
+FunctionCallee FaultInjectionPass::getLLFILibPostInjectionFunc(Module &M) {
   LLVMContext &context = M.getContext();
-  FunctionType *postinjectfunctype = FunctionType::get(
-      Type::getVoidTy(context), false); 
-  Constant *postfifunc = M.getOrInsertFunction("postInjections",
-                                             postinjectfunctype);
+  FunctionType *postinjectfunctype =
+      FunctionType::get(Type::getVoidTy(context), false);
+  FunctionCallee postfifunc =
+      M.getOrInsertFunction("postInjections", postinjectfunctype);
   return postfifunc;
 }
 

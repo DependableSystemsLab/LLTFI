@@ -43,8 +43,8 @@ bool ProfilingPass::runOnModule(Module &M) {
   std::map<Instruction*, std::list< int >* > *fi_inst_regs_map;
   Controller *ctrl = Controller::getInstance(M);
   ctrl->getFIInstRegsMap(&fi_inst_regs_map);
-  //BEHROOZ: 
-  std::string err;
+  //BEHROOZ:
+  std::error_code err;
   raw_fd_ostream logFile(llfilogfile.c_str(), err, sys::fs::F_Append);
 
   for (std::map<Instruction*, std::list< int >* >::const_iterator 
@@ -52,12 +52,14 @@ bool ProfilingPass::runOnModule(Module &M) {
        inst_reg_it != fi_inst_regs_map->end(); ++inst_reg_it) {
     Instruction *fi_inst = inst_reg_it->first;
     std::list<int > *fi_regs = inst_reg_it->second;
+
     /*BEHROOZ: This section makes sure that we do not instrument the intrinsic functions*/ 
     if(isa<CallInst>(fi_inst)){
       bool continue_flag=false;
       for (std::list<int>::iterator reg_pos_it_mem = fi_regs->begin();
         (reg_pos_it_mem != fi_regs->end()) && (*reg_pos_it_mem != DST_REG_POS); ++reg_pos_it_mem) {
-        std::string reg_mem = fi_inst->getOperand(*reg_pos_it_mem)->getName();
+        std::string reg_mem =
+            fi_inst->getOperand(*reg_pos_it_mem)->getName().str();
         if ((reg_mem.find("memcpy") != std::string::npos) || (reg_mem.find("memset") != std::string::npos) || (reg_mem.find("expect") != std::string::npos) || (reg_mem.find("memmove") != std::string::npos)){
           logFile << "LLFI cannot instrument " << reg_mem << " intrinsic function"<< "\n";
           continue_flag=true;
@@ -74,12 +76,11 @@ bool ProfilingPass::runOnModule(Module &M) {
       continue;
     }
 
-
     Value *fi_reg = *(fi_regs->begin())==DST_REG_POS ? fi_inst : (fi_inst->getOperand(*(fi_regs->begin())));
     Instruction *insertptr = getInsertPtrforRegsofInst(fi_reg, fi_inst);
-    
+
     // function declaration
-    Constant* profilingfunc = getLLFILibProfilingFunc(M);
+    FunctionCallee profilingfunc = getLLFILibProfilingFunc(M);
 
     // prepare for the calling argument and call the profiling function
     std::vector<Value*> profilingarg(1);
@@ -106,7 +107,7 @@ bool ProfilingPass::runOnModule(Module &M) {
 void ProfilingPass::addEndProfilingFuncCall(Module &M) {
   Function* mainfunc = M.getFunction("main");
   if (mainfunc != NULL) {
-    Constant *endprofilefunc = getLLFILibEndProfilingFunc(M);
+    FunctionCallee endprofilefunc = getLLFILibEndProfilingFunc(M);
 
     // function call
     std::set<Instruction*> exitinsts;
@@ -126,8 +127,8 @@ void ProfilingPass::addEndProfilingFuncCall(Module &M) {
   }
 }
 
-Constant *ProfilingPass::getLLFILibProfilingFunc(Module &M) {
-	LLVMContext& context = M.getContext();
+FunctionCallee ProfilingPass::getLLFILibProfilingFunc(Module &M) {
+  LLVMContext &context = M.getContext();
   std::vector<Type*> paramtypes(1);
   paramtypes[0] = Type::getInt32Ty(context);
 
@@ -136,17 +137,17 @@ Constant *ProfilingPass::getLLFILibProfilingFunc(Module &M) {
 
   FunctionType* profilingfunctype = FunctionType::get(
       Type::getVoidTy(context), paramtypes_array_ref, false);
-  Constant *profilingfunc = M.getOrInsertFunction(
-      "doProfiling", profilingfunctype);
+  FunctionCallee profilingfunc =
+      M.getOrInsertFunction("doProfiling", profilingfunctype);
   return profilingfunc;
 }
 
-Constant *ProfilingPass::getLLFILibEndProfilingFunc(Module &M) {
+FunctionCallee ProfilingPass::getLLFILibEndProfilingFunc(Module &M) {
   LLVMContext& context = M.getContext();
   FunctionType* endprofilingfunctype = FunctionType::get(
       Type::getVoidTy(context), false);
-  Constant *endprofilefunc = M.getOrInsertFunction("endProfiling", 
-                                                endprofilingfunctype);
+  FunctionCallee endprofilefunc =
+      M.getOrInsertFunction("endProfiling", endprofilingfunctype);
   return endprofilefunc;
 }
 

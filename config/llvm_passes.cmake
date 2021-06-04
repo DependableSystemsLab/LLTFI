@@ -1,6 +1,6 @@
 # TODO: support installed LLVM and LLFI installation
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.15)
 
 include(../config/llvm_paths.cmake)
 set(LLVM_ON_UNIX 1)
@@ -9,9 +9,9 @@ if (NOT EXISTS ${LLVM_DST_ROOT}/include/llvm)
   message(FATAL_ERROR "LLVM_DST_ROOT (${LLVM_DST_ROOT}) is not a valid LLVM build")
 endif()
 
-set(LLVM_INCLUDE_DIRS_LLFI ${LLVM_DST_ROOT}/include ${LLVM_SRC_ROOT}/include)
+set(LLVM_INCLUDE_DIRS_LLFI ${LLVM_DST_ROOT}/include ${LLVM_SRC_ROOT}/llvm/include)
 set(LLVM_LIBRARY_DIRS_LLFI ${LLVM_DST_ROOT}/lib)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${LLVM_DST_ROOT}/share/llvm/cmake")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${LLVM_DST_ROOT}/lib/cmake/llvm")
 
 include(LLVMConfig)
 include(AddLLVM)

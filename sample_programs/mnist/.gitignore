@@ -1,0 +1,6 @@
+# Ignore generated files
+*.tf
+llfi
+llfi*.txt
+*onnx*
+

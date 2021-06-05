@@ -5,6 +5,7 @@ LLFI is an LLVM based fault injection tool, that injects faults into the LLVM IR
 
 Please join the following Google Groups for asking questions about LLFI that are not answered in the documentation: llfi-development@googlegroups.com
 
+<!--
 Auto-Installer
 --------------
 This is the recommended method for building the LLFI. If you wish to build the LLFI via the auto-installer, you *do not need* to clone the LLFI git repository. Simply download the installer script by itself, and it will fetch the latest version of the git repository for you. The LLFI auto-installer takes the form of a single python script (installer/installLLFI.py). To run the script, simply copy it into the directory where you would like to build the LLFI and, from the command line, run `python3 InstallLLFI.py`.
@@ -12,7 +13,7 @@ This is the recommended method for building the LLFI. If you wish to build the L
 Dependencies:
   1. 64 Bit Machine
   2. 64 Bit Linux or OS X
-  3. Cmake (mininum v2.8)
+  3. Cmake (mininum v3.15)
   4. Python 3 and above
   5. tcsh (for GUI)
   6. GraphViz package (for visualizing error propagation)
@@ -33,6 +34,7 @@ run "python3 InstallLLFI.py -h" to see all running options/guidelines
 About tcsh:
 
 The LLFI-GUI uses tcsh to read environment variables describing the location of the LLFI build. The installer will automatically add those environment variables to your ~/.tcshrc file. You do not need to actively use tcsh as your primary shell, simply having it installed is enough.
+-->
 
 Manual Install
 ---------------
@@ -41,18 +43,20 @@ This method is also available, and may be more suitable if you want more control
 Dependencies:
   
   1. 64 Machine with 64 bit Linux or OS X
-  2. CMake (minimum v2.8)
+  2. CMake (minimum v3.15)
   3. Python 3 and above
   4. Python YAML library (PyYAML)
-  5. Clang v3.4
-  6. LLVM v3.4, built with CMake
-    * Build llvm-3.4 **WITH CMAKE** using flag `-DLLVM_REQUIRES_RTTI=1`. [Instructions](http://llvm.org/docs/CMake.html)
+  5. Clang v12.0
+  6. LLVM v12.0, built with CMake
+    * Build llvm-12.0 **WITH CMAKE** using flag `-DLLVM_REQUIRES_RTTI=1`. [Instructions](http://llvm.org/docs/CMake.html)
     * Remember to run `make` in the llvm build directory after running `cmake`.
-  9. GraphViz package (for visualizing error propagation)
+  9. ~GraphViz package (for visualizing error propagation)~
 
+<!--
 GUI Dependencies:
   1. JDK7/JDK8 with JavaFX
   2. tcsh shell
+-->
 
 Building:
   
@@ -79,18 +83,19 @@ Building:
 
   Here is a sample build command if `clang` and `javac` are already in $PATH:
 ```
-  ./setup -LLFI_BUILD_ROOT $BUILD/LLFI -LLVM_SRC_ROOT $SRC/llvm-3.4 -LLVM_DST_ROOT $BUILD/llvm-3.4
+  ./setup -LLFI_BUILD_ROOT $BUILD/LLFI -LLVM_SRC_ROOT $SRC/llvm-12.0 -LLVM_DST_ROOT $BUILD/llvm-12.0
 ```
 
 Build without GUI:
 To build LLFI without GUI, just add option: `--no_gui` in the command line for setup, for example:
 ```
-./setup -LLFI_BUILD_ROOT $BUILD/LLFI -LLVM_SRC_ROOT $SRC/llvm-3.4 -LLVM_DST_ROOT $BUILD/llvm-3.4 --no_gui
+./setup -LLFI_BUILD_ROOT $BUILD/LLFI -LLVM_SRC_ROOT $SRC/llvm-12.0 -LLVM_DST_ROOT $BUILD/llvm-12.0 --no_gui
 ```
 
 Running tests:
 Running all regression tests after installation is highly recommended. Note that you may encounter some error messages during the fault injection stage. This is normal. Once all tests have completed and they all passed, LLFI is correctly installed.
 
+<!--
 VirtualBox Image
 -----------------
 
@@ -109,6 +114,7 @@ password: `root`
 Sample tests can be found under `~/Desktop/test/`.
 
 To run it, open VirtualBox, select `File->Import Appliance...` and navigate to the `.ova` file.
+-->
 
 Running
 -------
@@ -137,6 +143,7 @@ Example program: `factorial`
 
   For complete test of whole of LLFI, please use LLFI test suite and refer to wiki page: [Test suite for regression test](https://github.com/DependableSystemsLab/LLFI/wiki/Test-Suite-for-Regression-Test) for details.
 
+<!--
 ####GUI
 If you have used `./setup` to install LLFI, you need to set new environment variables for tcsh shell before running the GUI for the first time. Open `~/.tcshrc` using your favourite text editor and add `setenv llfibuild <LLFI_BUILD_ROOT>/` and `setenv zgrviewer <LLFI_BUILD_ROOT>/tools/zgrviewer/` to it. [OPTIONAL] Create an environment variable "COMPARE" with the path of the SDC check script.
 
@@ -161,6 +168,7 @@ Go to the /web-app/server folder and run "node server.js"
 
 Start the front-end dev tool:   
 Go to the web-app directory and run "webpack" or "webpack -w"   
+-->
 
 Results
 -------

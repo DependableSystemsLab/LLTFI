@@ -124,12 +124,14 @@ Example program: `factorial`
   1. Copy the `sample_programs/factorial/` directory to your project directory. 
   2. Change to your `factorial` directory Build a single IR file with the LLFI tool `GenerateMakefile`
       ```
-      <LLFI_BUILD_ROOT>/tools/GenerateMakefile --readable --all -o factorial.ll
-      ```
+      <LLFI_BUILD_ROOT>/tools/GenerateMakefile.py --readable --all -o factorial.ll
+      make
+     
      Alternatively, you can build your own IR file with `clang`.
+          
   3. Instrument factorial with calls to LLFI libraries and create executables under *llfi* directory
       ```
-      <LLFI_BUILD_ROOT>/bin/instrument --readable factorial.ll
+      <LLFI_BUILD_ROOT>/bin/instrument.py --readable factorial.ll
       ```
   4. Run factorial executable with profiling functions instrumented
       ```

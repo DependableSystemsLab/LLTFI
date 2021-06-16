@@ -13,8 +13,32 @@ Dependencies (in addition to LLFI):
 4. [tensorflow-onnx](https://github.com/onnx/tensorflow-onnx)
    - Installation with pip is sufficient
 5. [onnx-mlir](https://github.com/onnx/onnx-mlir)
-   - Must use the designated LLVM commit to work
+   - Must use the designated compatible LLVM commit to work
    - Ensure that the version of libprotoc is compatible
+
+    Because onnx-mlir requires a specific LLVM commit, and LLVM 12.0 takes a long time to completely build,
+    the following is a short cut to checking out the LLVM commit, and building only the necessary LLVM targets.
+    Also, please download and select Ninja as the build tool.
+
+    ```
+    git clone https://github.com/llvm/llvm-project.git
+    # Check out a specific branch that is known to work with ONNX MLIR.
+    cd llvm-project && git checkout ebe408ad8003c946ef871b955ab18e64e82697cb && cd ..
+    ```
+    ```
+    mkdir llvm-project/build
+    cd llvm-project/build
+    
+    cmake -G Ninja ../llvm \
+      -DLLVM_ENABLE_PROJECTS="clang;mlir;tools" \
+      -DLLVM_BUILD_TESTS=ON \
+      -DLLVM_TARGETS_TO_BUILD="host" \
+      -DLLVM_ENABLE_ASSERTIONS=ON \
+      -DLLVM_ENABLE_RTTI=ON
+    
+    cmake --build . --target clang check-mlir opt llc llvm-dis
+    ```
+    Once LLVM is built, you may follow the rest of the steps in [onnx-mlir](https://github.com/onnx/onnx-mlir).
 
 Running
 ---

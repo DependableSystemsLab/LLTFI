@@ -36,7 +36,7 @@ Dependencies (in addition to LLFI):
       -DLLVM_ENABLE_ASSERTIONS=ON \
       -DLLVM_ENABLE_RTTI=ON
     
-    cmake --build . --target clang check-mlir opt llc llvm-dis
+    cmake --build . --target clang check-mlir mlir-translate opt llc lli llvm-dis llvm-link
     ```
     Once LLVM is built, you may follow the rest of the steps in [onnx-mlir](https://github.com/onnx/onnx-mlir).
 

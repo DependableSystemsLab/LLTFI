@@ -3,8 +3,6 @@ LLFI
 
 LLFI is an LLVM based fault injection tool, that injects faults into the LLVM IR of the application source code.  The faults can be injected into specific program points, and the effect can be easily tracked back to the source code.  LLFI is typically used to map fault characteristics back to source code, and hence understand source level or program characteristics for various kinds of fault outcomes. Detailed documentation about LLFI can be found at: https://github.com/DependableSystemsLab/LLFI/wiki    
 
-Please join the following Google Groups for asking questions about LLFI that are not answered in the documentation: llfi-development@googlegroups.com
-
 <!--
 Auto-Installer
 --------------
@@ -122,26 +120,8 @@ You can use test programs in the directory `sample_programs/` or `test_suite/PRO
 ####Command line
 Example program: `factorial`
   1. Copy the `sample_programs/factorial/` directory to your project directory. 
-  2. Change to your `factorial` directory Build a single IR file with the LLFI tool `GenerateMakefile`
-      ```
-      <LLFI_BUILD_ROOT>/tools/GenerateMakefile --readable --all -o factorial.ll
-      make
-     
-     Alternatively, you can build your own IR file with `clang`.
-          
-  3. Instrument factorial with calls to LLFI libraries and create executables under *llfi* directory
-      ```
-      <LLFI_BUILD_ROOT>/bin/instrument --readable factorial.ll
-      ```
-  4. Run factorial executable with profiling functions instrumented
-      ```
-      <LLFI_BUILD_ROOT>/bin/profile ./llfi/factorial-profiling.exe 6
-      ```
-     In file *llfi/baseline/golden_std_output*, you should be able to see 720
-  5. Run `factorial` executable with fault injection functions instrumented
-      ```
-      <LLFI_BUILD_ROOT>/bin/injectfault ./llfi/factorial-faultinjection.exe 6
-      ```
+  2. Set LLFI_BUILD_ROOT environment variable e.g., export LLFI_BUILD_ROOT=/path/to/LLFI/installation
+  3. Call the ./compileAndRun.sh script with the first argument as factorial, and the second argument as the number to compute the factorial of (e.g., 6)
 
   For complete test of whole of LLFI, please use LLFI test suite and refer to wiki page: [Test suite for regression test](https://github.com/DependableSystemsLab/LLFI/wiki/Test-Suite-for-Regression-Test) for details.
 

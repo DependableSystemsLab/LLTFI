@@ -306,7 +306,8 @@ def readCompileOption():
 
       ###Dot Graph Generation selection
       if "generateCDFG" in cOpt["tracingPropagationOption"]:
-        options["genDotGraph"] = True
+          if (str(cOpt["tracingPropagationOption"]["generateCDFG"]).lower() == "true"):
+            options["genDotGraph"] = True
   
 
 ################################################################################

@@ -12,10 +12,12 @@ Dependencies (in addition to LLFI):
 3. numpy package (part of TensorFlow)
 4. [tensorflow-onnx](https://github.com/onnx/tensorflow-onnx)
    - Installation with pip is sufficient
+   ```
+   pip install tf2onnx
+   ```
 5. [onnx-mlir](https://github.com/onnx/onnx-mlir)
-   - Must use the designated compatible LLVM commit to work
-   - Ensure that the version of libprotoc is compatible
-
+   1. Must use the designated compatible LLVM commit to work
+   
     Because onnx-mlir requires a specific LLVM commit, and LLVM 12.0 takes a long time to completely build,
     the following is a short cut to checking out the LLVM commit, and building only the necessary LLVM targets.
     Also, please download and select Ninja as the build tool.
@@ -38,7 +40,21 @@ Dependencies (in addition to LLFI):
     
     cmake --build . --target clang check-mlir mlir-translate opt llc lli llvm-dis llvm-link
     ```
-    Once LLVM is built, you may follow the rest of the steps in [onnx-mlir](https://github.com/onnx/onnx-mlir).
+
+    2. Ensure that the version of libprotoc is compatible.
+    ```
+    curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.17.0/protobuf-all-3.17.0.zip
+    unzip protobuf-all-3.17.0.zip
+    cd protobuf-3.17.0
+    
+    ./configure
+    make
+    make check
+    sudo make install
+    sudo ldconfig # refresh shared library cache.
+    ```
+
+    3. Finally, you may follow the rest of the steps in [onnx-mlir](https://github.com/onnx/onnx-mlir). 
 
 Running
 ---

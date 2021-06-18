@@ -14,10 +14,11 @@
 #include "llvm/IR/Instructions.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/Support/InstIterator.h"
+#include "llvm/IR/InstIterator.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/IR/DataLayout.h"
-#include "llvm/DebugInfo.h"
+#include "llvm/IR/DebugInfoMetadata.h"
+#include "llvm/IR/Value.h"
 #include "Utils.h"
 
 #define DATADEPCOLOUR "blue"
@@ -42,18 +43,18 @@ instNode::instNode(Instruction *target) {
 
   label = std::string(" [shape=record,label=\"") + longToString(llfiID);
   label += std::string("\\n") + target->getOpcodeName() + "\\n";
-  if (target->getDebugLoc().getLine()) {
+  /* if (target->getDebugLoc().getLine()) {
     label += "(Line #: " + intToString(target->getDebugLoc().getLine()) + ")\\n";
     if (MDNode *N= target->getMetadata("dbg")){
-      label += "(In File: " + DILocation (N).getFilename().str().substr(DILocation (N).getFilename().str().find_last_of("/\\")+1)+")";
+       label += "(In File: " + DILocation (N).getFilename().str().substr(DILocation (N).getFilename().str().find_last_of("/\\")+1)+")";
     }
     if (outputFile)
       fprintf(outputFile, "%s line_%s\n", name.c_str(),intToString(target->getDebugLoc().getLine()).c_str());
   }
-  else{
+  else{ */
     if (outputFile)
       fprintf(outputFile, "%s line_N/A\n", name.c_str());
-  }
+  // }
   label += "\"]";
 }
 
@@ -83,7 +84,7 @@ bBlockGraph::bBlockGraph(BasicBlock *BB) {
      instIterator != lastInst;
      ++instIterator) {
 
-    Instruction *inst = instIterator;
+    Instruction *inst = &*instIterator;
 
     addInstruction(inst);
   }
@@ -167,7 +168,7 @@ struct llfiDotGraph : public FunctionPass {
     for (Function::iterator blockIterator = F.begin(), lastBlock = F.end();
       blockIterator != lastBlock; ++blockIterator) {
 
-      BasicBlock* block = blockIterator;
+      BasicBlock* block = &*blockIterator;
 
       bBlockGraph b(block);
       blocks.push_back(b);
@@ -180,7 +181,8 @@ struct llfiDotGraph : public FunctionPass {
         instNode node = currBlock.instNodes.at(i);
         if (!inst->use_empty()) {
           // TODO: optimize the algorithm below later
-          for (value_use_iterator<User> useIter = inst->use_begin();
+	  // Iterates over the uses of instruction and finds their basic blocks and annotates them
+          for (Value::use_iterator useIter = inst->use_begin();
                useIter != inst->use_end(); useIter++) {
             Value* userValue = *useIter;
             for (unsigned int f = 0; f < blocks.size(); f++) {

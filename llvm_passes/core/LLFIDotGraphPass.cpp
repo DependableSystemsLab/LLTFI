@@ -13,7 +13,7 @@
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/Support/Debug.h"
-#include "llvm/Support/raw_ostream.h"
+#include "llvm/Support/raw_os_ostream.h"
 #include "llvm/IR/InstIterator.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/IR/DataLayout.h"
@@ -43,18 +43,19 @@ instNode::instNode(Instruction *target) {
 
   label = std::string(" [shape=record,label=\"") + longToString(llfiID);
   label += std::string("\\n") + target->getOpcodeName() + "\\n";
-  /* if (target->getDebugLoc().getLine()) {
-    label += "(Line #: " + intToString(target->getDebugLoc().getLine()) + ")\\n";
-    if (MDNode *N= target->getMetadata("dbg")){
+  DebugLoc dbgLoc = target->getDebugLoc();
+  if (bool(dbgLoc) && dbgLoc.getLine()) {
+    label += "(Line #: " + intToString(dbgLoc.getLine()) + ")\\n";
+    /* if (MDNode *N= target->getMetadata("dbg")){
        label += "(In File: " + DILocation (N).getFilename().str().substr(DILocation (N).getFilename().str().find_last_of("/\\")+1)+")";
-    }
+    } */
     if (outputFile)
-      fprintf(outputFile, "%s line_%s\n", name.c_str(),intToString(target->getDebugLoc().getLine()).c_str());
-  }
-  else{ */
+      fprintf(outputFile, "%s line_%s\n", name.c_str(),intToString(target->getDebugLoc().getLine()).c_str()); 
+  } 
+  else{
     if (outputFile)
       fprintf(outputFile, "%s line_N/A\n", name.c_str());
-  // }
+  }
   label += "\"]";
 }
 

@@ -102,7 +102,7 @@ struct InstTrace : public FunctionPass {
     LLVMContext& context = F.getContext();
     Module *M = F.getParent();
 
-    //iterate through each basicblock of the function
+    //iterate through each instruction of the function
     inst_iterator lastInst;
     for (inst_iterator instIterator = inst_begin(F), 
          lastInst = inst_end(F);

@@ -14,7 +14,7 @@ add_llvm_library(llfi-passes MODULE
 
   core/FaultInjectionPass.cpp
   core/InstTracePass.cpp
-#  core/LLFIDotGraphPass.cpp
+  core/LLFIDotGraphPass.cpp
   core/Utils.cpp
   core/Controller.cpp
   core/FICustomSelectorManager.cpp

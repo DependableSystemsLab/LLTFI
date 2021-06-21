@@ -99,7 +99,7 @@ bool bBlockGraph::addInstruction(Instruction* inst) {
 }
 
 bool bBlockGraph::writeToStream(std::ofstream &target) {
-  target << "subgraph cluster_" << funcName << "_" << name << " {\n";
+  target << "subgraph \"cluster_" << funcName << "_" << name << "\" {\n";
   target << "label = \"" << funcName << "_" << name << "\";\n";
   for (unsigned int i = 0; i < instNodes.size(); i++) {
     target << instNodes.at(i).dotNode() << ";\n";

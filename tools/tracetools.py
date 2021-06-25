@@ -12,11 +12,12 @@ import itertools
 import difflib
 
 
-debugFlag = 0
+debugFlag = 10
 
 def debug(text, level=5):
   global debugFlag
-  if debugFlag >= level:
+  
+  if debugFlag > level:
     print(text)
 
 goldenRemovedCount = []
@@ -25,8 +26,8 @@ faultyRemovedCount = []
 class diffBlock:
   def __init__(self, lines):
 
-    debug("\n\tCreating a diffBlock")
-
+    debug("\n\tCreating a diffBlock ")
+    debug(lines)
     origHeader, newHeader = lines[0].replace('@',' ').replace('+',' ').replace('-',' ').split()
     origsplit = origHeader.split(',')
     newsplit = newHeader.split(',')
@@ -50,16 +51,21 @@ class diffBlock:
       self.postDiff = lines.pop(len(lines)-1)
 
     for line in lines[1:]:
+      if line==None: continue
       if "-" in line:
         self.origLines.append(line)
+        # print("Appending ", line, "to origLines")  
       if "+" in line:
         self.newLines.append(line)
+        # print("Appending ", line, "to newLines")
 
     debug("\tDiffblock lines")
     debug("\t" + "\n\t".join(lines))
 
     self.origLength = len(self.origLines)
+    # assert(self.origLength > 0 and "self.origLines is empty")
     self.newLength = len(self.newLines)
+    # assert(self.newLength > 0 and "self.newLines is empty")
 
     debug("\t" + "\n\t".join(self.origLines))
     debug("\t" + "\n\t".join(self.newLines))
@@ -77,13 +83,16 @@ class diffBlock:
     DataDiffs = []
     CtrlDiffs = []
     instanceList = []
-
     izip = itertools.zip_longest(self.origLines, self.newLines)
     
     instance = diffInstance(0,0,0,0)
     for i, (g, f) in enumerate(izip):
-      g = diffLine(g)
-      f = diffLine(f)
+      if not g == None:
+        debug("Golden Line " + str(g) )
+        g = diffLine(g)
+      if not f == None:
+        debug("Fault Line " + str(f) )
+        f = diffLine(f)
       if g and f:
         if g.ID == f.ID:
           if instance.type != 1:
@@ -97,11 +106,14 @@ class diffBlock:
           instance.incNewLength()
     if (instance.summary != None):
       instanceList.append(instance.summary())
+    if (len(instanceList) < 2): 
+        debug("Instance list has zero or one elements")
+        return None
     return instanceList[1]
 
 class ctrlDiffBlock(diffBlock):
   def getRange(self):
-    debug("Printing ctrlDiffBlock Range")
+    debug("Printing ctrlDiffBlock Range")  # String has to be rturned this way for split to not fail later
     debug(str(self.origStart) + " " + str(self.origLength) + " " + str(self.newStart) + " " + str(self.newLength))
     return self.origStart, self.origLength, \
     self.newStart, self.newLength
@@ -239,7 +251,7 @@ class diffReport:
     goldenIDs = trimLinesToCtrlIDs(goldenIDs)
     faultyIDs = trimLinesToCtrlIDs(faultyIDs)
 
-    #This ugly hack forces the difflib routine to prioritize certain ctrl flow matches.
+#This ugly hack forces the difflib routine to prioritize certain ctrl flow matches.
 # TODO: the fundamental problem here is unix diff is not greedy
 # so we might need to come up with a comprehensive fix
 # The hack might not always work. Jiesheng
@@ -325,8 +337,13 @@ class diffReport:
 
 
   def printSummary(self):
+    def sortFunc(x): 
+        l = x.getSummary(self.startPoint)
+        if (l==None): return None
+        return l.split("\n")[1].replace('\\',' ').split()[3]
+    
     #Sort the list of blocks by their starting point (wrt the golden trace)
-    self.blocks.sort(key = lambda x: (x.getSummary(self.startPoint)).split("\n")[1].replace('\\',' ').split()[3])
+    self.blocks.sort(key = sortFunc)
 
     for block in self.blocks:
       if block.preDiff == None:

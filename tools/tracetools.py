@@ -16,7 +16,7 @@ debugFlag = 0
 
 def debug(text, level=5):
   global debugFlag
-  if debugFlag == level:
+  if debugFlag >= level:
     print(text)
 
 goldenRemovedCount = []
@@ -79,7 +79,7 @@ class diffBlock:
     instanceList = []
 
     izip = itertools.zip_longest(self.origLines, self.newLines)
-
+    
     instance = diffInstance(0,0,0,0)
     for i, (g, f) in enumerate(izip):
       g = diffLine(g)
@@ -344,13 +344,17 @@ def trimLinesToCtrlIDs(lines):
 
 
 class diffLine:
+  "Class to track line level differences in trace file"
+
   def __init__(self, rawLine):
+    if rawLine=="": return  
     self.raw = rawLine
     elements = str(rawLine).split()
-    #ID: 14\tOPCode: sub\tValue: 1336d337
     debug("RAWLINE: " + str(rawLine), 3)
-    assert (elements[0] in ["ID:","-ID:","+ID:"] and elements[2] == "OPCode:" and  \
-      elements[4] == "Value:"), "DiffLine constructor called incorrectly"
+    assert( len(elements) >=5 and "Line doesn't have sufficient fields" );
+    assert( elements[0] in ["ID:","-ID:","+ID:"] and "Can't find element ID" );
+    assert( elements[2] == "OPCode:" and "Can't find field OpCode");
+    assert( elements[4] == "Value:" and "Can't fine field Value" );
     self.ID = int(elements[1])
     self.OPCode = str(elements[3])
     self.Value = 0

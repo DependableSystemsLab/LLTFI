@@ -1,6 +1,7 @@
 #ifndef LLFI_UTILS_H
 #define LLFI_UTILS_H
 
+#include "llvm/Demangle/Demangle.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Instruction.h"

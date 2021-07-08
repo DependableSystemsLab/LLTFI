@@ -9,7 +9,7 @@ std::string demangleFuncName(std::string func) {
   // Demangled form is processed to remove type information.
   if(func[0] == '_' && func[1] == 'Z') {
     int stat;
-    char *test = abi::__cxa_demangle(func.c_str(), NULL, NULL, &stat);
+    char *test = itaniumDemangle(func.c_str(), NULL, NULL, &stat);
     std::string demangled = test;
     free(test);
 
@@ -51,8 +51,9 @@ Instruction *getTermInstofFunction(Function *func) {
   BasicBlock &termbb = func->back();
   Instruction *ret = termbb.getTerminator();
 
-  assert(isa<ReturnInst>(ret) || isa<UnreachableInst>(ret) &&
-         "Last instruction is not return or exit() instruction");
+  assert(isa<ReturnInst>(ret) || isa<ResumeInst>(ret) ||
+         isa<UnreachableInst>(ret) &&
+         "Last instruction is not return or resume or exit() instruction");
   return ret;
 }
 

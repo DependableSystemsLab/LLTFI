@@ -162,6 +162,10 @@ struct llfiDotGraph : public FunctionPass {
     //Create handles to the functions parent module and context
     LLVMContext &context = F.getContext();
 
+    if (F.getName() != "main_graph") {
+        return false;
+    }
+
     std::vector<bBlockGraph> blocks;
 
     Function::iterator lastBlock;

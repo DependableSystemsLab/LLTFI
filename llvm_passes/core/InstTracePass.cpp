@@ -102,6 +102,10 @@ struct InstTrace : public FunctionPass {
     LLVMContext& context = F.getContext();
     Module *M = F.getParent();
 
+    if (F.getName() != "main_graph") {
+        return false;
+    }
+
     //iterate through each instruction of the function
     inst_iterator lastInst;
     for (inst_iterator instIterator = inst_begin(F), 

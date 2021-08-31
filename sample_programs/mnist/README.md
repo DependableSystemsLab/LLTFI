@@ -104,6 +104,29 @@ To clean all generated output files and restore to a clean source directory, run
 ./clean.sh
 ```
 
+Control Flow Graph Visualization Example
+---
+In this example, we run the TensorFlow example and generate a visual image of a CFG after fault injection.
+
+1. Checkout the ml_graph branch.
+```
+git checkout origin/ml_graph
+```
+
+2. Run steps 1-2 of the [TensorFlow example](#running-tensorflow-example) above.
+
+3. Generate the diff report and trace dot file. In this example, we generate a diff report on the first fault injection run.
+```
+./generategraph.sh llfi/llfi_stat_output/llfi.stat.trace.0-0.txt
+```
+
+4. Either (i) visualize the dot file using xdot or (ii) generate a PDF from the trace dot file.
+```
+xdot diffgraph.dot
+```
+```
+dot -Tpdf diffgraph.dot -o diffgraph.pdf
+```
 
 Supplementary Information (Optional)
 ---

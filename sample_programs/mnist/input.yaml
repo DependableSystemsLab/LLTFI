@@ -15,6 +15,7 @@ compileOption:
     tracingPropagationOption:
         maxTrace: 250 # max number of instructions to trace during fault injection run
         debugTrace: False
+        mlTrace: True # enable for tracing ML programs
         generateCDFG: True
 
 runOption:

@@ -37,6 +37,9 @@ cl::opt<bool> debugtrace("debugtrace",
 cl::opt<int> maxtrace( "maxtrace",
     cl::desc("Maximum number of dynamic instructions that will be traced after fault injection"),
             cl::init(1000));
+cl::opt<bool> mltrace("mltrace",
+              cl::desc("Trace instructions in main_graph() function for ML programs"),
+              cl::init(false));
 
 namespace llfi {
 
@@ -102,7 +105,7 @@ struct InstTrace : public FunctionPass {
     LLVMContext& context = F.getContext();
     Module *M = F.getParent();
 
-    if (F.getName() != "main_graph") {
+    if (mltrace && (F.getName() != "main_graph")) {
         return false;
     }
 

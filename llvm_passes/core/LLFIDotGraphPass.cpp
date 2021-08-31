@@ -25,6 +25,10 @@
 
 using namespace llvm;
 
+cl::opt<bool> mltracegraph("mltracegraph",
+              cl::desc("Trace instructions in main_graph() function for ML programs"),
+              cl::init(false));
+
 namespace llfi {
 
 struct instNode {
@@ -162,7 +166,7 @@ struct llfiDotGraph : public FunctionPass {
     //Create handles to the functions parent module and context
     LLVMContext &context = F.getContext();
 
-    if (F.getName() != "main_graph") {
+    if (mltracegraph && (F.getName() != "main_graph")) {
         return false;
     }
 

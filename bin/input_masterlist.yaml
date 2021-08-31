@@ -78,6 +78,7 @@ compileOption:
     tracingPropagationOption:
         maxTrace: 250 # max number of instructions to trace during fault injection run
         debugTrace: False/True # print debug info or not
+        mlTrace: False/True # trace instructions in main_graph() function only
 
 
 runOption:

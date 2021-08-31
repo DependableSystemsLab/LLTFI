@@ -180,6 +180,7 @@ def execCompilation(execlist):
 ################################################################################
 def readCompileOption():
   global compileOptions
+  global graphOptions
   
   ###Instruction selection method
   if "instSelMethod" not in cOpt:  
@@ -187,6 +188,7 @@ def readCompileOption():
     exit(1)
   else:
     compileOptions = []
+    graphOptions = []
     validMethods = ["insttype", "funcname", "customInstselector"]
     # Generate list of instruction selection methods
     # TODO: Generalize and document
@@ -303,12 +305,17 @@ def readCompileOption():
         assert int(cOpt["tracingPropagationOption"]["maxTrace"])>0, "maxTrace must be greater than 0 in input.yaml"
         compileOptions.append('-maxtrace')
         compileOptions.append(str(cOpt["tracingPropagationOption"]["maxTrace"]))
+      if "mlTrace" in cOpt["tracingPropagationOption"]:
+        if(str(cOpt["tracingPropagationOption"]["mlTrace"]).lower() == "true"):
+          compileOptions.append('-mltrace')
 
       ###Dot Graph Generation selection
       if "generateCDFG" in cOpt["tracingPropagationOption"]:
           if (str(cOpt["tracingPropagationOption"]["generateCDFG"]).lower() == "true"):
             options["genDotGraph"] = True
-  
+            if "mlTrace" in cOpt["tracingPropagationOption"]:
+              if(str(cOpt["tracingPropagationOption"]["mlTrace"]).lower() == "true"):
+                graphOptions.append('-mltracegraph')
 
 ################################################################################
 def _suffixOfIR():
@@ -318,7 +325,7 @@ def _suffixOfIR():
     return ".bc"
 
 def compileProg():
-  global proffile, fifile, compileOptions, defaultlinklibs
+  global proffile, fifile, compileOptions, graphOptions, defaultlinklibs
   srcbase = os.path.basename(options["source"])
   progbin = os.path.join(options["dir"], srcbase[0 : srcbase.rfind(".")])
 
@@ -333,6 +340,7 @@ def compileProg():
     execlist.append('-S')
   if options["genDotGraph"]:
     execlist.append('-dotgraphpass')
+    execlist.extend(graphOptions)
   retcode = execCompilation(execlist)
   
   if retcode == 0:

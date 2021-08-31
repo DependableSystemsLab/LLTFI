@@ -1,8 +1,8 @@
-# Sample program for running LLFI on a TensorFlow model
+# Sample program for running LLTFI on a TensorFlow model
 
 This folder contains the scripts required to convert a TensorFlow model in `mnist-cnn.py` to LLVM IR.\
 We link the LLVM IR of the model to an image processing program `image.c`, which invokes the model.\
-This generated LLVM IR `model.ll` is instrumented, profiled, and fault injected by LLFI.\
+This generated LLVM IR `model.ll` is instrumented, profiled, and fault injected by LLTFI.\
 All of the following steps can be replicated for `mnist-nn.py`.
 
 Dependencies (in addition to LLFI):

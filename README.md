@@ -1,5 +1,9 @@
-LLFI
-====
+LLTFI
+=====
+
+LLTFI, which stands for Low Level Tensor Fault Injector, is an upgraded extension of [LLFI](https://github.com/DependableSystemsLab/LLFI), which operates on ML programs in addition to C/C++ programs.
+Because LLTFI is designed to be backwards compatible with LLFI, the basic setup instructions for LLTFI are the same as those of LLFI.
+**For instructions on how to setup and run LLTFI on ML programs, please read [this page](sample_programs/mnist).**
 
 LLFI is an LLVM based fault injection tool, that injects faults into the LLVM IR of the application source code.  The faults can be injected into specific program points, and the effect can be easily tracked back to the source code.  LLFI is typically used to map fault characteristics back to source code, and hence understand source level or program characteristics for various kinds of fault outcomes. Detailed documentation about LLFI can be found at: https://github.com/DependableSystemsLab/LLFI/wiki    
 
@@ -48,7 +52,7 @@ Dependencies:
   6. LLVM v12.0, built with CMake
     * Build llvm-12.0 **WITH CMAKE** using flag `-DLLVM_REQUIRES_RTTI=1`. [Instructions](http://llvm.org/docs/CMake.html)
     * Remember to run `make` in the llvm build directory after running `cmake`.
-  9. ~GraphViz package (for visualizing error propagation)~
+  9. GraphViz package (for visualizing error propagation)
 
 <!--
 GUI Dependencies:

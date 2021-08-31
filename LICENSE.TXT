@@ -1,5 +1,5 @@
 ==============================================================================
-LLFI Release License
+LLTFI Release License
 ==============================================================================
 University of Illinois/NCSA
 Open Source License
@@ -9,11 +9,11 @@ All rights reserved.
 
 Developed by:
 
-    LLFI Team
+    LLTFI Team
 
     University of British Columbia
 
-    https://github.com/DependableSystemsLab/LLFI
+    https://github.com/DependableSystemsLab/LLTFI
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal with

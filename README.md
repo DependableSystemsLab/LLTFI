@@ -1,7 +1,7 @@
 LLTFI
 =====
 
-LLTFI, which stands for Low Level Tensor Fault Injector, is an upgraded extension of [LLFI](https://github.com/DependableSystemsLab/LLFI), which operates on ML programs in addition to C/C++ programs.
+LLTFI, which stands for Low Level Tensor Fault Injector, is an upgraded extension of [LLFI](https://github.com/DependableSystemsLab/LLFI), which operates on ML (TensorFlow and PyTorch) programs in addition to C/C++ programs.
 Because LLTFI is designed to be backwards compatible with LLFI, the basic setup instructions for LLTFI are the same as those of LLFI.
 **For instructions on how to setup and run LLTFI on ML programs, please read [this page](sample_programs/mnist).**
 

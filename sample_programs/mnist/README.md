@@ -43,9 +43,9 @@ Dependencies (in addition to LLFI):
 
     2. Ensure that the version of libprotoc is compatible.
     ```
-    curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.17.0/protobuf-all-3.17.0.zip
-    unzip protobuf-all-3.17.0.zip
-    cd protobuf-3.17.0
+    curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.17.0/protobuf-all-3.17.2.zip
+    unzip protobuf-all-3.17.2.zip
+    cd protobuf-3.17.2
     
     ./configure
     make
@@ -56,6 +56,9 @@ Dependencies (in addition to LLFI):
 
     3. Finally, you may follow the rest of the steps in [onnx-mlir](https://github.com/onnx/onnx-mlir). Commit: ``` 221b8e1d2ad ```
 
+6. [json-c](https://github.com/json-c/json-c)
+   1. json-c is required for exporting intermediate ML model layer outputs in the JSON format. To install json-c, simply run the `tools/json-c-setup.sh` script. 
+
 
 Initialization
 ---
@@ -65,7 +68,6 @@ export ONNX_MLIR_SRC=<path to onnx-mlir source>
 export ONNX_MLIR_BUILD=<path to where onnx-mlir has been built>
 export LLFI_BUILD_ROOT=<path to where LLFI has been built>
 ```
-
 
 Running TensorFlow example
 ---

@@ -11,6 +11,7 @@ add_llvm_library(llfi-passes MODULE
   SoftwareFailureAutoScanPass.cpp
   HardwareFailureAutoScanPass.cpp
   MainGraphInstSelector.cpp
+  CustomTensorOperatorInstSelector.cpp
 
   core/FaultInjectionPass.cpp
   core/InstTracePass.cpp

@@ -29,7 +29,7 @@ class DotGraph:
         self.Graph.node_attr["fillcolor"] = "#EFE8E8"
         self.Graph.edge_attr["color"] = "black"
 
-    def AddNodes(self, layers):
+    def addNodes(self, layers):
         self.Layers = layers
 
         for i in range(0, len(layers) - 1, 1):
@@ -41,7 +41,7 @@ class DotGraph:
         node.attr["style"] = "filled"
 
 
-    def FormatFloat(self, f):
+    def formatFloat(self, f):
         f = str(f)
         retval = ""
         comp = f.split('e')
@@ -51,7 +51,7 @@ class DotGraph:
 
         return str(retval)
 
-    def AddMisMatch(self, layer, index, elements, old_val, new_val):
+    def addMisMatch(self, layer, index, elements, old_val, new_val):
         # First chage the colour of the mismatch layer to red
         node = self.Graph.get_node(layer)
         node.attr["color"] = "red"
@@ -59,21 +59,21 @@ class DotGraph:
         node.attr["style"] = "filled,dashed"
 
         NameOfSubGraph = "cluster_"+layer+"_"+str(index)
-        old_val_node_name = "Old Value: \n" + self.FormatFloat(old_val) + NameOfSubGraph 
-        new_val_node_name = "New Value: \n" + self.FormatFloat(new_val) + NameOfSubGraph
+        old_val_node_name = "Old Value: \n" + self.formatFloat(old_val) + NameOfSubGraph
+        new_val_node_name = "New Value: \n" + self.formatFloat(new_val) + NameOfSubGraph
 
-        self.Graph.add_node(old_val_node_name, label=str("Old Value: \n" + self.FormatFloat(old_val)))
-        self.Graph.add_node(new_val_node_name, label=str("New Value: \n" + self.FormatFloat(new_val)))
+        self.Graph.add_node(old_val_node_name, label=str("Old Value: \n" + self.formatFloat(old_val)))
+        self.Graph.add_node(new_val_node_name, label=str("New Value: \n" + self.formatFloat(new_val)))
 
         # Add mismatch as a subgraph
         self.Graph.add_edge(old_val_node_name, new_val_node_name, color="blue")
         self.Graph.add_edge(layer, old_val_node_name, lhead=NameOfSubGraph)
         self.Graph.add_subgraph([old_val_node_name, new_val_node_name], name=NameOfSubGraph, color="blue", label='< <B>Index ' + str(index) + ' / ' + str(elements) + '</B> >', style='dashed')
 
-    def PrintGraph(self):
+    def printGraph(self):
         print(self.Graph.string())
 
-    def SaveGraph(self):
+    def saveGraph(self):
         file = open('mismatch.dot', 'w')
         file.write(self.Graph.string())
         file.close()
@@ -111,28 +111,28 @@ class LLTFI:
     # is new file
     is_new_file = False
 
-    def SetFILayerId(self, layer_id):
+    def setFILayerId(self, layer_id):
         self.fi_layer_id = layer_id
 
-    def SetFILayerName(self, name):
+    def setFILayerName(self, name):
         self.fi_layer_name = name
 
-    def GetFILayerId(self):
+    def getFILayerId(self):
         return self.fi_layer_id
 
-    def SetCurrFileName(self, fileName):
+    def setCurrFileName(self, fileName):
         self.curr_file_name = fileName
         self.fi_layer_op_mismatches[fileName] = []
         self.is_new_file = True
 
-    def SetStatsDir(self, path):
+    def setStatsDir(self, path):
         if os.path.isdir(path):
             self.fi_runtime_stats_dir = path
         else:
             print("Invalid Directory path: " + str(path) + "   Aborting!")
             exit()
 
-    def ArgParser(self, argParser):
+    def argParser(self, argParser):
 
         if argParser.summary:
             self.summary_only = True
@@ -140,9 +140,9 @@ class LLTFI:
             self.summary_only = False
 
         if argParser.fiStatsDir != "None":
-            self.SetStatsDir(str(argParser.fiStatsDir))
+            self.setStatsDir(str(argParser.fiStatsDir))
 
-    def ReportMismatch(self, LayerId, d1_old, d2_new):
+    def reportMismatch(self, LayerId, d1_old, d2_new):
         if not self.is_new_file:
             assert (self.fi_layer_id is not None)
             if str(LayerId) == str(self.fi_layer_id):
@@ -156,7 +156,7 @@ class LLTFI:
             self.total_mismatches_found = self.total_mismatches_found + 1
             self.is_new_file = False
 
-    def GetFIStats(self):
+    def getFIStats(self):
 
         self.total_runs = len(os.listdir(self.fi_runtime_stats_dir))
         for key in [k for k,v in self.fi_layer_op_mismatches.items() if len(v) > 0]:
@@ -200,14 +200,14 @@ class LLTFI:
                 if (d_new > 0 and d_old < 0) or (d_new < 0 and d_old > 0):
                     self.fi_bit_sign_flip.append(v[0])
 
-                if self.IsMultipleBitFlips(d_old, d_new):
+                if self.isMultipleBitFlips(d_old, d_new):
                     self.multiple_bit_flips = self.multiple_bit_flips + 1
                 else:
                     self.single_bit_flips = self.single_bit_flips + 1
 
 
     # Check if 2 floats differ by multiple bit flips or just a single bit flip
-    def IsMultipleBitFlips(self, d1, d2):
+    def isMultipleBitFlips(self, d1, d2):
 
         if str(d1) == 'nan' or str(d2) == 'nan':
             self.numbers_of_nan = self.numbers_of_nan + 1
@@ -223,7 +223,7 @@ class LLTFI:
         man2 = h2.split('.')[-1].split('p')[0]
 
         # Count bit flips in sign, exponent and mantissa
-        numberOfFlips = self.CountBitFlips(sign1, sign2) + self.CountBitFlips(exp1, exp2) + self.CountBitFlips(man1, man2)
+        numberOfFlips = self.countBitFlips(sign1, sign2) + self.countBitFlips(exp1, exp2) + self.countBitFlips(man1, man2)
         self.distance_bitflips.append(numberOfFlips)
 
         assert numberOfFlips > 0
@@ -234,7 +234,7 @@ class LLTFI:
             return False
 
     # Count bitflips between 2 hex numbers
-    def CountBitFlips(self, h1, h2):
+    def countBitFlips(self, h1, h2):
         b1 = bin(int(h1, 16))
         b2 = bin(int(h2, 16))
         xor = bin(int(str(int(b1, 2) ^ int(b2, 2))))
@@ -248,7 +248,7 @@ class LLTFI:
                     retval = retval + 1
             return retval
 
-    def PrintSummary(self):
+    def printSummary(self):
         print("Total number of files:" + str(self.total_runs))
         print("Total mismatches found in layer " + str(self.fi_layer_id) + " = " + str(self.total_mismatches_found))
         percentage = (float)(self.total_mismatches_found / self.total_runs) * 100
@@ -260,17 +260,17 @@ class LLTFI:
         print("% of single bit corruption in the output of the tensor operator: " + str(percentage) + "%")
         print("Number of NaNs in output of the corrupted tensor operator: " + str(self.numbers_of_nan))
 
-    def PrintStats(self):
+    def printStats(self):
         print("Mismatches in FI layer:" + str(self.fi_layer_op_mismatches))
         print("FI Stats: " + str(self.fi_stats))
-        self.PrintSummary()
+        self.printSummary()
 
-    def PrintDump(self):
-        self.GetFIStats()
+    def printDump(self):
+        self.getFIStats()
         if self.summary_only:
-            self.PrintSummary()
+            self.printSummary()
         else:
-            self.PrintStats()
+            self.printStats()
 
 # Global LLTFI Object
 LLTFIObject = LLTFI()
@@ -282,17 +282,17 @@ mismatch = []
 FIStatsCalculate = False
 
 ###### HELPER FUNCTIONS #######
-def PrintStructuralDifferenceError():
+def printStructuralDifferenceError():
     print("Input JSON files are structurally difference. Abort!");
     exit()
 
-def Assert(a):
+def assertFun(a):
     if not a:
-        PrintStructuralDifferenceError();
+        printStructuralDifferenceError();
     else:
         pass
 
-def AssertData(d1, d2, elements, layer, index, delta):
+def assertData(d1, d2, elements, layer, index, delta):
     if abs(float(d1) - float(d2)) <= float(delta):
         return False
     else:
@@ -302,13 +302,13 @@ def AssertData(d1, d2, elements, layer, index, delta):
         global FIStatsCalculate
         if FIStatsCalculate:
             global LLTFIObject
-            LLTFIObject.ReportMismatch(layer, d1, d2)
+            LLTFIObject.reportMismatch(layer, d1, d2)
         return True
 
 
 def export_dot_graph(layerNames, GraphName, SelectedLayers):
     g = DotGraph(GraphName)
-    g.AddNodes(layerNames)
+    g.addNodes(layerNames)
 
     layerNamesSmall = [x.lower() for x in layerNames]
     SelectedLayers = [x.lower() for x in SelectedLayers]
@@ -318,9 +318,9 @@ def export_dot_graph(layerNames, GraphName, SelectedLayers):
         layer_name = layerNamesSmall[int(item[0])]
 
         if ('all' in SelectedLayers) or (layer_name.split('_')[0] in SelectedLayers) or (layer_name is layerNamesSmall[-1]):
-            g.AddMisMatch(layerNames[int(item[0])], item[1], item[2], item[3], item[4])
+            g.addMisMatch(layerNames[int(item[0])], item[1], item[2], item[3], item[4])
 
-    g.SaveGraph()
+    g.saveGraph()
 
 
 def getJsonDiff(j1, j2, delta):
@@ -330,20 +330,20 @@ def getJsonDiff(j1, j2, delta):
             jf = json.load(f)
             jg = json.load(g)
 
-            Assert(len(jf) == len(jg));
+            assertFun(len(jf) == len(jg));
 
             # Iterate each layer
             for i in range(0, len(jf), 1):
                 key = str(i)
 
-                Assert(jf[key]['Layer Id'] == jg[key]['Layer Id'])
-                Assert(jf[key]['Rank'] == jg[key]['Rank'])
-                Assert(jf[key]['Number of Elements'] == jg[key]['Number of Elements'])
-                Assert(jf[key]['Shape'] == jg[key]['Shape'])
+                assertFun(jf[key]['Layer Id'] == jg[key]['Layer Id'])
+                assertFun(jf[key]['Rank'] == jg[key]['Rank'])
+                assertFun(jf[key]['Number of Elements'] == jg[key]['Number of Elements'])
+                assertFun(jf[key]['Shape'] == jg[key]['Shape'])
 
                 #Iterate all data outputs
                 for j in range(0, len(jf[key]['Data']), 1):
-                    retval = AssertData(str(jf[key]['Data'][j]), str(jg[key]['Data'][j]), str(jf[key]['Number of Elements']), str(jf[key]['Layer Id']), str(j), delta)
+                    retval = assertData(str(jf[key]['Data'][j]), str(jg[key]['Data'][j]), str(jf[key]['Number of Elements']), str(jf[key]['Layer Id']), str(j), delta)
 
 # Get total number of layers in a model
 layers_in_json_file = None
@@ -380,7 +380,7 @@ def main():
     args = parser.parse_args()
 
     global LLTFIObject
-    LLTFIObject.ArgParser(args)
+    LLTFIObject.argParser(args)
 
     diff = None
 
@@ -400,7 +400,7 @@ def main():
                 if os.path.isfile(dir_path + file):
 
                     global mismatch
-                    LLTFIObject.SetCurrFileName(str(file))
+                    LLTFIObject.setCurrFileName(str(file))
 
                     mismatch = []
                     getJsonDiff(args.first, dir_path + file, args.delta)
@@ -443,7 +443,7 @@ def main():
     else:
         if os.path.isfile(args.first) and os.path.isfile(args.second):
 
-            LLTFIObject.SetCurrFileName(args.second)
+            LLTFIObject.setCurrFileName(args.second)
 
             diff = getJsonDiff(args.first, args.second, args.delta)
 
@@ -474,7 +474,7 @@ def main():
         export_dot_graph(output_names, model.graph.doc_string, args.selected_layers_in_dot.split(';'))
 
     if args.getFIStatsRQ2:
-        LLTFIObject.PrintDump()
+        LLTFIObject.printDump()
 
 def main_deprecated():
     warnings.warn("jsondiff is deprecated. Use jdiff instead.", DeprecationWarning)

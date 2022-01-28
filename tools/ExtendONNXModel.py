@@ -6,8 +6,8 @@ from onnx import numpy_helper
 from collections import OrderedDict
 
 parser = argparse.ArgumentParser()
-parser.add_argument('model_path', type=str, help="Path to the ONNX model")
-parser.add_argument('output_model_path', type=str, help="Path to the extended ONNX model")
+parser.add_argument('--model_path', type=str, required=True, help="Path to the ONNX model")
+parser.add_argument('--output_model_path', type=str, required=True, help="Path to the extended ONNX model")
 parser.add_argument('--layers', type=str, default="all", help="""Intermediate layers for which output has to be extracted. Semicolon seperated. like: --layers="conv;maxpool" """)
 parser.add_argument('--summary', default=False, action="store_true", help="Just return the summary of the model")
 args = parser.parse_args()

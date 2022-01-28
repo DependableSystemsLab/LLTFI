@@ -50,22 +50,22 @@ def getONNXId(name):
     if name == 'Conv':
         return 1986948931
 
-    if name == 'Relu':
+    elif name == 'Relu':
         return 1970038098
 
-    if name == 'MaxPool':
+    elif name == 'MaxPool':
         return 30521821366870349
 
-    if name == 'MatMul':
+    elif name == 'MatMul':
         return 119251066446157
 
-    if name == 'Add':
+    elif name == 'Add':
         return 6579265
 
-    if name == 'AvgPool':
+    elif name == 'AvgPool':
         return 30521821365761601
 
-    if name == 'Softmax':
+    else name == 'Softmax':
         return 33884119937478483
 
 

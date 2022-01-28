@@ -29,7 +29,7 @@ static cl::list< std::string > layerName("layerName",
 
 
 // Return an array our of string of comma-seperated values.
-std::vector<std::string> GetCommaSeperateVals(std::string inp) {
+std::vector<std::string> getCommaSeperateVals(std::string inp) {
 
     std::string s = inp;
     std::string delimiter = ";";
@@ -42,10 +42,9 @@ std::vector<std::string> GetCommaSeperateVals(std::string inp) {
         retval.push_back(token);
         s.erase(0, pos + delimiter.length());
     }
-    
+
     if ((pos = s.find(delimiter)) == std::string::npos) {
-    	
-	 retval.push_back(s);
+        retval.push_back(s);
     }
     
     return retval;
@@ -54,7 +53,7 @@ std::vector<std::string> GetCommaSeperateVals(std::string inp) {
 
 /**
  * This sample instruction selector only selects instructions in function
-     main_graph and belonging to the specified tensor operator.
+ *   main_graph and belonging to the specified tensor operator.
  */
 class CustomTensorOperatorInstSelector : public HardwareFIInstSelector {
 
@@ -75,7 +74,7 @@ public:
             OperatorName = name;
             FIOperatorCount = atoll(count.c_str());
             OperatorCount = 0;
-            OperatorNumber = GetOperatorNumber(name);
+            OperatorNumber = getOperatorNumber(name);
 
             if (OperatorNumber == -1) {
                 std::cout<<"Operator name "<< OperatorName.c_str() <<"not found.\n";
@@ -87,37 +86,29 @@ public:
         }
 
         // Get unique Id corresponding to the ONNX operator.
-        static int64_t GetOperatorNumber(std::string name) {
+        static int64_t getOperatorNumber(std::string name) {
 
             char opname[100];
             std::transform(name.begin(), name.end(), name.begin(),
                             [](unsigned char c){ return std::tolower(c); });
 
-	    strcpy(opname, name.c_str());
-            
-	    if (!strcmp(opname, "conv")) {
-                return 1986948931;
-            }
-            else if (!strcmp(opname, "relu")) {
-                return 1970038098;
-            }
-            else if (!strcmp(opname, "maxpool")) {
-                return 30521821366870349;
-            }
-            else if (!strcmp(opname, "matmul")) {
-                return 119251066446157;
-            }
-            else if (!strcmp(opname, "add")) {
-                return 6579265;
-            }
-            else if (!strcmp(opname, "avgpool")) {
-                return 30521821365761601;
-            }
-            else if (!strcmp(opname, "softmax")) {
-                return 33884119937478483;
-            }
+            strcpy(opname, name.c_str());
 
-            return -1;
+            // ONNX assigns unique IDs to each tensor operator.
+            std::map<char*, int64_t> ONNXOperatorId = {
+                {"conv", 1986948931},
+                {"relu", 1970038098},
+                {"maxpool", 30521821366870349},
+                {"matmul", 119251066446157},
+                {"add", 6579265},
+                {"avgpool", 30521821365761601},
+                {"softmax", 33884119937478483}
+            };
+
+            if (ONNXOperatorId.find(opname) == ONNXOperatorId.end())
+                return -1;
+
+            return ONNXOperatorId[opname];
         }
 
         bool doFaultInjection(){
@@ -144,20 +135,20 @@ private:
     }
 
     // Initializes Layer name and number
-    void InitializeLayerNameAndNumber(std::string layerNo, std::string layerName) {
+    void initializeLayerNameAndNumber(std::string layerNo,
+            std::string layerName) {
 
-        std::vector<std::string> OperatorNames = GetCommaSeperateVals(layerName);
-        std::vector<std::string> OperatorNumbers = GetCommaSeperateVals(layerNo);
+        std::vector<std::string> OperatorNames =
+            getCommaSeperateVals(layerName);
+        std::vector<std::string> OperatorNumbers =
+            getCommaSeperateVals(layerNo);
 
         assert(OperatorNumbers.size() == OperatorNames.size() && "Number of CSVs given to the layerNo and layerName should be equal.");
 
-	std::cout<<"Initializing"<<std::endl;
         for (int i  = 0; i < OperatorNames.size(); i++) {
 
             std::string name = OperatorNames[i];
             std::string number = OperatorNumbers[i];
-
-	    std::cout<<"Got operator name="<<name.c_str()<<"   Number="<<number.c_str()<<std::endl;
 
             // Inject in all operators.
             if (strcmp(name.c_str(), "all") == 0 || strcmp(name.c_str(), "All") == 0) {
@@ -165,7 +156,7 @@ private:
                 break;
             }
 
-            int64_t code = Operator::GetOperatorNumber(name);
+            int64_t code = Operator::getOperatorNumber(name);
 
             // if this operator is already in the map
             if (map.find(code) != map.end()) {
@@ -206,14 +197,15 @@ private:
         if (inst->getParent()->getParent()->getName() == "main_graph") {
                 
             if (map.size() == 0 && !injectInAll){
-                InitializeLayerNameAndNumber(layerNo[0], layerName[0]);
+                initializeLayerNameAndNumber(layerNo[0], layerName[0]);
             }
 
             if (inst->getOpcode() == Instruction::Call){
                 CallInst* callinst = dyn_cast<CallInst>(inst);
 
                 // If this is OMInstrument function?
-                if ((callinst->getCalledFunction())->getName() == "OMInstrumentPoint") {
+                if ((callinst->getCalledFunction())->getName() ==
+                    "OMInstrumentPoint") {
                     
                     Value* arg1 = callinst->getArgOperand(0); 
                     Value* arg2 = callinst->getArgOperand(1);
@@ -226,7 +218,7 @@ private:
 
                     if (argValue2 == 2 && shouldInjectFault(argValue1)) {
                         
-                        // I'm gonna inject fault!
+                        // Inject fault!
                         isCustomTensorOperator = true;
                     }
                     
@@ -235,8 +227,6 @@ private:
                         // Set this to false after the operator ends.
                         isCustomTensorOperator = false;
                     }
-
-                    // std::cout<<ci1->getSExtValue()<<" : "<<ci2->getSExtValue()<<std::endl; 
                 }
             }
 
@@ -250,7 +240,6 @@ private:
                 inst->getOpcode() == Instruction::FCmp) {
 
                 addMetadata(inst, "Injected fault");
-                std::cout<<"In Custom Tensor Operator pass "<<inst->getOpcodeName()<<std::endl;
                 return true;
             }
             

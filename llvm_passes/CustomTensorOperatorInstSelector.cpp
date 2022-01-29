@@ -19,12 +19,12 @@ using namespace llvm;
 namespace llfi {
 
 
-static cl::list< std::string > layerNo("layerNo", cl::desc("Layer Number in
-which you want to inject bitflip faults. Pass 0 for injecting faults in all the
+static cl::list< std::string > layerNo("layerNo", cl::desc("Layer Number in \
+which you want to inject bitflip faults. Pass 0 for injecting faults in all the \
 layers.\n Semi-colon seperated values. Example: 1;0;2"), cl::ZeroOrMore);
 
-static cl::list< std::string > layerName("layerName", cl::desc("Layer Name in
-which you want to inject bitflip faults. Semi-colon seperated values. Example:
+static cl::list< std::string > layerName("layerName", cl::desc("Layer Name in \
+which you want to inject bitflip faults. Semi-colon seperated values. Example: \
 Conv;Relu;Pool"), cl::ZeroOrMore);
 
 
@@ -79,7 +79,7 @@ public:
             if (OperatorNumber == -1) {
                 std::cout<<"Operator name "<< OperatorName.c_str() <<
                     "not found.\n";
-                std::cout<<"Please use the following operator name(s): 
+                std::cout<<"Please use the following operator name(s): \
                 conv, relu, maxpool, matmul, add, avgpool, all, and softmax.";
                 assert(false && "Invalid input operator name");
             }

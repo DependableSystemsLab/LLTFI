@@ -19,13 +19,13 @@ using namespace llvm;
 namespace llfi {
 
 
-static cl::list< std::string > layerNo("layerNo",
-         cl::desc("Layer Number in which you want to inject bitflip faults. Pass 0 for injecting faults in all the layers.\n Semi-colon seperated values. Example: 1;0;2"),
-         cl::ZeroOrMore);
+static cl::list< std::string > layerNo("layerNo", cl::desc("Layer Number in
+which you want to inject bitflip faults. Pass 0 for injecting faults in all the
+layers.\n Semi-colon seperated values. Example: 1;0;2"), cl::ZeroOrMore);
 
-static cl::list< std::string > layerName("layerName",
-         cl::desc("Layer Name in which you want to inject bitflip faults. Semi-colon seperated values. Example: Conv;Relu;Pool"),
-         cl::ZeroOrMore);
+static cl::list< std::string > layerName("layerName", cl::desc("Layer Name in
+which you want to inject bitflip faults. Semi-colon seperated values. Example:
+Conv;Relu;Pool"), cl::ZeroOrMore);
 
 
 // Return an array our of string of comma-seperated values.
@@ -77,8 +77,10 @@ public:
             OperatorNumber = getOperatorNumber(name);
 
             if (OperatorNumber == -1) {
-                std::cout<<"Operator name "<< OperatorName.c_str() <<"not found.\n";
-                std::cout<<"Please use the following operator name(s): conv, relu, maxpool, matmul, add, avgpool, all, and softmax.";
+                std::cout<<"Operator name "<< OperatorName.c_str() <<
+                    "not found.\n";
+                std::cout<<"Please use the following operator name(s): 
+                conv, relu, maxpool, matmul, add, avgpool, all, and softmax.";
                 assert(false && "Invalid input operator name");
             }
 
@@ -116,7 +118,8 @@ public:
             OperatorCount++;
 
             // Inject fault in the user-specified operator count.
-            if (FIOperatorCount == 0 || FIOperatorCount == OperatorCount) return true;
+            if (FIOperatorCount == 0 || FIOperatorCount == OperatorCount)
+                return true;
 
             return false;
         }
@@ -143,7 +146,8 @@ private:
         std::vector<std::string> OperatorNumbers =
             getCommaSeperateVals(layerNo);
 
-        assert(OperatorNumbers.size() == OperatorNames.size() && "Number of CSVs given to the layerNo and layerName should be equal.");
+        assert(OperatorNumbers.size() == OperatorNames.size() &&
+            "Number of CSVs given to the layerNo and layerName should be equal");
 
         for (int i  = 0; i < OperatorNames.size(); i++) {
 
@@ -151,7 +155,8 @@ private:
             std::string number = OperatorNumbers[i];
 
             // Inject in all operators.
-            if (strcmp(name.c_str(), "all") == 0 || strcmp(name.c_str(), "All") == 0) {
+            if (strcmp(name.c_str(), "all") == 0 ||
+                strcmp(name.c_str(), "All") == 0) {
                 injectInAll = true;
                 break;
             }
@@ -257,10 +262,12 @@ public:
     virtual void getCompileTimeInfo(std::map<std::string, std::string> &info) {
         info["failure_class"] = "HardwareFault";
         info["failure_mode"] = "CustomTensorOperator";
-        info["targets"] = "<instructions in main_graph() function and within the specified tensor operator>";
+        info["targets"] = "<instructions in main_graph() function and within 
+            the specified tensor operator>";
         info["injector"] = "<fi_type>";
     }
 };
 
-static RegisterFIInstSelector X("CustomTensorOperator", new CustomTensorOperatorInstSelector());
+static RegisterFIInstSelector X("CustomTensorOperator",
+                                new CustomTensorOperatorInstSelector());
 } // namespace llfi

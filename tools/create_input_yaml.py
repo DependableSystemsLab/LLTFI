@@ -47,27 +47,11 @@ runOption:
 
 def getONNXId(name):
 
-    if name == 'Conv':
-        return 1986948931
+    dict = {'Conv':1986948931, 'Relu':1970038098, 'MaxPool':30521821366870349,
+            'MatMul':119251066446157, 'Add':6579265, 'AvgPool':30521821365761601,
+            'Softmax':33884119937478483}
 
-    elif name == 'Relu':
-        return 1970038098
-
-    elif name == 'MaxPool':
-        return 30521821366870349
-
-    elif name == 'MatMul':
-        return 119251066446157
-
-    elif name == 'Add':
-        return 6579265
-
-    elif name == 'AvgPool':
-        return 30521821365761601
-
-    else name == 'Softmax':
-        return 33884119937478483
-
+    return dict[name];
 
 # Inject faults into these layers only
 whiteList = ['Conv', 'Relu', 'MaxPool', 'Add', 'MatMul', 'AvgPool']

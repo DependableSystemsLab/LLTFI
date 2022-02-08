@@ -49,9 +49,9 @@ Dependencies:
   2. CMake (minimum v3.15)
   3. Python 3 and above
   4. Python YAML library (PyYAML)
-  5. Clang v12.0
-  6. LLVM v12.0, built with CMake
-    * Build llvm-12.0 **WITH CMAKE** using flag `-DLLVM_REQUIRES_RTTI=1`. [Instructions](http://llvm.org/docs/CMake.html)
+  5. Clang v13.0 (commit: 23dd750279c9)
+  6. LLVM v13.0 (commit: 23dd750279c9), built with CMake
+    * Build llvm-13.0 **WITH CMAKE** using flag `-DLLVM_REQUIRES_RTTI=1`. [Instructions](http://llvm.org/docs/CMake.html)
     * Remember to run `make` in the llvm build directory after running `cmake`.
   9. GraphViz package (for visualizing error propagation)
 

@@ -18,14 +18,14 @@ Dependencies (in addition to LLFI):
 5. [onnx-mlir](https://github.com/onnx/onnx-mlir)
    1. Must use the designated compatible LLVM commit to work
    
-    Because onnx-mlir requires a specific LLVM commit, and LLVM 12.0 takes a long time to completely build,
+    Because onnx-mlir requires a specific LLVM commit, and LLVM 13.0 takes a long time to completely build,
     the following is a short cut to checking out the LLVM commit, and building only the necessary LLVM targets.
     Also, please download and select Ninja as the build tool.
 
     ```
     git clone https://github.com/llvm/llvm-project.git
     # Check out a specific branch that is known to work with ONNX MLIR.
-    cd llvm-project && git checkout ebe408ad8003c946ef871b955ab18e64e82697cb && cd ..
+    cd llvm-project && git checkout 23dd750279c9 && cd ..
     ```
     ```
     mkdir llvm-project/build
@@ -43,9 +43,9 @@ Dependencies (in addition to LLFI):
 
     2. Ensure that the version of libprotoc is compatible.
     ```
-    curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.17.0/protobuf-all-3.17.0.zip
-    unzip protobuf-all-3.17.0.zip
-    cd protobuf-3.17.0
+    curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.17.0/protobuf-all-3.17.2.zip
+    unzip protobuf-all-3.17.2.zip
+    cd protobuf-3.17.2
     
     ./configure
     make
@@ -54,7 +54,10 @@ Dependencies (in addition to LLFI):
     sudo ldconfig # refresh shared library cache.
     ```
 
-    3. Finally, you may follow the rest of the steps in [onnx-mlir](https://github.com/onnx/onnx-mlir). 
+    3. Finally, you may follow the rest of the steps in [onnx-mlir](https://github.com/onnx/onnx-mlir). Commit: ``` 221b8e1d2ad ```
+
+6. [json-c](https://github.com/json-c/json-c)
+   1. json-c is required for exporting intermediate ML model layer outputs in the JSON format. To install json-c, simply run the `tools/json-c-setup.sh` script. 
 
 
 Initialization
@@ -65,7 +68,6 @@ export ONNX_MLIR_SRC=<path to onnx-mlir source>
 export ONNX_MLIR_BUILD=<path to where onnx-mlir has been built>
 export LLFI_BUILD_ROOT=<path to where LLFI has been built>
 ```
-
 
 Running TensorFlow example
 ---

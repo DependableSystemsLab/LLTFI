@@ -4,8 +4,8 @@ compileOption:
           include:
             - CustomTensorOperator
           options:
-            - -layerNo=1;1
-            - -layerName=conv;relu
+            - -layerNo=0;0;0;0;0;0;0
+            - -layerName=conv;relu;matmul;maxpool;add;avgpool;softmax
 
     regSelMethod: regloc
     regloc: dstreg
@@ -23,8 +23,8 @@ compileOption:
 
 runOption:
     - run:
-        numOfRuns: 50
+        numOfRuns: 1000
         fi_type: bitflip
         window_len_multiple_startindex: 1
         window_len_multiple_endindex: 500
-        fi_max_multiple: 9
+        fi_max_multiple: 1

@@ -13,11 +13,14 @@
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <sys/time.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 #define RANK 2
+#define NUM_OUTPUT_CLASSES 10 // For MNIST, there are 10 possible digits.
+
 
 OMTensorList *run_main_graph(OMTensorList *);
 void export_layer_output_to_json(OMTensorList *, char*, char*);
@@ -42,24 +45,34 @@ int main(int argc, char *argv[]) {
     OMTensor *x1 = omTensorCreate(rgb_image, in_shape, RANK, ONNX_TYPE_FLOAT);
     OMTensor *img_list[1] = {x1};
     OMTensorList *input = omTensorListCreate(img_list, 1);
+    
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
 
     // Call the compiled onnx model function.
     OMTensorList *outputList = run_main_graph(input);
 
+    gettimeofday(&end, NULL);
+
+    double time_taken = end.tv_sec + end.tv_usec / 1e6 -
+                        start.tv_sec - start.tv_usec / 1e6; // in seconds
+
+
+    printf("Time taken to execute the model: %f\n", time_taken);
+
     // Export layer outputs to a JSON file
     export_layer_output_to_json(outputList, savefilename, output_seq);
 
-    // Get the last omt as output.
+    // Get the first omt as output.
     OMTensor *output = omTensorListGetOmtByIndex(outputList, omTensorListGetSize(outputList) - 1);
     float *outputPtr = (float *)omTensorGetDataPtr(output);
 
-    // Print out elements of the last tensor
-    int64_t *shape = omTensorGetShape(output);
-    int64_t numElements = (int64_t) (omTensorGetNumElems(output) / shape[0]);
     printf("Final prediction for %s is: ", filename);
 
-    for (int i = 0; i < numElements; i++)
+    // Print its content, should be in softmax form
+    for (int i = 0; i < NUM_OUTPUT_CLASSES; i++)
         printf("%f ", outputPtr[i]);
+    printf("\n");
 
     stbi_image_free(rgb_image);
 

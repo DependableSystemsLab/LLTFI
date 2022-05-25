@@ -5,12 +5,14 @@ kernelOption:
 
 compileOption:
     instSelMethod:
-      - customInstselector:
-          include:
-            - InappropriateClose(API)
+      - insttype:
+          include: 
+            - all
+          exclude:
+            - ret
 
-    regSelMethod: customregselector
-    customRegSelector: Automatic
+    regSelMethod: regloc
+    regloc: dstreg
 
 runOption:
     - run:

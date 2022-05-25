@@ -45,7 +45,7 @@ bool ProfilingPass::runOnModule(Module &M) {
   ctrl->getFIInstRegsMap(&fi_inst_regs_map);
   //BEHROOZ:
   std::error_code err;
-  raw_fd_ostream logFile(llfilogfile.c_str(), err, sys::fs::F_Append);
+  raw_fd_ostream logFile(llfilogfile.c_str(), err, sys::fs::OF_Append);
 
   for (std::map<Instruction*, std::list< int >* >::const_iterator 
        inst_reg_it = fi_inst_regs_map->begin(); 

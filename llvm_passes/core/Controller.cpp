@@ -204,7 +204,7 @@ void Controller::processRegSelArgs() {
 void Controller::processCmdArgs() {
   // clear the log file
   std::error_code err;
-  raw_fd_ostream logFile(llfilogfile.c_str(), err, sys::fs::F_Append);
+  raw_fd_ostream logFile(llfilogfile.c_str(), err, sys::fs::OF_Append);
   if (!err) {
     logFile << "\n\nStart of a pass\n";
   } else {

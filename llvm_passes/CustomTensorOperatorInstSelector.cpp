@@ -69,24 +69,6 @@ public:
         // Operator number to do FI
         int FIOperatorCount;
 
-        Operator(std::string name, std::string count) {
-
-            OperatorName = name;
-            FIOperatorCount = atoll(count.c_str());
-            OperatorCount = 0;
-            OperatorNumber = getOperatorNumber(name);
-
-            if (OperatorNumber == -1) {
-                std::cout<<"Operator name "<< OperatorName.c_str() <<
-                    "not found.\n";
-                std::cout<<"Please use the following operator name(s): \
-                conv, relu, maxpool, matmul, add, avgpool, all, and softmax.";
-                assert(false && "Invalid input operator name");
-            }
-
-            assert(FIOperatorCount >= 0 && "Invalid input FI operator number");
-        }
-
         // Get unique Id corresponding to the ONNX operator.
         static int64_t getOperatorNumber(std::string name) {
 
@@ -96,8 +78,10 @@ public:
 
             strcpy(opname, name.c_str());
 
+            std::cout<<"OperatorName: "<<opname<<"\n";
+
             // ONNX assigns unique IDs to each tensor operator.
-            std::map<char*, int64_t> ONNXOperatorId = {
+            std::map<std::string, int64_t> ONNXOperatorId = {
                 {"conv", 1986948931},
                 {"relu", 1970038098},
                 {"maxpool", 30521821366870349},
@@ -111,6 +95,24 @@ public:
                 return -1;
 
             return ONNXOperatorId[opname];
+        }
+
+        Operator(std::string name, std::string count) {
+
+            OperatorName = name;
+            FIOperatorCount = atoll(count.c_str());
+            OperatorCount = 0;
+            OperatorNumber = getOperatorNumber(name);
+
+            if (OperatorNumber == -1) {
+                std::cout<<"Operator name "<< OperatorName.c_str() <<
+                    " not found.\n";
+                std::cout<<"Please use the following operator name(s):\
+                conv, relu, maxpool, matmul, add, avgpool, all, and softmax.";
+                assert(false && "Invalid input operator name");
+            }
+
+            assert(FIOperatorCount >= 0 && "Invalid input FI operator number");
         }
 
         bool doFaultInjection(){
@@ -262,7 +264,7 @@ public:
     virtual void getCompileTimeInfo(std::map<std::string, std::string> &info) {
         info["failure_class"] = "HardwareFault";
         info["failure_mode"] = "CustomTensorOperator";
-        info["targets"] = "<instructions in main_graph() function and within 
+        info["targets"] = "<instructions in main_graph() function and within \
             the specified tensor operator>";
         info["injector"] = "<fi_type>";
     }

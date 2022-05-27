@@ -16,7 +16,7 @@ void FIRegSelector::getFIInstRegMap(
     const std::set< Instruction* > *instset, 
     std::map<Instruction*, std::list< int >* > *instregmap) {
   std::error_code err;
-  raw_fd_ostream logFile(llfilogfile.c_str(), err, sys::fs::F_Append);
+  raw_fd_ostream logFile(llfilogfile.c_str(), err, sys::fs::OF_Append);
 
   for (std::set<Instruction*>::const_iterator inst_it = instset->begin();
        inst_it != instset->end(); ++inst_it) {

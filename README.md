@@ -2,15 +2,12 @@ LLTFI
 =====
 LLTFI (Low Level Tensor Fault Injector) is a unified SWiFI (Software-implemented fault injection) tool that supports fault injection of both C/C++ programs and ML applications written using high-level frameworks such as TensorFlow and PyTorch.
 
-As machine learning (ML) has become more prevalent across many critical domains, so has the need to understand ML system resilience. While there are many ML fault injectors at the application level, there has been little work enabling fault injection of ML applications at a lower level. **LLTFI** is a tool that allows users to run fault injection experiments on C/C++, TensorFlow and PyTorch applications at a lower level (at the LLVM IR level). 
+As machine learning (ML) has become more prevalent across many critical domains, so has the need to understand ML system resilience. While there are many ML fault injectors at the application level, there has been little work enabling fault injection of ML applications at a lower level. **LLTFI** is a tool that allows users to run fault injection experiments on C/C++, TensorFlow and PyTorch applications at a lower level (at the LLVM IR level). Please refer to the following [paper](https://blogs.ubc.ca/dependablesystemslab/2021/08/31/wip-lltfi-low-level-tensor-fault-injector/) for more information about LLTFI.
 
-LLTFI is built on top of [LLFI](https://github.com/DependableSystemsLab/LLFI) fully backwards compatible with LLFI. 
+LLTFI is built on top of [LLFI](https://github.com/DependableSystemsLab/LLFI) and is fully backwards compatible with LLFI. 
 
 ### LLFI ###
-**LLFI** is an LLVM based fault injection tool, that injects faults into the LLVM IR of the application source code.  The faults can be injected into specific program points, and the effect can be easily tracked back to the source code.  LLFI is typically used to map fault characteristics back to source code, and hence understand source level or program characteristics for various kinds of fault outcomes. Detailed documentation about LLFI can be found at: https://github.com/DependableSystemsLab/LLFI/wiki 
-Because LLTFI is designed to be backwards compatible with LLFI, the basic setup instructions for LLTFI are similar to those of LLFI. But, there are additional steps and dependencies for running ML programs. 
-
-Please refer to the following [paper](https://blogs.ubc.ca/dependablesystemslab/2021/08/31/wip-lltfi-low-level-tensor-fault-injector/) for more information about LLTFI.
+**LLFI** is an LLVM based fault injection tool, that injects faults into the LLVM IR of the application source code.  The faults can be injected into specific program points, and the effect can be easily tracked back to the source code.  LLFI is typically used to map fault characteristics back to source code, and hence understand source level or program characteristics for various kinds of fault outcomes. Detailed documentation about LLFI can be found at: https://github.com/DependableSystemsLab/LLFI/wiki. Because LLTFI is designed to be backwards compatible with LLFI, the basic setup instructions for LLTFI are similar to those of LLFI. But, there are additional steps and dependencies for running ML programs. 
 
 LLTFI Workflow:
 -------------------------
@@ -21,7 +18,6 @@ LLTFI first lowers ML models to *MLIR* (Multi-Level Intermediate Representation)
 
 ![Alt text](images/workflow.png?raw=true "Workflow Diagram of LLTFI")
 
-**Running LLTFI on an ML program:**
 - LLTFI first converts all ML models to the ONNX format. ONNX’s open exchange format allows LLTFI to
 support both TensorFlow and PyTorch. 
 - Then, the ONNX file is converted into MLIR through ONNX-MLIR. 
@@ -63,12 +59,12 @@ About tcsh:
 The LLFI-GUI uses tcsh to read environment variables describing the location of the LLFI build. The installer will automatically add those environment variables to your ~/.tcshrc file. You do not need to actively use tcsh as your primary shell, simply having it installed is enough.
 -->
 
-Manual Install
----------------
+Manual Installation
+-------------------
 <!--This method is also available, and may be more suitable if you want more control over the location of the LLVM build that the LLFI requires (ie, you already have LLVM built and wish to use that build).-->
 In this method, the developer has more control over the location of the LLVM build that the LLTFI requires. If you already have LLVM built, you could use that build.
 
-Dependencies:
+### Dependencies: ###
   
   1. 64 Bit Machine (preferably with GPU for faster training of ML programs) 
   2. 64 bit Linux (Ubuntu 20.04) or OS X
@@ -78,7 +74,8 @@ Dependencies:
   6. Ninja >= 1.10.2
   7. libprotoc >= 3.11.0
   8. Clang v13.0 (commit: 23dd750279c9)
-  9. LLVM v13.0 (commit: 23dd750279c9), built with CMake( [Reference](http://llvm.org/docs/CMake.html)). LLVM 13.0 takes a long time to completely build, the following is a short cut to checking out the required LLVM commit, and building only the necessary LLVM targets. Also, please download and select Ninja as the build tool.
+  9. LLVM v13.0 (commit: 23dd750279c9), built with CMake( [Reference](http://llvm.org/docs/CMake.html)).
+		LLVM 13.0 takes a long time to completely build. Following is a shortcut to checking out the required LLVM commit, and building only the necessary LLVM targets.
 		```
 		git clone https://github.com/llvm/llvm-project.git
 		
@@ -161,7 +158,7 @@ GUI Dependencies:
   2. tcsh shell
 -->
 
-Building LLTFI:
+### Building LLTFI: ###
   
   Run `./setup --help` for build instructions.
 ```
@@ -221,8 +218,8 @@ Sample tests can be found under `~/Desktop/test/`.
 To run it, open VirtualBox, select `File->Import Appliance...` and navigate to the `.ova` file.
 -->
 
-Running Sample Programs
------------------------
+### Running Sample Programs ###
+
 You can use test programs in the directory `sample_programs/` or `test_suite/PROGRAMS/` to test LLFI. Programs in the `sample_programs` directory already contains a valid `input.yaml` file.
 ####Command line
 Example program: `factorial`

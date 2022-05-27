@@ -12,7 +12,7 @@ LLTFI is built on top of [LLFI](https://github.com/DependableSystemsLab/LLFI) an
 LLTFI Workflow:
 -------------------------
 High-level ML models need to be lowered to intermediate representation (IR) for fault injection. LLTFI provides a single script that converts ML models into LLVM IR, using several publicly available tools and performs fault injection.
-LLTFI first lowers ML models to *MLIR* (Multi-Level Intermediate Representation) using ONNX-MLIR before converting to LLVM IR. Reasons for choosing MLIR being MLIR's ability to better preserve the semantics of ML models, its integration with LLVM, testability and easier extensibility. 
+LLTFI first lowers ML models to **MLIR** (Multi-Level Intermediate Representation) using ONNX-MLIR before converting to LLVM IR. Reasons for choosing MLIR being MLIR's ability to better preserve the semantics of ML models, its integration with LLVM, testability and easier extensibility. 
 
 #### Workflow Diagram of LLTFI: ####
 
@@ -64,7 +64,7 @@ Manual Installation
 <!--This method is also available, and may be more suitable if you want more control over the location of the LLVM build that the LLFI requires (ie, you already have LLVM built and wish to use that build).-->
 In this method, the developer has more control over the location of the LLVM build that the LLTFI requires. If you already have LLVM built, you could use that build.
 
-### Dependencies: ###
+**Dependencies:**
   
   1. 64 Bit Machine (preferably with GPU for faster training of ML programs) 
   2. 64 bit Linux (Ubuntu 20.04) or OS X
@@ -74,7 +74,7 @@ In this method, the developer has more control over the location of the LLVM bui
   6. Ninja >= 1.10.2
   7. libprotoc >= 3.11.0
   8. Clang v13.0 (commit: 23dd750279c9)
-  9. LLVM v13.0 (commit: 23dd750279c9), built with CMake( [Reference](http://llvm.org/docs/CMake.html)).
+  9. LLVM v13.0 (commit: 23dd750279c9) ([Reference](http://llvm.org/docs/CMake.html)).
 		LLVM 13.0 takes a long time to completely build. Following is a shortcut to checking out the required LLVM commit, and building only the necessary LLVM targets.
 		```
 		git clone https://github.com/llvm/llvm-project.git
@@ -106,7 +106,7 @@ In this method, the developer has more control over the location of the LLVM bui
 		    ```
 		4. libprotoc
 			```
-			curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.17.2/protobuf-all-3.17.2.zips
+			curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.17.2/protobuf-all-3.17.2.zip
 			unzip protobuf-all-3.17.2.zip
 			cd protobuf-3.17.2
 			
@@ -221,8 +221,8 @@ To run it, open VirtualBox, select `File->Import Appliance...` and navigate to t
 ### Running Sample Programs ###
 
 You can use test programs in the directory `sample_programs/` or `test_suite/PROGRAMS/` to test LLFI. Programs in the `sample_programs` directory already contains a valid `input.yaml` file.
-####Command line
-Example program: `factorial`
+
+Example program: `factorial`:
   1. Copy the `sample_programs/factorial/` directory to your project directory. 
   2. Set LLFI_BUILD_ROOT environment variable e.g., export LLFI_BUILD_ROOT=/path/to/LLFI/installation
   3. Call the ./compileAndRun.sh script with the first argument as factorial, and the second argument as the number to compute the factorial of (e.g., 6)

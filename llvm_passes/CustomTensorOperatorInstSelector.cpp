@@ -78,7 +78,7 @@ public:
 
             strcpy(opname, name.c_str());
 
-            std::cout<<"OpertaorName: "<<opname<<"\n";
+            std::cout<<"OperatorName: "<<opname<<"\n";
 
             // ONNX assigns unique IDs to each tensor operator.
             std::map<std::string, int64_t> ONNXOperatorId = {

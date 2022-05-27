@@ -6,7 +6,7 @@ As machine learning (ML) has become more prevalent across many critical domains,
 
 LLTFI is built on top of [LLFI](https://github.com/DependableSystemsLab/LLFI) fully backwards compatible with LLFI. 
 
-#### LLFI ####
+### LLFI ###
 **LLFI** is an LLVM based fault injection tool, that injects faults into the LLVM IR of the application source code.  The faults can be injected into specific program points, and the effect can be easily tracked back to the source code.  LLFI is typically used to map fault characteristics back to source code, and hence understand source level or program characteristics for various kinds of fault outcomes. Detailed documentation about LLFI can be found at: https://github.com/DependableSystemsLab/LLFI/wiki 
 Because LLTFI is designed to be backwards compatible with LLFI, the basic setup instructions for LLTFI are similar to those of LLFI. But, there are additional steps and dependencies for running ML programs. 
 
@@ -78,8 +78,7 @@ Dependencies:
   6. Ninja >= 1.10.2
   7. libprotoc >= 3.11.0
   8. Clang v13.0 (commit: 23dd750279c9)
-  9. LLVM v13.0 (commit: 23dd750279c9), built with CMake [Reference](http://llvm.org/docs/CMake.html)
-		LLVM 13.0 takes a long time to completely build, the following is a short cut to checking out the required LLVM commit, and building only the necessary LLVM targets. Also, please download and select Ninja as the build tool.
+  9. LLVM v13.0 (commit: 23dd750279c9), built with CMake( [Reference](http://llvm.org/docs/CMake.html)). LLVM 13.0 takes a long time to completely build, the following is a short cut to checking out the required LLVM commit, and building only the necessary LLVM targets. Also, please download and select Ninja as the build tool.
 		```
 		git clone https://github.com/llvm/llvm-project.git
 		
@@ -103,12 +102,12 @@ Dependencies:
   10. For executing ML programs, following additional dependencies have to be installed:
 		1. TensorFlow framework (v2.0 or greater)
 		2. numpy package (part of TensorFlow)
-		3. [tensorflow-onnx](https://github.com/onnx/tensorflow-onnx)
+		3. [tensorflow-onnx](https://github.com/onnx/tensorflow-onnx): 
 		    Installation with pip is sufficient
 		    ```
 		    pip install tf2onnx
 		    ```
-		4. Install libprotoc
+		4. libprotoc
 			```
 			curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.17.2/protobuf-all-3.17.2.zips
 			unzip protobuf-all-3.17.2.zip
@@ -121,6 +120,7 @@ Dependencies:
 			sudo ldconfig # refresh shared library cache.
 			```
 		5. [ONNX-MLIR](https://github.com/onnx/onnx-mlir)
+
 		    The MLIR_DIR cmake variable must be set before building onnx-mlir. It should point to the mlir cmake module inside an llvm-project build or install directory (e.g., llvm-project/build/lib/cmake/mlir).
             ```
 		    MLIR_DIR=$(pwd)/llvm-project/build/lib/cmake/mlir
@@ -161,7 +161,7 @@ GUI Dependencies:
   2. tcsh shell
 -->
 
-Building:
+Building LLTFI:
   
   Run `./setup --help` for build instructions.
 ```
@@ -195,8 +195,10 @@ To build LLFI without GUI, just add option: `--no_gui` in the command line for s
 ./setup -LLFI_BUILD_ROOT $BUILD/LLFI -LLVM_SRC_ROOT $SRC/llvm-12.0 -LLVM_DST_ROOT $BUILD/llvm-12.0 --no_gui
 ```
 
-Running tests:
+### Running tests: ###
 Running all regression tests after installation is highly recommended. Note that you may encounter some error messages during the fault injection stage. This is normal. Once all tests have completed and they all passed, LLFI is correctly installed.
+
+For complete test of whole of LLFI, please use LLFI test suite and refer to wiki page: [Test suite for regression test](https://github.com/DependableSystemsLab/LLFI/wiki/Test-Suite-for-Regression-Test) for details.
 
 <!--
 VirtualBox Image
@@ -219,8 +221,8 @@ Sample tests can be found under `~/Desktop/test/`.
 To run it, open VirtualBox, select `File->Import Appliance...` and navigate to the `.ova` file.
 -->
 
-Running
--------
+Running Sample Programs
+-----------------------
 You can use test programs in the directory `sample_programs/` or `test_suite/PROGRAMS/` to test LLFI. Programs in the `sample_programs` directory already contains a valid `input.yaml` file.
 ####Command line
 Example program: `factorial`
@@ -228,7 +230,6 @@ Example program: `factorial`
   2. Set LLFI_BUILD_ROOT environment variable e.g., export LLFI_BUILD_ROOT=/path/to/LLFI/installation
   3. Call the ./compileAndRun.sh script with the first argument as factorial, and the second argument as the number to compute the factorial of (e.g., 6)
 
-  For complete test of whole of LLFI, please use LLFI test suite and refer to wiki page: [Test suite for regression test](https://github.com/DependableSystemsLab/LLFI/wiki/Test-Suite-for-Regression-Test) for details.
 
 <!--
 ####GUI

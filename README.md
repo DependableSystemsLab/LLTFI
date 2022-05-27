@@ -2,10 +2,11 @@ LLTFI
 =====
 LLTFI (Low Level Tensor Fault Injector) is a unified SWiFI (Software-implemented fault injection) tool that supports fault injection of both C/C++ programs and ML applications written using high-level frameworks such as TensorFlow and PyTorch.
 
-As machine learning (ML) has become more prevalent across many critical domains, so has the need to understand ML system resilience. While there are many ML fault injectors at the application level, there has been little work enabling fault injection of ML applications at a lower level. **LLTFI** is a tool that allows users to run fault injection experiments on C/C++, TensorFlow and PyTorch applications at a lower level (LLVM IR). 
+As machine learning (ML) has become more prevalent across many critical domains, so has the need to understand ML system resilience. While there are many ML fault injectors at the application level, there has been little work enabling fault injection of ML applications at a lower level. **LLTFI** is a tool that allows users to run fault injection experiments on C/C++, TensorFlow and PyTorch applications at a lower level (at the LLVM IR level). 
 
 LLTFI is built on top of [LLFI](https://github.com/DependableSystemsLab/LLFI) fully backwards compatible with LLFI. 
 
+**LLFI**:
 **LLFI** is an LLVM based fault injection tool, that injects faults into the LLVM IR of the application source code.  The faults can be injected into specific program points, and the effect can be easily tracked back to the source code.  LLFI is typically used to map fault characteristics back to source code, and hence understand source level or program characteristics for various kinds of fault outcomes. Detailed documentation about LLFI can be found at: https://github.com/DependableSystemsLab/LLFI/wiki 
 Because LLTFI is designed to be backwards compatible with LLFI, the basic setup instructions for LLTFI are similar to those of LLFI. But, there are additional steps and dependencies for running ML programs. 
 
@@ -15,6 +16,8 @@ Workflow diagram of LLTFI:
 -------------------------
 High-level ML models need to be lowered to intermediate representation (IR) for fault injection. LLTFI provides a single script that converts ML models into LLVM IR, using several publicly available tools and performs fault injection.
 LLTFI first lowers ML models to *MLIR* (Multi-Level Intermediate Representation) using ONNX-MLIR before converting to LLVM IR. Reasons for choosing MLIR being MLIR's ability to better preserve the semantics of ML models, its integration with LLVM, testability and easier extensibility. 
+
+**Workflow Diagram of LLTFI**:
 
 ![Alt text](images/workflow.png?raw=true "Workflow Diagram of LLTFI")
 

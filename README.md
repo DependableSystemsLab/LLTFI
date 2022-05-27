@@ -6,22 +6,22 @@ As machine learning (ML) has become more prevalent across many critical domains,
 
 LLTFI is built on top of [LLFI](https://github.com/DependableSystemsLab/LLFI) fully backwards compatible with LLFI. 
 
-**LLFI**:
+#### LLFI ####
 **LLFI** is an LLVM based fault injection tool, that injects faults into the LLVM IR of the application source code.  The faults can be injected into specific program points, and the effect can be easily tracked back to the source code.  LLFI is typically used to map fault characteristics back to source code, and hence understand source level or program characteristics for various kinds of fault outcomes. Detailed documentation about LLFI can be found at: https://github.com/DependableSystemsLab/LLFI/wiki 
 Because LLTFI is designed to be backwards compatible with LLFI, the basic setup instructions for LLTFI are similar to those of LLFI. But, there are additional steps and dependencies for running ML programs. 
 
 Please refer to the following [paper](https://blogs.ubc.ca/dependablesystemslab/2021/08/31/wip-lltfi-low-level-tensor-fault-injector/) for more information about LLTFI.
 
-Workflow diagram of LLTFI:
+LLTFI Workflow:
 -------------------------
 High-level ML models need to be lowered to intermediate representation (IR) for fault injection. LLTFI provides a single script that converts ML models into LLVM IR, using several publicly available tools and performs fault injection.
 LLTFI first lowers ML models to *MLIR* (Multi-Level Intermediate Representation) using ONNX-MLIR before converting to LLVM IR. Reasons for choosing MLIR being MLIR's ability to better preserve the semantics of ML models, its integration with LLVM, testability and easier extensibility. 
 
-**Workflow Diagram of LLTFI**:
+#### Workflow Diagram of LLTFI: ####
 
 ![Alt text](images/workflow.png?raw=true "Workflow Diagram of LLTFI")
 
-Running LLTFI on an ML program:
+**Running LLTFI on an ML program:**
 - LLTFI first converts all ML models to the ONNX format. ONNX’s open exchange format allows LLTFI to
 support both TensorFlow and PyTorch. 
 - Then, the ONNX file is converted into MLIR through ONNX-MLIR. 

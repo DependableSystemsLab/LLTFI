@@ -5,58 +5,10 @@ We link the LLVM IR of the model to an image processing program `image.c`, which
 This generated LLVM IR `model.ll` is instrumented, profiled, and fault injected by LLTFI.\
 All of the following steps can be replicated for `mnist-nn.py`.
 
-Dependencies (in addition to LLFI):
+Dependencies (in addition to LLTFI):
 ---
-1. 64 Bit Machine (preferably with GPU for faster training)
-2. TensorFlow framework (v2.0 or greater)
-3. numpy package (part of TensorFlow)
-4. [tensorflow-onnx](https://github.com/onnx/tensorflow-onnx)
-   - Installation with pip is sufficient
-   ```
-   pip install tf2onnx
-   ```
-5. [onnx-mlir](https://github.com/onnx/onnx-mlir)
-   1. Must use the designated compatible LLVM commit to work
-   
-    Because onnx-mlir requires a specific LLVM commit, and LLVM 13.0 takes a long time to completely build,
-    the following is a short cut to checking out the LLVM commit, and building only the necessary LLVM targets.
-    Also, please download and select Ninja as the build tool.
 
-    ```
-    git clone https://github.com/llvm/llvm-project.git
-    # Check out a specific branch that is known to work with ONNX MLIR.
-    cd llvm-project && git checkout 23dd750279c9 && cd ..
-    ```
-    ```
-    mkdir llvm-project/build
-    cd llvm-project/build
-    
-    cmake -G Ninja ../llvm \
-      -DLLVM_ENABLE_PROJECTS="clang;mlir;tools" \
-      -DLLVM_BUILD_TESTS=ON \
-      -DLLVM_TARGETS_TO_BUILD="host" \
-      -DLLVM_ENABLE_ASSERTIONS=ON \
-      -DLLVM_ENABLE_RTTI=ON
-    
-    cmake --build . --target clang check-mlir mlir-translate opt llc lli llvm-dis llvm-link
-    ```
-
-    2. Ensure that the version of libprotoc is compatible.
-    ```
-    curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.17.0/protobuf-all-3.17.2.zip
-    unzip protobuf-all-3.17.2.zip
-    cd protobuf-3.17.2
-    
-    ./configure
-    make
-    make check
-    sudo make install
-    sudo ldconfig # refresh shared library cache.
-    ```
-
-    3. Finally, you may follow the rest of the steps in [onnx-mlir](https://github.com/onnx/onnx-mlir). Commit: ``` 221b8e1d2ad ```
-
-6. [json-c](https://github.com/json-c/json-c)
+1. [json-c](https://github.com/json-c/json-c)
    1. json-c is required for exporting intermediate ML model layer outputs in the JSON format. To install json-c, simply run the `tools/json-c-setup.sh` script. 
 
 

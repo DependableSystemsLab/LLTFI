@@ -21,7 +21,7 @@ Go to the web-app directory and run "webpack" or "webpack -w"
 
 ## Overview of the Web Application ## 
 
-Refernce: * [LLFI Web GUI](https://github.com/DependableSystemsLab/LLFI/wiki/Get-Started-with-using-LLFI-with-Web-GUI)
+Reference: [LLFI Web GUI](https://github.com/DependableSystemsLab/LLFI/wiki/Get-Started-with-using-LLFI-with-Web-GUI)
 
 Here we describe the procedure for performing fault injections in LLTFI using the Web GUI. We provide step-by-step instructions to inject fault and to view the results. The process differs slightly for Hardware/Software Injection and the differences are described below.
 
@@ -33,13 +33,13 @@ The figure below is a screenshot for opening a single file.
 
 ![Alt text](images/fileUpload.png?raw=true)
 
-The procedure contains the following steps once the file or project is uploaded:
+Once the file is uploaded:
 
-1) Compile To IR: If a C/C++ source file or project is uploaded then click on the "Compile To IR" button. When the program is successfully compiled, a success message with the name of IR file that is created will be displayed. The figure below is a screenshot of a successful completion of "Compile To IR".
+1) **Compile To IR**: After a C/C++ source file is uploaded then click on the "Compile To IR" button. When the program is successfully compiled, a success message with the name of IR file that is created will be displayed. The figure below is a screenshot of a successful completion of "Compile To IR".
 
 ![Alt text](images/CompileToIR.png?raw=true)
 
-2) Instrument: Once the intermediate representation (IR) file is created click on "Instrument" button. The instrument dialog box will open, where the user can select the configuration parameters (input.yaml).
+2) **Instrument**: Once the intermediate representation (IR) file is created click on "Instrument" button. The instrument dialog box will open, where the user can select the configuration parameters (input.yaml).
 
 For Hardware Faults Injection, select "Hardware Injection", then select the Instruction Type, Register Location and trace options before clicking the "Instrument" button in the dialog box. The figure below is an example of the Hardware Faults Instrument interface.
 
@@ -49,13 +49,13 @@ For Hardware Faults Injection, select "Hardware Injection", then select the Inst
 
 Instrument-software######### -->
 
-3) Profiling:After instrumentation, click on the "Profiling" button. However if the program requires any command line inputs, provide them in the "Command Line Input" text box before clicking "Profiling". Profiling displays the No.of.Index and No.of.Cycle on the Profiling Status tab in the bottom pane.
+3) **Profiling**: After instrumentation, click on the "Profiling" button. If the program requires any command line inputs, provide them in the "Command Line Input" text box before clicking "Profiling". Profiling displays the No.of.Index and No.of.Cycle on the Profiling Status tab in the bottom pane.
 
 The figure below is a successful completion of hardware faults profiling.
 
 ![Alt text](images/Profiling.png?raw=true)
 
-4) Runtime Options: Click on the "Runtime Options" to configure the fault injection. The user can also save the profile by checking the "Save Profile" checkbox before clicking "Submit". If the user uploaded a .yaml file with the runtime options then this step could be skipped. Click on the "Delete Run" button to delete a runtime option.
+4) **Runtime Options**: Click on the "Runtime Options" to configure the fault injection. The user can also save the profile by checking the "Save Profile" checkbox before clicking "Submit". If the user uploaded a .yaml file with the runtime options then this step could be skipped. Click on the "Delete Run" button to delete a runtime option.
 
 For Hardware Faults Injection, the user should provide Number of Runs and Fault injection type (mandatory), while other inputs are optional. The figure below is a screenshot of the Hardware Runtime Options interface.
 
@@ -65,18 +65,18 @@ For Hardware Faults Injection, the user should provide Number of Runs and Fault 
 
 RuntimeOption-software########## -->
 
-5) Fault Injection: Click on the "Inject Fault" button to perform fault injection. When fault injection is completed click on the "Fault Injection Status" and "Fault Summary" tabs to view the result of the fault injections.
+5) **Fault Injection**: Click on the "Inject Fault" button to perform fault injection. When fault injection is completed click on the "Fault Injection Status" and "Fault Summary" tabs to view the result of the fault injections.
 
 The figure below is a screenshot of a completion of a Hardware "Inject Fault", you can also see the "Fault Injection Status" table in the figure.
 
 ![Alt text](images/InjectFault.png?raw=true)
 ![Alt text](images/InjectFault2.png?raw=true)
 
-6) Trace Graph: Select one or more traces from the "Fault Injection Status" tabs. Click on the "Trace Graph" button and a trace graph window will pop up. The trace graph contains the flow of the LLVM IR instructions, and the mapping information of LLVM IR instructions to the C source code (if applicable). The trace graph will be downloaded in a pdf format.
+6) *Trace Graph*: Select one or more traces from the "Fault Injection Status" tabs. Click on the "Trace Graph" button and a trace graph window will pop up. The trace graph contains the flow of the LLVM IR instructions, and the mapping information of LLVM IR instructions to the C source code (if applicable). The trace graph will be downloaded in a pdf format.
 
 ![Alt text](images/TraceGraph.png?raw=true)
 
-*SDC Option*: By default the SDC's are reported by making a diff between the std_outputfile and the golden_output. The user can customize the way SDC are generated by writing a script and provide the path of the script to the environment variable COMPARE.
+**SDC Option**: By default the SDC's are reported by making a diff between the std_outputfile and the golden_output. The user can customize the way SDC are generated by writing a script and provide the path of the script to the environment variable COMPARE.
 
 
 

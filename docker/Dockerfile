@@ -6,7 +6,7 @@ RUN apt-get -y upgrade
 
 # Install tools needed
 RUN distro=$(cat /etc/os-release|grep -Po '(?<=^ID=").*(?=")|(?<=^ID=)[^"].*[^"]') \
-    && TZ="America/New_York" \
+    && TZ="America/Vancouver" \
     && if [ "${distro}" = "debian" ] || [ "${distro}" = "ubuntu" ]; then \
           DEBIAN_FRONTEND=noninteractive && \
           apt-get update -qq && \
@@ -43,66 +43,60 @@ RUN distro=$(cat /etc/os-release|grep -Po '(?<=^ID=").*(?=")|(?<=^ID=)[^"].*[^"]
           git clone -b v1.10.2 https://github.com/ninja-build/ninja.git && \
           cd ninja && mkdir -p build && cd build && \
           cmake .. && \
-          make -j${NPROC} install && \
+          make -j ${nproc} install && \
           cd ${WORK_DIR} && rm -rf ninja; \
        fi \
     && ln -sf /usr/bin/python3 /usr/bin/python
     
 RUN pip install tensorflow
 RUN pip install tf2onnx
+RUN pip install pyyaml
     
 WORKDIR /home/
 RUN mkdir LLTFI
 
 ### LLVM
 RUN git clone https://github.com/llvm/llvm-project.git && \
-    cd llvm-project && git checkout 23dd750279c9 && cd .. && \
+    cd llvm-project && git checkout 9778ec057cf4 && cd .. && \
     mkdir llvm-project/build && cd llvm-project/build && \
     cmake -G Ninja ../llvm \
-      -DLLVM_ENABLE_PROJECTS="clang;mlir;tools" \
+      -DLLVM_ENABLE_PROJECTS="clang;mlir" \
       -DLLVM_BUILD_TESTS=ON \
       -DLLVM_TARGETS_TO_BUILD="host" \
       -DLLVM_ENABLE_ASSERTIONS=ON \
       -DLLVM_ENABLE_RTTI=ON && \
-    cmake --build . --target clang check-mlir mlir-translate opt llc lli llvm-dis llvm-link -j 3&& \
-    ninja install -j 1 && \
+    cmake --build . --target clang check-mlir mlir-translate opt llc lli llvm-dis llvm-link -j 5 && \
+    ninja install -j 2 && \
     cd ../.. 
+
+RUN apt-get update
+RUN apt-get install unzip
 
 ### libprotoc
 RUN curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.17.2/protobuf-all-3.17.2.zip
 RUN unzip protobuf-all-3.17.2.zip
-WORKDIR /home/LLTFI/protobuf-3.17.2
+WORKDIR /home/protobuf-3.17.2
 
 RUN ./configure
-RUN make
-RUN make check
+RUN make -j 4
+RUN make check -j 4
 RUN make install
 RUN ldconfig
 
-WORKDIR /home/LLTFI/
+WORKDIR /home/
 
 ### ONNX_MLIR
 RUN git clone --recursive https://github.com/onnx/onnx-mlir.git && \
     cd onnx-mlir && \
-    git checkout 221b8e1d2ad && \
+    git checkout 9c62e1a46ec27818dba87724fcf678a7be6059e9 && \
     cd .. && \
     export MLIR_DIR=$(pwd)/llvm-project/build/lib/cmake/mlir && \
     mkdir onnx-mlir/build && cd onnx-mlir/build && \
-    if [[ -z "$pythonLocation" ]]; then \
-  	cmake -G Ninja \
+    cmake -G Ninja \
         -DCMAKE_CXX_COMPILER=/usr/bin/c++ \
         -DMLIR_DIR=${MLIR_DIR} \
-        .. \
-    else \
-  	cmake -G Ninja \
-        -DCMAKE_CXX_COMPILER=/usr/bin/c++ \
-        -DPython3_ROOT_DIR=$pythonLocation \
-        -DMLIR_DIR=${MLIR_DIR} \
-        .. \
-    fi && \
+        .. && \
     cmake --build . -j 2 && \
-    export LIT_OPTS=-v && \
-    cmake --build . --target check-onnx-lit && \
     ninja install
 
 WORKDIR /home/LLTFI/
@@ -110,5 +104,5 @@ WORKDIR /home/LLTFI/
 ### LLTFI
 RUN git clone https://github.com/DependableSystemsLab/LLTFI.git && \
     cd /home/LLTFI/LLTFI && \
-    ./setup -LLFI_BUILD_ROOT $(pwd)/build -LLVM_SRC_ROOT $(pwd)/../llvm-project -LLVM_DST_ROOT $(pwd)/../llvm-project/build --no_gui && \
+    ./setup -LLFI_BUILD_ROOT $(pwd)/build -LLVM_SRC_ROOT $(pwd)/../../llvm-project -LLVM_DST_ROOT $(pwd)/../../llvm-project/build --no_gui && \
     export LLFI_BUILD_ROOT=$(pwd)/build

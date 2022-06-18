@@ -1,6 +1,8 @@
 # Base image
 FROM ubuntu:20.04
 
+ARG NPROC=2
+
 RUN apt-get update
 RUN apt-get -y upgrade
 
@@ -43,15 +45,14 @@ RUN distro=$(cat /etc/os-release|grep -Po '(?<=^ID=").*(?=")|(?<=^ID=)[^"].*[^"]
           git clone -b v1.10.2 https://github.com/ninja-build/ninja.git && \
           cd ninja && mkdir -p build && cd build && \
           cmake .. && \
-          make -j ${nproc} install && \
-          cd ${WORK_DIR} && rm -rf ninja; \
+          make -j${NPROC} install \
        fi \
     && ln -sf /usr/bin/python3 /usr/bin/python
     
 RUN pip install tensorflow
 RUN pip install tf2onnx
-RUN pip install pyyaml
-    
+RUN pip3 install pyyaml===5.4.1
+   
 WORKDIR /home/
 RUN mkdir LLTFI
 
@@ -65,8 +66,8 @@ RUN git clone https://github.com/llvm/llvm-project.git && \
       -DLLVM_TARGETS_TO_BUILD="host" \
       -DLLVM_ENABLE_ASSERTIONS=ON \
       -DLLVM_ENABLE_RTTI=ON && \
-    cmake --build . --target clang check-mlir mlir-translate opt llc lli llvm-dis llvm-link -j 5 && \
-    ninja install -j 2 && \
+    cmake --build . --target clang check-mlir mlir-translate opt llc lli llvm-dis llvm-link -j${NPROC} && \
+    ninja install -j${NPROC} && \
     cd ../.. 
 
 RUN apt-get update
@@ -78,8 +79,8 @@ RUN unzip protobuf-all-3.17.2.zip
 WORKDIR /home/protobuf-3.17.2
 
 RUN ./configure
-RUN make -j 4
-RUN make check -j 4
+RUN make -j${NPROC}
+RUN make check -j${NPROC}
 RUN make install
 RUN ldconfig
 
@@ -96,7 +97,7 @@ RUN git clone --recursive https://github.com/onnx/onnx-mlir.git && \
         -DCMAKE_CXX_COMPILER=/usr/bin/c++ \
         -DMLIR_DIR=${MLIR_DIR} \
         .. && \
-    cmake --build . -j 2 && \
+    cmake --build . -j${NPROC} && \
     ninja install
 
 WORKDIR /home/LLTFI/
@@ -105,4 +106,6 @@ WORKDIR /home/LLTFI/
 RUN git clone https://github.com/DependableSystemsLab/LLTFI.git && \
     cd /home/LLTFI/LLTFI && \
     ./setup -LLFI_BUILD_ROOT $(pwd)/build -LLVM_SRC_ROOT $(pwd)/../../llvm-project -LLVM_DST_ROOT $(pwd)/../../llvm-project/build --no_gui && \
-    export LLFI_BUILD_ROOT=$(pwd)/build
+    export LLFI_BUILD_ROOT=$(pwd)/build && \
+    cd /home/LLTFI/LLTFI/tools && \
+    sh json-c-setup.sh

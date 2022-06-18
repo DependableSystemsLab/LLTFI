@@ -192,6 +192,17 @@ To build LLFI without GUI, just add option: `--no_gui` in the command line for s
 ./setup -LLFI_BUILD_ROOT $BUILD/LLFI -LLVM_SRC_ROOT $SRC/llvm-12.0 -LLVM_DST_ROOT $BUILD/llvm-12.0 --no_gui
 ```
 
+Details about running the Web GUI for LLTFI can be found [here](web-app/README.md) 
+
+### Building LLTFI using Docker: ###
+
+`docker/Dockerfile` can be used to build and run LLTFI in a docker container. You can modify the Dockerfile according to your system and project requirements. More details can be found [here](docker/README.md)
+
+Steps to build:
+1. **Creating a docker image from the Dockerfile:** Copy the Dockerfile to a directory of your choice outside this repository. To create an image, run the command `docker build --tag imageName .` in the terminal.
+2. **Starting a docker container:** Once the above step is completed, a docker container can be started using the command `docker run -it imageName`
+
+
 ### Running tests: ###
 Running all regression tests after installation is highly recommended. Note that you may encounter some error messages during the fault injection stage. This is normal. Once all tests have completed and they all passed, LLFI is correctly installed.
 

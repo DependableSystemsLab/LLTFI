@@ -45,7 +45,7 @@ RUN distro=$(cat /etc/os-release|grep -Po '(?<=^ID=").*(?=")|(?<=^ID=)[^"].*[^"]
           git clone -b v1.10.2 https://github.com/ninja-build/ninja.git && \
           cd ninja && mkdir -p build && cd build && \
           cmake .. && \
-          make -j${NPROC} install \
+          make -j${NPROC} install; \
        fi \
     && ln -sf /usr/bin/python3 /usr/bin/python
     

@@ -4,7 +4,7 @@ LLTFI (Low Level Tensor Fault Injector) is a unified SWiFI (Software-implemented
 
 As machine learning (ML) has become more prevalent across many critical domains, so has the need to understand ML system resilience. While there are many ML fault injectors at the application level, there has been little work enabling fault injection of ML applications at a lower level. **LLTFI** is a tool that allows users to run fault injection experiments on C/C++, TensorFlow and PyTorch applications at a lower level (at the LLVM IR level). Please refer to the following [paper](https://blogs.ubc.ca/dependablesystemslab/2021/08/31/wip-lltfi-low-level-tensor-fault-injector/) for more information about LLTFI.
 
-LLTFI is built on top of [LLFI](https://github.com/DependableSystemsLab/LLFI) and is fully backwards compatible with LLFI. 
+LLTFI is built on top of [LLFI](https://github.com/DependableSystemsLab/LLFI) and is fully backwards compatible with it. 
 
 ### LLFI ###
 **LLFI** is an LLVM based fault injection tool, that injects faults into the LLVM IR of the application source code.  The faults can be injected into specific program points, and the effect can be easily tracked back to the source code.  LLFI is typically used to map fault characteristics back to source code, and hence understand source level or program characteristics for various kinds of fault outcomes. Detailed documentation about LLFI can be found at: https://github.com/DependableSystemsLab/LLFI/wiki. Because LLTFI is designed to be backwards compatible with LLFI, the basic setup instructions for LLTFI are similar to those of LLFI. But, there are additional steps and dependencies for running ML programs. 
@@ -70,17 +70,17 @@ In this method, the developer has more control over the location of the LLVM bui
   2. 64 bit Linux (Ubuntu 20.04) or OS X
   3. CMake (minimum v3.15)
   4. Python 3 and above
-  5. Python YAML library (PyYAML)
+  5. Python YAML library (PyYAML v5.4.1)
   6. Ninja >= 1.10.2
   7. libprotoc >= 3.11.0
-  8. Clang v13.0 (commit: 23dd750279c9)
-  9. LLVM v13.0 (commit: 23dd750279c9) ([Reference](http://llvm.org/docs/CMake.html)).
-		LLVM 13.0 takes a long time to completely build. Following is a shortcut to checking out the required LLVM commit, and building only the necessary LLVM targets.
+  8. Clang v15.0 (commit: 9778ec057cf4)
+  9. LLVM v15.0 (commit: 9778ec057cf4) ([Reference](http://llvm.org/docs/CMake.html)).
+		LLVM 15.0 takes a long time to completely build. Following is a shortcut to checking out the required LLVM commit, and building only the necessary LLVM targets.
 		```
 		git clone https://github.com/llvm/llvm-project.git
 		
-		# Check out a specific branch that is known to work with ONNX MLIR.
-		cd llvm-project && git checkout 23dd750279c9 && cd ..
+		# Check out a specific branch that is known to work with the required version of ONNX MLIR.
+		cd llvm-project && git checkout 9778ec057cf4 && cd ..
 			
 		mkdir llvm-project/build
 		cd llvm-project/build
@@ -92,9 +92,9 @@ In this method, the developer has more control over the location of the LLVM bui
 			-DLLVM_ENABLE_ASSERTIONS=ON \
 			-DLLVM_ENABLE_RTTI=ON
 
-		cmake --build . --target clang check-mlir mlir-translate opt llc lli llvm-dis llvm-link
+		cmake --build . --target clang check-mlir mlir-translate opt llc lli llvm-dis llvm-link -j 2
 
-		ninja install
+		ninja install -j 2
 		```
   10. For executing ML programs, following additional dependencies have to be installed:
 		1. TensorFlow framework (v2.0 or greater)
@@ -111,7 +111,7 @@ In this method, the developer has more control over the location of the LLVM bui
 			cd protobuf-3.17.2
 			
 			./configure
-			make
+			make -j 2
 			make check
 			sudo make install
 			sudo ldconfig # refresh shared library cache.
@@ -123,29 +123,23 @@ In this method, the developer has more control over the location of the LLVM bui
 		    MLIR_DIR=$(pwd)/llvm-project/build/lib/cmake/mlir
 		    ```
 
-		    Onnx-mlir commit: ``` 221b8e1d2ad ``` has to be built and installed. 
+		    Onnx-mlir commit: ``` 9c62e1a46ec2 ``` has to be built and installed. 
 			```
 			git clone --recursive https://github.com/onnx/onnx-mlir.git
-			cd onnx-mlir && git checkout 221b8e1d2ad && cd ..
+			cd onnx-mlir && git checkout 9c62e1a46ec27818dba87724fcf678a7be6059e9 && cd ..
 	
 			mkdir onnx-mlir/build && cd onnx-mlir/build
-			if [[ -z "$pythonLocation" ]]; then
 			cmake -G Ninja \
-					-DCMAKE_CXX_COMPILER=/usr/bin/c++ \
-					-DMLIR_DIR=${MLIR_DIR} \
-					..
-			else
-			cmake -G Ninja \
-					-DCMAKE_CXX_COMPILER=/usr/bin/c++ \
-					-DPython3_ROOT_DIR=$pythonLocation \
-					-DMLIR_DIR=${MLIR_DIR} \
-					..
-			fi
+				-DCMAKE_CXX_COMPILER=/usr/bin/c++ \
+				-DMLIR_DIR=${MLIR_DIR} \
+				.. 
+				
 			cmake --build .
 				
 			# Run lit tests:
 			export LIT_OPTS=-v
 			cmake --build . --target check-onnx-lit
+			
 			ninja install
 			```
   10. GraphViz package (for visualizing error propagation)

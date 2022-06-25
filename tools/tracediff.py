@@ -89,7 +89,8 @@ def traceDiff(argv, output = 0):
   '''
 
   report = diffReport(goldTraceLines, faultyTraceLines, faultyTraceStartPoint, diffID)
-  report.printSummary()
+  if report != None:
+    report.printSummary()
 
   #restore stdout
   sys.stdout = oldSTDOut

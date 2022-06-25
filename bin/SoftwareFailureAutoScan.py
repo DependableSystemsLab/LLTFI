@@ -89,7 +89,7 @@ def usage(msg = None):
 
 def runAutoScan(args):
     global filename
-    execlist = [optbin , "-load", llfipasses, "-genllfiindexpass", "-SoftwareFailureAutoScanPass", "-analyze"]
+    execlist = [optbin , "-load", llfipasses, "-genllfiindexpass", "-SoftwareFailureAutoScanPass", "-enable-new-pm=0"]
     execlist.extend(args)
     print(' '.join(execlist))
     p = subprocess.Popen(execlist)

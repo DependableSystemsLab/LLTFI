@@ -59,8 +59,10 @@ About tcsh:
 The LLFI-GUI uses tcsh to read environment variables describing the location of the LLFI build. The installer will automatically add those environment variables to your ~/.tcshrc file. You do not need to actively use tcsh as your primary shell, simply having it installed is enough.
 -->
 
-Installation
-------------
+Manual Installation
+-------------------
+
+In this method, the developer has more control over the location of the LLVM build that the LLTFI requires. If you already have LLVM built, you could use that build.
 
 **Dependencies:**
   

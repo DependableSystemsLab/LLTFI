@@ -4,6 +4,7 @@
 #include "llvm/IR/Instruction.h"
 
 #include <set>
+#include <map>
 
 using namespace llvm;
 

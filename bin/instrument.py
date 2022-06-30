@@ -376,6 +376,7 @@ def compileProg():
       liblist.extend(["-L", lib_dir])
     for lib in options["l"]:
       liblist.append("-l" + lib)
+    liblist.append("-no-pie")
     liblist.append("-Wl,-rpath")
     liblist.append(llfilinklib)
 

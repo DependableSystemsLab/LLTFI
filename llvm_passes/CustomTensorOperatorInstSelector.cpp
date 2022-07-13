@@ -223,13 +223,13 @@ private:
                     int64_t argValue1 = ci1->getSExtValue();
                     int64_t argValue2 = ci2->getSExtValue();
 
-                    if (argValue2 == 2 && shouldInjectFault(argValue1)) {
+                    if (argValue2 == 12 && shouldInjectFault(argValue1)) {
                         
                         // Inject fault!
                         isCustomTensorOperator = true;
                     }
                     
-                    if (argValue2 == 1) {
+                    if (argValue2 == 14) {
                         
                         // Set this to false after the operator ends.
                         isCustomTensorOperator = false;

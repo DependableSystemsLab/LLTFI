@@ -27,7 +27,7 @@ void export_layer_output_to_json(OMTensorList *, char*, char*);
 
 int main(int argc, char *argv[]) {
 
-// Input pointers needed for the model	
+    //Input pointers needed for the model
     char *inp[NUM_INPUTS];
     char* savefilename = "layeroutput.txt";
     char* output_seq = NULL;

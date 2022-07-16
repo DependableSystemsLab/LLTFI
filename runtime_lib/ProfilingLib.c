@@ -10,7 +10,7 @@ static long long unsigned opcodecount[OPCODE_CYCLE_ARRAY_LEN] = {0};
 void doProfiling(int opcode) {
   assert(opcodecount[opcode] >= 0 && 
          "dynamic instruction number too large to be handled by llfi");
-  opcodecount[opcode]++; 
+  opcodecount[opcode]++;
 }
 
 void endProfiling() {

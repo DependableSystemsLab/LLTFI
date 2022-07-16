@@ -5,7 +5,7 @@
 
 #include "Utils.h"
 
-static long long opcodecount[OPCODE_CYCLE_ARRAY_LEN] = {0};
+static long long unsigned opcodecount[OPCODE_CYCLE_ARRAY_LEN] = {0};
 
 void doProfiling(int opcode) {
   assert(opcodecount[opcode] >= 0 && 
@@ -27,7 +27,7 @@ void endProfiling() {
   getOpcodeExecCycleArray(OPCODE_CYCLE_ARRAY_LEN, opcode_cycle_arr);
 
   unsigned i = 0;
-  long long total_cycle = 0;
+  long long unsigned total_cycle = 0;
   for (i = 0; i < 100; ++i) {
     assert(total_cycle >= 0 && 
             "total dynamic instruction cycle too large to be handled by llfi");

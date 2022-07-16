@@ -130,7 +130,7 @@ void _parseLLFIConfigFile() {
     //==============================================================	
     /*BEHROOZ: Add multiple corrupted regs*/
     } else if (strcmp(option, "fi_max_multiple") == 0){
-        assert(atoll(value) > 1 && "invalid fi_max_multiple in config file");
+        assert(atoll(value) > 0 && "invalid fi_max_multiple in config file");
     	config.fi_max_multiple = atoi(value);
     } else if (strcmp(option, "fi_next_cycle") == 0){
     	assert(atoll(value) > 0 && "invalid fi_next_cycle in config file");

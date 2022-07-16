@@ -57,6 +57,17 @@ Instruction *getTermInstofFunction(Function *func) {
   return ret;
 }
 
+void getAllTermInstofFunction(Function *func, std::set<Instruction*> &exitinsts) {
+  
+  for (auto i = inst_begin(func); i != inst_end(func); i++) {	
+    Instruction* ret = &*i;	
+
+    if (isa<ReturnInst>(ret) || isa<ResumeInst>(ret) ||
+         isa<UnreachableInst>(ret))
+	    exitinsts.insert(ret);
+  }
+}
+
 void getProgramExitInsts(Module &M, std::set<Instruction*> &exitinsts) {
   for (Module::iterator m_it = M.begin(); m_it != M.end(); ++m_it) {
     if (!m_it->isDeclaration()) {
@@ -76,7 +87,7 @@ void getProgramExitInsts(Module &M, std::set<Instruction*> &exitinsts) {
   }
 
   Function* mainfunc = M.getFunction("main");
-  exitinsts.insert(getTermInstofFunction(mainfunc));
+  getAllTermInstofFunction(mainfunc, exitinsts);
 }
 
 Instruction *getInsertPtrforRegsofInst(Value *reg, Instruction *inst) {

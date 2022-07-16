@@ -139,9 +139,7 @@ void FaultInjectionPass::insertInjectionFuncCall(
       indices_for_gep[1] = ConstantInt::get(Type::getInt32Ty(context),0);
       ArrayRef<Constant*> indices_for_gep_array_ref(indices_for_gep);
       Constant *opc_str = dyn_cast<Constant>(opcode_str_gv);
-      Type *ty =
-          dyn_cast<PointerType>(opcode_str_gv->getType()->getScalarType())
-              ->getScalarType();
+      Type *ty = opcode_str_gv->getValueType();
       Constant *gep_expr = ConstantExpr::getGetElementPtr(
           ty, opc_str, indices_for_gep_array_ref, true);
       args[6] = gep_expr; // opcode in string

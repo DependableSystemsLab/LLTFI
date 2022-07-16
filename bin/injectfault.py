@@ -289,7 +289,7 @@ def checkValues(key, val, var1 = None,var2 = None,var3 = None,var4 = None):
   ##BEHROOZ: Add max number of target locations
   elif key == "fi_max_multiple":
     assert isinstance(val, int)==True, key+" must be an integer in input.yaml"
-    assert int(val) >1, key+" must be greater than one in input.yaml"
+    assert int(val) >0, key+" must be greater than zero in input.yaml"
     assert int(val) <=int(fi_max_multiple_default), key+" must be smaller than or equal to "+str(fi_max_multiple_default)+ " in input.yaml"
   ##==============================================================
 

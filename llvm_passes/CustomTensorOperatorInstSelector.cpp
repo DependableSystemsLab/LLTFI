@@ -88,7 +88,10 @@ public:
                 {"matmul", 119251066446157},
                 {"add", 6579265},
                 {"avgpool", 30521821365761601},
-                {"softmax", 33884119937478483}
+                {"softmax", 33884119937478483},
+                {"loop", 1886351180},
+                {"nonmaxs", 23494782373228366},
+                {"unsqueeze", 28540527736745557}
             };
 
             if (ONNXOperatorId.find(opname) == ONNXOperatorId.end())
@@ -223,14 +226,14 @@ private:
                     int64_t argValue1 = ci1->getSExtValue();
                     int64_t argValue2 = ci2->getSExtValue();
 
-                    if (argValue2 == 12 && shouldInjectFault(argValue1)) {
-                        
+		     if (argValue2 == 12 && shouldInjectFault(argValue1)) {
+
                         // Inject fault!
                         isCustomTensorOperator = true;
                     }
                     
                     if (argValue2 == 14) {
-                        
+
                         // Set this to false after the operator ends.
                         isCustomTensorOperator = false;
                     }

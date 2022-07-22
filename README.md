@@ -118,7 +118,7 @@ In this method, the developer has more control over the location of the LLVM bui
 			```
 		5. [ONNX-MLIR](https://github.com/onnx/onnx-mlir)
 
-		    The MLIR_DIR cmake variable must be set before building onnx-mlir. It should point to the mlir cmake module inside an llvm-project build or install directory (e.g., llvm-project/build/lib/cmake/mlir).
+		    Additional changes made in the ONNX-MLIR code have been provided in the patch: tools/onnx-mlir.patch. This patch has to be applied before building ONNX-MLIR. The MLIR_DIR cmake variable must be set before building onnx-mlir. It should point to the mlir cmake module inside an llvm-project build or install directory (e.g., llvm-project/build/lib/cmake/mlir).
             ```
 		    MLIR_DIR=$(pwd)/llvm-project/build/lib/cmake/mlir
 		    ```
@@ -126,7 +126,10 @@ In this method, the developer has more control over the location of the LLVM bui
 		    Onnx-mlir commit: ``` 9c62e1a46ec2 ``` has to be built and installed. 
 			```
 			git clone --recursive https://github.com/onnx/onnx-mlir.git
-			cd onnx-mlir && git checkout 9c62e1a46ec27818dba87724fcf678a7be6059e9 && cd ..
+			cp LLTFI/tools/onnx-mlir.patch onnx-mlir
+			cd onnx-mlir && git checkout 9c62e1a46ec27818dba87724fcf678a7be6059e9
+			git apply onnx-mlir.patch
+			cd ..
 	
 			mkdir onnx-mlir/build && cd onnx-mlir/build
 			cmake -G Ninja \

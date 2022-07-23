@@ -175,8 +175,9 @@ void initInjections() {
 
 bool preFunc(long llfi_index, unsigned opcode, unsigned my_reg_index, 
              unsigned total_reg_target_num) {
-  assert(opcodecyclearray[opcode] >= 0 && 
-          "opcode does not exist, need to update instructions.def");
+  if (opcodecyclearray[opcode] < 0 &&
+          "opcode does not exist, need to update instructions.def")
+     return false;
   
    if (! fiFlag) return false;
    if (my_reg_index == 0)

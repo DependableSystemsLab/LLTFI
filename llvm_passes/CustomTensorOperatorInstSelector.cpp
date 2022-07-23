@@ -88,7 +88,10 @@ public:
                 {"matmul", 119251066446157},
                 {"add", 6579265},
                 {"avgpool", 30521821365761601},
-                {"softmax", 33884119937478483}
+                {"softmax", 33884119937478483},
+                {"loop", 1886351180},
+                {"nonmaxs", 23494782373228366},
+                {"unsqueeze", 28540527736745557}
             };
 
             if (ONNXOperatorId.find(opname) == ONNXOperatorId.end())

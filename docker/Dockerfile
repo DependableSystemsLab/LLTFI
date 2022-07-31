@@ -91,7 +91,7 @@ WORKDIR /home/
 
 ### ONNX_MLIR
 RUN git clone --recursive https://github.com/onnx/onnx-mlir.git && \
-    cp LLTFI/LLTFI/tools/onnx-mlir.patch onnx-mlir && \
+    cp LLTFI/LLTFI/tools/onnx-mlir/onnx-mlir.patch onnx-mlir && \
     cd onnx-mlir && \
     git checkout 9c62e1a46ec27818dba87724fcf678a7be6059e9 && \
     git apply onnx-mlir.patch && \

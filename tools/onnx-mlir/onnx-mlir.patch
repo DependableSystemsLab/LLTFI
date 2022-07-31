@@ -1,0 +1,31 @@
+diff --git a/src/Runtime/OMInstrument.inc b/src/Runtime/OMInstrument.inc
+index 876f0076..1e4ca960 100644
+--- a/src/Runtime/OMInstrument.inc
++++ b/src/Runtime/OMInstrument.inc
+@@ -181,7 +181,7 @@ void OMInstrumentPoint(int64_t id, int64_t tag) {
+     return;
+ 
+   // Print header
+-  printf("#%3d) %s op=%8s", instrumentCounter,
++  printf("#%3d) ; id= %llu %s op=%8s", instrumentCounter, id,
+       tag & (1 << (int)InstrumentBeforeOp) ? "before" : "after ", (char *)&id);
+   instrumentCounter++;
+ 
+diff --git a/src/Transform/ONNX/InstrumentONNXPass.cpp b/src/Transform/ONNX/InstrumentONNXPass.cpp
+index fdb0559d..75d31ff9 100644
+--- a/src/Transform/ONNX/InstrumentONNXPass.cpp
++++ b/src/Transform/ONNX/InstrumentONNXPass.cpp
+@@ -135,11 +135,10 @@ public:
+ 
+         Location loc = op->getLoc();
+         OpBuilder opBuilder(op);
+-        if (instrumentBefore)
+-          opBuilder.create<mlir::KrnlInstrumentOp>(loc, op, beforeTag());
++        opBuilder.create<mlir::KrnlInstrumentOp>(loc, op, beforeTag());
+ 
+         // Can not insert after Op (e.g. ONNXReturnOP) with IsTerminator Trait
+-        if (instrumentAfter && !op->hasTrait<OpTrait::IsTerminator>()) {
++        if (!op->hasTrait<OpTrait::IsTerminator>()) {
+           opBuilder.setInsertionPointAfter(op);
+           opBuilder.create<mlir::KrnlInstrumentOp>(loc, op, afterTag());
+         }

@@ -84,12 +84,17 @@ RUN make check -j${NPROC}
 RUN make install
 RUN ldconfig
 
+WORKDIR /home/LLTFI/
+RUN git clone https://github.com/DependableSystemsLab/LLTFI.git
+
 WORKDIR /home/
 
 ### ONNX_MLIR
 RUN git clone --recursive https://github.com/onnx/onnx-mlir.git && \
+    cp LLTFI/LLTFI/tools/onnx-mlir/onnx-mlir.patch onnx-mlir && \
     cd onnx-mlir && \
     git checkout 9c62e1a46ec27818dba87724fcf678a7be6059e9 && \
+    git apply onnx-mlir.patch && \
     cd .. && \
     export MLIR_DIR=$(pwd)/llvm-project/build/lib/cmake/mlir && \
     mkdir onnx-mlir/build && cd onnx-mlir/build && \
@@ -100,12 +105,10 @@ RUN git clone --recursive https://github.com/onnx/onnx-mlir.git && \
     cmake --build . -j${NPROC} && \
     ninja install
 
-WORKDIR /home/LLTFI/
+WORKDIR /home/LLTFI/LLTFI
 
 ### LLTFI
-RUN git clone https://github.com/DependableSystemsLab/LLTFI.git && \
-    cd /home/LLTFI/LLTFI && \
-    ./setup -LLFI_BUILD_ROOT $(pwd)/build -LLVM_SRC_ROOT $(pwd)/../../llvm-project -LLVM_DST_ROOT $(pwd)/../../llvm-project/build --no_gui && \
+RUN ./setup -LLFI_BUILD_ROOT $(pwd)/build -LLVM_SRC_ROOT $(pwd)/../../llvm-project -LLVM_DST_ROOT $(pwd)/../../llvm-project/build --no_gui && \
     export LLFI_BUILD_ROOT=$(pwd)/build && \
     cd /home/LLTFI/LLTFI/tools && \
     sh json-c-setup.sh

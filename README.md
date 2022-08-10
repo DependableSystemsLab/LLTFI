@@ -21,11 +21,11 @@ LLTFI first lowers ML models to **MLIR** (Multi-Level Intermediate Representatio
 - LLTFI first converts all ML models to the ONNX format. ONNX’s open exchange format allows LLTFI to
 support both TensorFlow and PyTorch. 
 - Then, the ONNX file is converted into MLIR through ONNX-MLIR. 
-- Finally, we convert MLIR into LLVM IR, using the mlir-translate tool in LLVM 12.0. 
+- Finally, we convert MLIR into LLVM IR, using the mlir-translate tool in LLVM 15.0. 
 
 **LLTFI** can now inject faults into the LLVM IR, alike lowered C/C++ programs. 
 
-The LLFI tool was originally written for LLVM 3.4. While developing LLTFI, the entire LLFI tool was upgraded to LLVM 12.0 because LLVM 3.4 has no support for MLIR.
+The LLFI tool was originally written for LLVM 3.4. While developing LLTFI, the entire LLFI tool was upgraded to LLVM 15.0 because LLVM 3.4 has no support for MLIR.
 This upgrade also ensured that LLTFI is compatible all of the newest C/C++ features, and LLVM optimization passes
 
 <!--
@@ -180,13 +180,13 @@ GUI Dependencies:
 
   Here is a sample build command if `clang` and `javac` are already in $PATH:
 ```
-  ./setup -LLFI_BUILD_ROOT $BUILD/LLFI -LLVM_SRC_ROOT $SRC/llvm-12.0 -LLVM_DST_ROOT $BUILD/llvm-12.0
+  ./setup -LLFI_BUILD_ROOT $BUILD/LLFI -LLVM_SRC_ROOT $SRC/llvm-15.0 -LLVM_DST_ROOT $BUILD/llvm-15.0
 ```
 
 Build without GUI:
 To build LLFI without GUI, just add option: `--no_gui` in the command line for setup, for example:
 ```
-./setup -LLFI_BUILD_ROOT $BUILD/LLFI -LLVM_SRC_ROOT $SRC/llvm-12.0 -LLVM_DST_ROOT $BUILD/llvm-12.0 --no_gui
+./setup -LLFI_BUILD_ROOT $BUILD/LLFI -LLVM_SRC_ROOT $SRC/llvm-15.0 -LLVM_DST_ROOT $BUILD/llvm-15.0 --no_gui
 ```
 
 Details about running the Web GUI for LLTFI can be found [here](web-app/README.md) 

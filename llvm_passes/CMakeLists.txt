@@ -37,3 +37,5 @@ add_llvm_library(llfi-passes MODULE
   #END
   
 )
+
+add_subdirectory(./instruction_duplication)

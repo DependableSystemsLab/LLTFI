@@ -37,4 +37,4 @@ $LLVM_BUILD_PATH/bin/opt model_change.ll -always-inline -S -o model.ll
 - Use `--enableChainDuplication` to toggle between ACD (Arithmetic Chain Duplication) and AID (Arithmetic SID). Default value if nothing is specified: False 
 - Use `--llfiIndex` to specify the LLFI index (unique instruction number) to do SID. Default value if nothing is specified:all
 
-3. Execute the sample application following the steps mentioned in their README.
+3. Copy the `SIDHelperFunctions.ll` from `LLTFI/llvm_passes/instruction_duplication/shared_lib/` folder to the sample application folder and execute the application following the steps mentioned in their README.

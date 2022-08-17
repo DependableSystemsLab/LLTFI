@@ -1,0 +1,130 @@
+defaultTimeOut: 500 #customize the default timeout threshold
+
+## To inject faults into all the layers of the model:
+## LayerNo: '0' indicates all layers of the type mentioned in LayerName; For layerName, you can specify 'all' to inject fault in all the layers
+compileOption:
+    instSelMethod:
+      - customInstselector:
+          include:
+            - CustomTensorOperator
+          options:
+            -layerNo=0 
+            -layerName=all
+
+## To inject faults into all layers of a specific type in the model:
+## LayerNo: '0' indicates all layers of the type mentioned in LayerName; Mention the type of layer(convolution, relu etc) in layerName. For the below example, fault injection is done for all convolution and relu layers.
+compileOption:
+    instSelMethod:
+      - customInstselector:
+          include:
+            - CustomTensorOperator
+          options:
+            -layerNo=0;0;0;0;0;0;0 # 
+            -layerName=conv;relu
+            
+## To inject faults into a specific layer number in the model:
+## LayerNo: '1' indicates first layer of the 'layerName' type; In the below example, it is the first convolution layer in the model
+compileOption:
+    instSelMethod:
+      - customInstselector:
+          include:
+            - CustomTensorOperator
+          options:
+            -layerNo=1 
+            -layerName=conv
+            
+
+    ## To use a location-based register selector to select targeting register:
+    regSelMethod: regloc
+    ## To select the destination register
+    regloc: dstreg
+    ## To select the 1st source register
+    regloc: srcreg1
+    ## To select the 2nd source register
+    regloc: srcreg2
+    ## To select the 3rd source register
+    regloc: srcreg3
+
+    ## To incorporate the forward slice/backward slice of the selected instructions as injection targets: 
+    includeInjectionTrace: 
+        - forward # include forward trace of the selected instructions into fault injection targets
+        - backward # include forward trace of the selected instructions into fault injection targets
+
+    ## To turn on the tracing (or turn off)
+    tracingPropagation: False/True # trace dynamic instruction values.
+    tracingPropagationOption:
+        maxTrace: 250 # max number of instructions to trace during fault injection run
+        debugTrace: False/True # print debug info or not
+        generateCDFG: False/True # generates the graph for trace
+
+runOption:
+    ## To inject a common hardware fault in all injection targets by random:
+    - run:
+        numOfRuns: 5 # run injection for 5 times
+        fi_type: bitflip/stuck_at_0/stuck_at_1 # specify the fault type
+        timeOut: 1000 # specify a custom timeout threashold for only this experiment
+
+    ## To inject a bitflip fault at a specified cycle, on a specified register and
+    ## a specified bit position. This can be used for reproducing an pervious injection
+    ## result.
+    - run:
+        numOfRuns: 3
+        fi_type: bitflip
+        fi_cycle: 10
+        fi_reg_index: 3
+        fi_bit: 32
+        fi_reg: 2
+        verbose: True/False # prints return code summary at end of injection
+        timeOut: 1000
+
+    ## To inject multiple bitflip fault on one register:
+    ## (for example, 4 bits in one register)
+    - run:
+        numOfRuns: 5
+        fi_type: bitflip
+        fi_num_bits: 4
+
+    ## To inject TWO faults into two registers, specifying a maximum cycles between 
+    ## the two faults:
+    ## (for example, 4 cycles)
+    - run:
+        numOfRuns: 50
+        fi_type: bitflip
+        window_len: 10
+
+    ## To use a custom fault injector (fault type) for this experiment:
+    ## ('BufferOverflow(API)' is an fault injector for software failures 
+    ##  shipped with LLFI)
+    - run:
+        numOfRuns: 5
+        fi_type: BufferOverflow(API)
+    
+    ## To inject a maximum of 4 bit-flip errors into multiple registers.
+    ## The distance between each consecutive injection is controlled by a random number representing the number of dynamic instructions that needs
+    ## to be executed between the consecutive injections. The lower bound and upper bound of the random number are especified as two of the run time options.
+    - run:
+        numOfRuns: 5
+        fi_type: bitflip
+        fi_max_multiple: 4
+        window_len_multiple_startindex: 10
+        window_len_multiple_endindex: 100
+
+    ## To inject a maximum of 4 bit-flip errors into multiple registers starting from a specific bit of a specific register in a specific cycle.
+    ## This configuration is used to compare single bit-flip results with multiple bit-flip results.
+    ## The distance between each consecutive injection is controlled by a random number representing the number of dynamic instructions that needs
+    ## to be executed between the consecutive injections. The lower bound and upper bound of the random number are especified as two of the run time options.
+    - run:
+        numOfRuns: 5
+        fi_type: bitflip
+        fi_cycle: 684347
+        fi_index: 417
+        fi_reg_index: 0
+        fi_reg_pos: 1
+        fi_bit: 15
+        fi_max_multiple: 4
+        window_len_multiple_startindex: 10
+        window_len_multiple_endindex: 100
+  
+  
+kernelOption:
+    - forceRun

@@ -1,37 +1,40 @@
 defaultTimeOut: 500 #customize the default timeout threshold
 
 ## To inject faults into all the layers of the model:
-## LayerNo: '0' indicates all layers of the type mentioned in LayerName; For layerName, you can specify 'all' to inject fault in all the layers
+## LayerNo: Option '0' indicates all layers of the type mentioned in LayerName; For layerName, specify 'all' to inject fault in all the layers
 compileOption:
     instSelMethod:
       - customInstselector:
           include:
             - CustomTensorOperator
           options:
-            -layerNo=0 
-            -layerName=all
+            - layerNo=0 
+            - layerName=all
+
+## Both layerNo and layerName have to be specified and do not have default values set
+## The number of options specified for layerNo and layerName must match. Example: (layerNo: 0, 1; layerName: conv) is invalid and will produce error in the instrumentation stage
 
 ## To inject faults into all layers of a specific type in the model:
-## LayerNo: '0' indicates all layers of the type mentioned in LayerName; Mention the type of layer(convolution, relu etc) in layerName. For the below example, fault injection is done for all convolution and relu layers.
+## LayerNo: Option '0' indicates all layers of the type mentioned in LayerName; Mention the type of layer(convolution, relu etc) in layerName. For the below example, fault injection is done for all convolution and relu layers.
 compileOption:
     instSelMethod:
       - customInstselector:
           include:
             - CustomTensorOperator
           options:
-            -layerNo=0;0;0;0;0;0;0 # 
-            -layerName=conv;relu
+            - layerNo=0;0 
+            - layerName=conv;relu
             
 ## To inject faults into a specific layer number in the model:
-## LayerNo: '1' indicates first layer of the 'layerName' type; In the below example, it is the first convolution layer in the model
+## LayerNo: Option '1' indicates first layer of the 'layerName' type; In the below example, it is the first convolution layer in the model
 compileOption:
     instSelMethod:
       - customInstselector:
           include:
             - CustomTensorOperator
           options:
-            -layerNo=1 
-            -layerName=conv
+            - layerNo=1 
+            - layerName=conv
             
 
     ## To use a location-based register selector to select targeting register:

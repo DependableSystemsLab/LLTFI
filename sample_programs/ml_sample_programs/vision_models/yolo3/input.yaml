@@ -1,0 +1,31 @@
+compileOption:
+    instSelMethod:
+      - customInstselector:
+          include:
+            - CustomTensorOperator
+          options:
+            - -layerNo=0
+            - -layerName=all
+
+    regSelMethod: regloc
+    regloc: dstreg
+
+    includeInjectionTrace:
+        - forward
+
+    tracingPropagation: False # trace dynamic instruction values.
+
+    tracingPropagationOption:
+        maxTrace: 250 # max number of instructions to trace during fault injection run
+        debugTrace: False
+        mlTrace: False # enable for tracing ML programs
+        generateCDFG: True
+
+runOption:
+    - run:
+        numOfRuns: 1000
+        fi_type: bitflip
+        window_len_multiple_startindex: 1
+        window_len_multiple_endindex: 500
+        fi_max_multiple: 1
+        timeOut: 50000

@@ -1,5 +1,12 @@
 printf "[Compile Script]: Getting the ONNX model\n"
-wget https://github.com/onnx/models/raw/main/text/machine_comprehension/t5/model/t5-encoder-12.onnx
+
+FILE=t5-encoder-12.onnx
+if [ -f "$FILE" ]; then
+    echo "$FILE exists."
+else
+    echo "$FILE does not exist."
+    wget https://github.com/onnx/models/raw/main/text/machine_comprehension/t5/model/t5-encoder-12.onnx
+fi
 
 printf "\n[Compile Script]: Convert TF model to LLVM IR\n"
 onnx-mlir --EmitLLVMIR  --instrument-onnx-ops="ALL" --InstrumentBeforeOp --InstrumentAfterOp t5-encoder-12.onnx

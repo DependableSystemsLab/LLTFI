@@ -1,8 +1,8 @@
 printf "\n[Compile Script]: Generating TF model\n"
-python3 $1.py
+python3 mnist-cnn.py
 
 printf "\n[Compile Script]: Convert TF model to LLVM IR\n"
-python3 -m tf2onnx.convert --saved-model $1.tf --output model.onnx
+python3 -m tf2onnx.convert --saved-model mnist-cnn.tf --output model.onnx
 python3 ../../../../tools/ExtendONNXModel.py --model_path ./model.onnx  --output_model_path ./extendedmodel.onnx > expected_op_seq.txt
 onnx-mlir --EmitLLVMIR extendedmodel.onnx --instrument-onnx-ops="ALL" --InstrumentBeforeOp --InstrumentAfterOp
 mlir-translate -mlir-to-llvmir extendedmodel.onnx.mlir > model.mlir.ll

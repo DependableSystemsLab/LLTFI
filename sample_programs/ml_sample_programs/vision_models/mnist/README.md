@@ -5,19 +5,6 @@ We link the LLVM IR of the model to an image processing program `image.c`, which
 This generated LLVM IR `model.ll` is instrumented, profiled, and fault injected by LLTFI.\
 All of the following steps can be replicated for `mnist-nn.py`.
 
-Running TensorFlow example
----
-1. Train CNN on MNIST and compile it to LLVM IR. The final output file is `model.ll`.
-```
-./compile.sh mnist-cnn
-```
-
-2. Select one of the test image files, e.g. `eight.png` and run LLTFI on it.
-```
-./runllfi.sh eight.png
-```
-
-
 Running PyTorch example
 ---
 

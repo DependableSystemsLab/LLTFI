@@ -27,8 +27,6 @@ export LLFI_BUILD_ROOT=<path to where LLFI has been built>
 ./runllfi.sh
 ```
 
-There are minor differences in the steps to execute the `cnn-fmnist`, `lenet-mnist`, `dave_keras`, `lenet-fmnist` and `mnist` models because they are first trained, then converted to ONNX format and then to LLVM IR. Specific details of how to execute them can be found in their individual README files.
-
 ## Supplementary Information (Optional)
 
 For debugging purposes, you may wish to view the generated ONNX file in this example, model.onnx, in human readable format.

@@ -1,5 +1,11 @@
 printf "[Compile Script]: Getting the ONNX model\n"
-wget https://github.com/onnx/models/raw/main/vision/object_detection_segmentation/yolov3/model/yolov3-10.onnx
+FILE=yolov3-10.onnx
+if [ -f "$FILE" ]; then
+    echo "$FILE exists."
+else
+    echo "$FILE does not exist."
+    wget https://github.com/onnx/models/raw/main/vision/object_detection_segmentation/yolov3/model/yolov3-10.onnx
+fi
 
 printf "\n[Compile Script]: Convert TF model to LLVM IR\n"
 onnx-mlir --EmitLLVMIR  --instrument-onnx-ops="ALL" --InstrumentBeforeOp --InstrumentAfterOp yolov3-10.onnx

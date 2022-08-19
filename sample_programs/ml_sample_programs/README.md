@@ -37,6 +37,7 @@ sh execute_all_prog.sh compile
 ```
 
 	- Use the `run` option to perform fault injection.   
+
 ```
 sh execute_all_prog.sh compile
 ```

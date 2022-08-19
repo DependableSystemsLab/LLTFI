@@ -27,6 +27,20 @@ export LLFI_BUILD_ROOT=<path to where LLFI has been built>
 ./runllfi.sh
 ```
 
+## Executing all the ML models
+Follow the below steps to build all the models and perform fault injection:
+1. Modify the `input.yaml` file in the current folder if you need to add any additional options.
+2. Execute the `execute_all_prog.sh` script with either the `compile` or `run` option.
+	- Use the `compile` option to download and build the model 
+```
+sh execute_all_prog.sh compile
+```
+
+	- Use the `run` option to perform fault injection.   
+```
+sh execute_all_prog.sh compile
+```
+
 ## Supplementary Information (Optional)
 
 For debugging purposes, you may wish to view the generated ONNX file in this example, model.onnx, in human readable format.

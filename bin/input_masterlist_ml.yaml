@@ -8,7 +8,7 @@ defaultTimeOut: 500 #customize the default timeout threshold
 
 ## To inject faults into all layers of a specific type in the model:
 ## LayerNo: The value '0' represents all layers of the type mentioned in LayerName;
-## layerName: The type of layer (convolution, relu etc) must be mentioned in layerName.
+## layerName: The specific layers (convolution, relu etc) for fault injection must be mentioned in layerName.
 ## For the below example, fault injection is done for all the convolution and relu layers in the model.
 compileOption:
     instSelMethod:

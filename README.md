@@ -280,6 +280,7 @@ References
 ----------
 * [LLFI Paper](http://blogs.ubc.ca/karthik/2013/02/15/llfi-an-intermediate-code-level-fault-injector-for-soft-computing-applications/)
 * [LLFI Wiki](https://github.com/DependableSystemsLab/LLFI/wiki)
+* .2022. Udit Kumar Agarwal, Abraham Chan, Karthik Pattabiraman. LLTFI: Framework agnostic fault injection for machine learning applications. International Symposium on Software Reliability Engineering (ISSRE), 2022. 10 pages. Acceptance rate: 29%.  [LLTFI Paper](https://www.dropbox.com/s/lgr3ed75sy0fq2p/issre22-camera-ready.pdf?dl=0)
 
 ======		
 Read *caveats.txt* for caveats and known problems.

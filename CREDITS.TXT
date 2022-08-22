@@ -48,3 +48,6 @@ D: Added Makefile script to support compilation of entire projects.
 
 N: Behrooz Sangchoolie
 D: Added support for multiple bit fault injections for hardware faults.
+
+N: Udit Kumar Agarwal
+D: Added support for FI in ML applications along with the ability to inject custom fault patterns according to the TPU and GPU HW models.

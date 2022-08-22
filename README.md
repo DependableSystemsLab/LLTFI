@@ -282,6 +282,19 @@ References
 * [LLFI Wiki](https://github.com/DependableSystemsLab/LLFI/wiki)
 * .2022. Udit Kumar Agarwal, Abraham Chan, Karthik Pattabiraman. LLTFI: Framework agnostic fault injection for machine learning applications. International Symposium on Software Reliability Engineering (ISSRE), 2022. 10 pages. Acceptance rate: 29%.  [LLTFI Paper](https://www.dropbox.com/s/lgr3ed75sy0fq2p/issre22-camera-ready.pdf?dl=0)
 
+Citations
+----------
+
+<pre>
+@article{Agarwal22LLTFI,
+  title={LLTFI: Framework agnostic fault injection for machine learning applications},
+  author={Agarwal, Udit and Chan, Abraham and Pattabiraman, Karthik},
+  journal={International Symposium on Software Reliability Engineering (ISSRE)},
+  year={2022},
+  publisher={IEEE}
+}
+</pre>
+
 ======		
 Read *caveats.txt* for caveats and known problems.
 

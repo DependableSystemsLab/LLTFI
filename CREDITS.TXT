@@ -45,6 +45,7 @@ D: Added Software Fault Injection to the GUI and integrated FIDL into LLFI.
 
 N: Abraham Chan
 D: Added Makefile script to support compilation of entire projects.
+D: Upgraded LLVM from 3.4 to LLVM 12, added initial capability for FI on ML models
 
 N: Behrooz Sangchoolie
 D: Added support for multiple bit fault injections for hardware faults.

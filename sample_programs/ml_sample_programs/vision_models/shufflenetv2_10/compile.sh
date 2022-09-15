@@ -8,7 +8,7 @@ else
 fi
 
 printf "\n[Compile Script]: Convert TF model to LLVM IR\n"
-onnx-mlir --EmitLLVMIR  --instrument-onnx-ops="ALL" --InstrumentBeforeOp --InstrumentAfterOp shufflenet-v2-10.onnx
+onnx-mlir --EmitLLVMIR  --instrument-onnx-ops="ALL" --InstrumentBeforeAndAfterOp shufflenet-v2-10.onnx
 mlir-translate -mlir-to-llvmir shufflenet-v2-10.onnx.mlir > model.mlir.ll
 
 printf "\n[Compile Script]: Compile main driver program and link to TF model in LLVM IR\n"

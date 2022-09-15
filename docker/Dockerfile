@@ -90,13 +90,12 @@ RUN git clone https://github.com/DependableSystemsLab/LLTFI.git
 WORKDIR /home/
 
 ### ONNX_MLIR
-RUN git clone --recursive https://github.com/onnx/onnx-mlir.git && \
-    cp LLTFI/LLTFI/tools/onnx-mlir/onnx-mlir.patch onnx-mlir && \
-    cd onnx-mlir && \
-    git checkout 9c62e1a46ec27818dba87724fcf678a7be6059e9 && \
-    git apply onnx-mlir.patch && \
-    cd .. && \
+RUN git clone --recursive https://github.com/DependableSystemsLab/onnx-mlir-lltfi.git && \
     export MLIR_DIR=$(pwd)/llvm-project/build/lib/cmake/mlir && \
+    mv onnx-mlir-lltfi onnx-mlir && \
+    cd onnx-mlir && \
+    git checkout LLTFI && \
+    cd .. && \
     mkdir onnx-mlir/build && cd onnx-mlir/build && \
     cmake -G Ninja \
         -DCMAKE_CXX_COMPILER=/usr/bin/c++ \

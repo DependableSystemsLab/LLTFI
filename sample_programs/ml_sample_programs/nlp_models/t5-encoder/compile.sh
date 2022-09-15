@@ -9,7 +9,7 @@ else
 fi
 
 printf "\n[Compile Script]: Convert TF model to LLVM IR\n"
-onnx-mlir --EmitLLVMIR  --instrument-onnx-ops="ALL" --InstrumentBeforeOp --InstrumentAfterOp t5-encoder-12.onnx
+onnx-mlir --EmitLLVMIR  --instrument-onnx-ops="ALL" --InstrumentBeforeAndAfterOp t5-encoder-12.onnx
 mlir-translate -mlir-to-llvmir t5-encoder-12.onnx.mlir > model.mlir.ll
 
 printf "\n[Compile Script]: Compile main driver program and link to TF model in LLVM IR\n"

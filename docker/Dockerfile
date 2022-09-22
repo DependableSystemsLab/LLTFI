@@ -107,7 +107,7 @@ RUN git clone --recursive https://github.com/DependableSystemsLab/onnx-mlir-lltf
 WORKDIR /home/LLTFI/LLTFI
 
 ### LLTFI
-RUN ./setup -LLFI_BUILD_ROOT $(pwd)/build -LLVM_SRC_ROOT $(pwd)/../../llvm-project -LLVM_DST_ROOT $(pwd)/../../llvm-project/build --no_gui && \
+RUN ./setup -LLFI_BUILD_ROOT $(pwd)/build -LLVM_SRC_ROOT $(pwd)/../../llvm-project -LLVM_DST_ROOT $(pwd)/../../llvm-project/build && \
     export LLFI_BUILD_ROOT=$(pwd)/build && \
     cd /home/LLTFI/LLTFI/tools && \
     sh json-c-setup.sh

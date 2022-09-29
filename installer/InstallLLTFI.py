@@ -14,34 +14,43 @@ def Touch(path):
     with open(path, 'a'):
         os.utime(path, None)
 
+# Helper function to return the python version installed in the system
 def python3PrintParse(version):
   return version.split()[1]
 
+# Get the Python3 major version and minor version
 def python3Parse(version):
   return version.split()[1].split('.')[:2]
 
+# Error Message to display if appropriate Python3 version is not found
 python3Msg = "Error: Python 3 (python3) not found on path" + \
        "       Pease ensure python3 is installed and is available on the path"  + \
        "       The latest version of Python3 can be downloaded from:"  + \
        "       https://www.python.org/downloads/"
-       
+
+# Helper function to return the cmake version installed in the system
 def CmakePrintParse(version):
   return version.split()[2]
 
+# Get the cmake major version and minor version
 def CmakeParse(version):
   return version.split()[2].split('.')[:2]
 
+# Error Message to display if the appropriate cmake version is not found
 cmakeMsg = "\tCmake 3.15+ can be downloaded from:\n\thttp://www.cmake.org/cmake/resources/software.html" 
 
+# Helper function to return the ninja version installed in the system
 def ninjaPrintParse(version):
   return version.split()[0]
 
+# Get the ninja major version and minor version
 def ninjaParse(version):
   return version.split()[0].split('.')[:2]
 
+# Error Message to display if the appropriate ninja version is not found
 ninjaMsg = "\tNinja 1.10+ can be downloaded from:\n\thttps://ninja-build.org/"
 
-       
+# Helper function to check if dependency versions present in the system are correct       
 def checkDep(name, execName, versionArg, printParseFunc, parseFunc, minVersion, msg):
   try:
     which = subprocess.check_output(['which', execName])
@@ -57,15 +66,9 @@ def checkDep(name, execName, versionArg, printParseFunc, parseFunc, minVersion, 
       properVersion = True
 
       if int(version[0]) < minVersion[0]:
-          #if name != "Protobuf":
           properVersion = False
-          #else:
-          #installProtobuf = True
       elif (int(version[0]) == minVersion[0]) and (int(version[1]) < minVersion[1]):
-          #if name != "Protobuf":
           properVersion = False
-          #else:
-              #installProtobuf = True
       if properVersion:
         print("Success: " + name + "(" + printVersion + ") is at or above version " + ".".join([str(x) for x in minVersion]))
         return True
@@ -83,6 +86,8 @@ def checkDep(name, execName, versionArg, printParseFunc, parseFunc, minVersion, 
     print(msg)
     return False
 
+# Check if all dependencies(Python >= v3.8, CMake > v3.15, Ninja > 1.10.2) are installed. Exit the program with an error message if dependencies are missing.
+# Install PyYaml, tensorflow and tfonnx packages if not already installed
 def checkDependencies():
     hasAll = True
     hasAll = checkDep("Python 3", "python3", "--version", python3PrintParse, python3Parse, [3,8], python3Msg) and hasAll
@@ -117,6 +122,7 @@ def checkDependencies():
 
     return hasAll
     
+# Clone the LLVM, ONNX-MLIR and LLTFI repos
 def downloadSource():
       # LLTFI
       os.system('git clone https://github.com/DependableSystemsLab/LLTFI.git')
@@ -134,7 +140,7 @@ def downloadSource():
       os.chdir(os.path.join('..'))
       os.rename('onnx-mlir-lltfi','onnx-mlir')
 
-
+# Helper function to check if a particular directory already exists
 def CheckDirExists(dir):
   FullPath = os.path.abspath(dir)
   if (os.path.exists(FullPath)):
@@ -145,8 +151,9 @@ def CheckDirExists(dir):
     print("%s directory missing" % (dir))
   return False
 
+# Build and install LLVM 15.0, onnx-mlir and LLTFI
 def buildSource():
-    # LLVM
+    # Build and install LLVM
     if CheckDirExists('llvm-project'):
         os.chdir("llvm-project")
         if (not CheckDirExists('build')): 
@@ -172,7 +179,7 @@ def buildSource():
     else:
         print("LLVM source code missing. Run the installer script without -nD option")
 
-    # ONNX-MLIR 
+    # Build and install ONNX-MLIR 
     if CheckDirExists('onnx-mlir'):
         cwd = os.getcwd()
         os.environ['MLIR_DIR'] = cwd + '/llvm-project/build/lib/cmake/mlir'
@@ -200,7 +207,7 @@ def buildSource():
         print("ONNX-MLIR source missing. Run the installer script without -nD option")
 
 
-    # LLTFI
+    # Build LLTFI
     if CheckDirExists('LLTFI'):
         os.chdir("LLTFI")
         if (not os.path.exists("BUILDSUCCESS")):
@@ -217,6 +224,7 @@ def buildSource():
     cwd = os.getcwd()
     os.environ['LLFI_BUILD_ROOT'] = cwd + '/LLTFI/build'
 
+# Helper function to download a zip file from a url
 def DownloadFile(url, destinationDirectory, desc=None):
     u = urllib2.urlopen(url)
 
@@ -255,6 +263,7 @@ def DownloadFile(url, destinationDirectory, desc=None):
 
     return filename
 
+#  Download and install libprotoc v.3.17.2
 def downloadAndInstallProtobuf():
     DownloadFile("https://github.com/protocolbuffers/protobuf/releases/download/v3.17.2/protobuf-all-3.17.2.zip", ".")
     os.system("unzip protobuf-all-3.17.2.zip")
@@ -266,7 +275,7 @@ def downloadAndInstallProtobuf():
     os.system("ldconfig")
     os.chdir(os.path.join('../..'))
 
-
+# Run LLTFI regression tests
 def runTests():
   LLFI_BUILD_DIR = os.path.dirname(os.path.realpath(__file__))
   subprocess.call(["python3", LLFI_BUILD_DIR + "/LLTFI/build/test_suite/SCRIPTS/llfi_test", "--all", "--threads", "2", "--verbose"])
@@ -293,12 +302,16 @@ if __name__ == "__main__":
             print("Please see Errors above, and install the missing dependencies")
             print("Exiting Installer...")
             sys.exit(-1)
+    # If the "-nPb" option is not specified, download and install protobuf
     if not args.noProtobuf:
        downloadAndInstallProtobuf()
     print("Installing LLTFI to: " + os.path.abspath(LLTFIROOTDIRECTORY))
+    # If "-nD" option is not specifies, clone all the required github repositories
     if not args.noDownload:
         downloadSource()
+    # If "-nB" option is not specified, Build and install
     if not args.noBuild:
         buildSource()
+    # Run LLTFI regression tests
     if args.runTests:
         runTests()

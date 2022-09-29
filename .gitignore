@@ -15,7 +15,6 @@ installer/llvmsrc/*
 installer/pyyaml/*
 installer/pyyamlsrc/*
 installer/fontconfig/*
-installer/
 build/
 
 # All the .ll and .bc files

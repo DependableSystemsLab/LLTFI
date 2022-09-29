@@ -28,36 +28,23 @@ support both TensorFlow and PyTorch.
 The LLFI tool was originally written for LLVM 3.4. While developing LLTFI, the entire LLFI tool was upgraded to LLVM 15.0 because LLVM 3.4 has no support for MLIR.
 This upgrade also ensured that LLTFI is compatible all of the newest C/C++ features, and LLVM optimization passes
 
-<!--
+
 Auto-Installer
 --------------
-This is the recommended method for building the LLFI. If you wish to build the LLFI via the auto-installer, you *do not need* to clone the LLFI git repository. Simply download the installer script by itself, and it will fetch the latest version of the git repository for you. The LLFI auto-installer takes the form of a single python script (installer/installLLFI.py). To run the script, simply copy it into the directory where you would like to build the LLFI and, from the command line, run `python3 InstallLLFI.py`.
+If you wish to build LLTFI and its dependencies via the auto-installer(installer/InstallLLTFI.py), you *do not need* to clone the LLTFI git repository. Simply download the installer script by itself, and it will fetch the latest version of the git repository for you. To run the script, simply copy it into the directory where you would like to build the LLTFI and, from the command line, run `python3 InstallLLTFI.py`.
   
 Dependencies:
-  1. 64 Bit Machine
-  2. 64 Bit Linux (Ubuntu 20.04) or OS X
-  3. Cmake (mininum v3.15)
+  1. 64 Bit Machine (preferably with GPU for faster training of ML programs) 
+  2. 64 bit Linux (Ubuntu 20.04) or OS X
+  3. CMake (minimum v3.15)
   4. Python 3 and above
-  5. tcsh (for GUI)
-  6. GraphViz package (for visualizing error propagation)
-  7. Internet Connection
-
-GUI Dependencies:
-  1. JDK7/JDK8 with JavaFX
-  2. tcsh shell
+  5. Ninja >= 1.10.2
+  6. Internet Connection
 
 Usage:
-run "python3 InstallLLFI.py -h" to see all running options/guidelines
-  1. Copy the InstallLLFI.py script to where you want to build the LLFI
-  2. Make sure you are _not_ logged in as root
-  2. Run "python3 InstallLLFI.py"
-  3. Wait for compilation to finish
-  4. Run the GUI by executing "./llfi-gui" under the bin/ folder
+  1. Copy the InstallLLTFI.py script to where you want to build the LLTFI. Run "python3 InstallLLTFI.py -h" to see all running options/guidelines
+  2. Run "python3 InstallLLTFI.py"
 
-About tcsh:
-
-The LLFI-GUI uses tcsh to read environment variables describing the location of the LLFI build. The installer will automatically add those environment variables to your ~/.tcshrc file. You do not need to actively use tcsh as your primary shell, simply having it installed is enough.
--->
 
 Manual Installation
 -------------------
@@ -176,7 +163,7 @@ GUI Dependencies:
   --runTests: Add this option if you want to run all regression tests after building LLFI.
 ```
 
-  Below is the command to build LLTFI(without GUI) if `clang` and `javac` are already in $PATH:
+  Below is the command to build LLTFI(without GUI) if `clang` is already in $PATH:
 ```
 ./setup -LLFI_BUILD_ROOT $BUILD/LLFI -LLVM_SRC_ROOT $SRC/llvm-15.0 -LLVM_DST_ROOT $BUILD/llvm-15.0
 ```

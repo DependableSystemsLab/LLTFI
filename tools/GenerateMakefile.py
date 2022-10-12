@@ -115,7 +115,7 @@ def initializeMakefile(sourceFiles):
     fout.write('LINKER=' + llvmlink + '\n')
     fout.write('OUTPUT=' + options["o"] + '\n')
     
-    cflags = ['-w', '-emit-llvm', '-fno-use-cxa-atexit'] #Default compiler flags
+    cflags = ['-w', '-emit-llvm', '-fno-use-cxa-atexit', '-g'] #Default compiler flags
     lflags = ['-o', '$(OUTPUT)']  #Default linker flags
 
     if options['readable']:

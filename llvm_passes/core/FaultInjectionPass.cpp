@@ -30,6 +30,8 @@
 
 namespace llfi {
 
+char FaultInjectionPass::ID=0;
+
 std::string FaultInjectionPass::getFIFuncNameforType(const Type *type) {
   std::string funcname;
   if (fi_rettype_funcname_map.find(type) != fi_rettype_funcname_map.end()) {

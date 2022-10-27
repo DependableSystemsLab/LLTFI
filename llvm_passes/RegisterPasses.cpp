@@ -4,10 +4,13 @@
 #include "core/ProfilingPass.h"
 #include "core/GenLLFIIndexPass.h"
 #include "core/FaultInjectionPass.h"
+#include "core/LLFIDotGraphPass.h"
+#include "core/InstTracePass.h"
 
 using namespace llvm;
 
 namespace llfi {
+
   //-----------------------------------------------------------------------------
   // New PM Registration
   //-----------------------------------------------------------------------------
@@ -43,6 +46,28 @@ namespace llfi {
                    ArrayRef<PassBuilder::PipelineElement>) {
                   if (Name == "faultinjectionpass") {
                     MPM.addPass(llfi::NewFaultInjectionPass());
+                    return true;
+                  }
+                  return false;
+                });
+
+              // For DotGraphPass
+              PB.registerPipelineParsingCallback(
+                [](StringRef Name, ModulePassManager &MPM,
+                   ArrayRef<PassBuilder::PipelineElement>) {
+                  if (Name == "dotgraphpass") {
+                    MPM.addPass(llfi::NewLLFIDotGraph());
+                    return true;
+                  }
+                  return false;
+                });
+
+              // For InstructionTracePass
+              PB.registerPipelineParsingCallback(
+                [](StringRef Name, ModulePassManager &MPM,
+                   ArrayRef<PassBuilder::PipelineElement>) {
+                  if (Name == "insttracepass") {
+                    MPM.addPass(llfi::NewInstTrace());
                     return true;
                   }
                   return false;

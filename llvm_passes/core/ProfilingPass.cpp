@@ -6,10 +6,10 @@
 // License. See LICENSE.TXT for details.
 //
 //===----------------------------------------------------------------------===//
-// The trace function is a C function which increments the count 
+// The trace function is a C function which increments the count
 // when the function is executed
-// See profiling_lib.c doProfiling() function for more details. This function 
-// definition is linked to the instrumented bitcode file (after this pass). 
+// See profiling_lib.c doProfiling() function for more details. This function
+// definition is linked to the instrumented bitcode file (after this pass).
 //===----------------------------------------------------------------------===//
 
 #include "llvm/IR/DerivedTypes.h"
@@ -34,10 +34,10 @@ using namespace llvm;
 
 namespace llfi {
 
-//BEHROOZ: 
+char LegacyProfilingPass::ID=0;
 extern cl::opt< std::string > llfilogfile;
 
-bool ProfilingPass::runOnModule(Module &M) {
+bool LegacyProfilingPass::runOnModule(Module &M) {
 	LLVMContext &context = M.getContext();
 
   std::map<Instruction*, std::list< int >* > *fi_inst_regs_map;
@@ -89,22 +89,20 @@ bool ProfilingPass::runOnModule(Module &M) {
     //LLVM 3.3 Upgrading
     IntegerType* itype_non_const = const_cast<IntegerType*>(itype);
     Value* opcode = ConstantInt::get(itype_non_const, fi_inst->getOpcode());
-    profilingarg[0] = opcode; 
+    profilingarg[0] = opcode;
     ArrayRef<Value*> profilingarg_array_ref(profilingarg);
 
     CallInst::Create(profilingfunc, profilingarg_array_ref,
                      "", insertptr);
   }
 
-  //BEHROOZ: 
   logFile.close();
 
   addEndProfilingFuncCall(M);
   return true;
 }
 
-
-void ProfilingPass::addEndProfilingFuncCall(Module &M) {
+void LegacyProfilingPass::addEndProfilingFuncCall(Module &M) {
   Function* mainfunc = M.getFunction("main");
   if (mainfunc != NULL) {
     FunctionCallee endprofilefunc = getLLFILibEndProfilingFunc(M);
@@ -112,7 +110,7 @@ void ProfilingPass::addEndProfilingFuncCall(Module &M) {
     // function call
     std::set<Instruction*> exitinsts;
     getProgramExitInsts(M, exitinsts);
-    assert (exitinsts.size() != 0 
+    assert (exitinsts.size() != 0
             && "Program does not have explicit exit point");
 
     for (std::set<Instruction*>::iterator it = exitinsts.begin();
@@ -121,13 +119,13 @@ void ProfilingPass::addEndProfilingFuncCall(Module &M) {
       CallInst::Create(endprofilefunc, "", term);
     }
   } else {
-    errs() << "ERROR: Function main does not exist, " << 
+    errs() << "ERROR: Function main does not exist, " <<
         "which is required by LLFI\n";
     exit(1);
   }
 }
 
-FunctionCallee ProfilingPass::getLLFILibProfilingFunc(Module &M) {
+FunctionCallee LegacyProfilingPass::getLLFILibProfilingFunc(Module &M) {
   LLVMContext &context = M.getContext();
   std::vector<Type*> paramtypes(1);
   paramtypes[0] = Type::getInt32Ty(context);
@@ -142,7 +140,7 @@ FunctionCallee ProfilingPass::getLLFILibProfilingFunc(Module &M) {
   return profilingfunc;
 }
 
-FunctionCallee ProfilingPass::getLLFILibEndProfilingFunc(Module &M) {
+FunctionCallee LegacyProfilingPass::getLLFILibEndProfilingFunc(Module &M) {
   LLVMContext& context = M.getContext();
   FunctionType* endprofilingfunctype = FunctionType::get(
       Type::getVoidTy(context), false);
@@ -151,6 +149,7 @@ FunctionCallee ProfilingPass::getLLFILibEndProfilingFunc(Module &M) {
   return endprofilefunc;
 }
 
-static RegisterPass<ProfilingPass> X("profilingpass", 
+// Registration for the old PM
+static RegisterPass<LegacyProfilingPass> X("profilingpass",
                                      "Profiling pass", false, false);
 }

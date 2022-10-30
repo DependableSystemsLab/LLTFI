@@ -232,13 +232,12 @@ void Controller::getModuleFuncs(Module &M) {
 void Controller::init(Module &M) {
   // generate list of functions present in M
   getModuleFuncs(M);
-
   processCmdArgs();
-  
+
   // select fault injection instructions
   std::set<Instruction*> fiinstset;
   fiinstselector->getFIInsts(M, &fiinstset);
-  
+
   // select fault injection registers
   firegselector->getFIInstRegMap(&fiinstset, &fi_inst_regs_map);
 }

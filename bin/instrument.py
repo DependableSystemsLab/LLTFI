@@ -308,7 +308,6 @@ def readCompileOption():
       if "generateCDFG" in cOpt["tracingPropagationOption"]:
           if (str(cOpt["tracingPropagationOption"]["generateCDFG"]).lower() == "true"):
             options["genDotGraph"] = True
-  
 
 ################################################################################
 def _suffixOfIR():
@@ -327,16 +326,16 @@ def compileProg():
   fifile = progbin + "-faultinjection"
   tmpfiles = []
 
-  execlist = [optbin, '-load', llfilib, '-genllfiindexpass', '-enable-new-pm=0', '-o',
+  execlist = [optbin, '-load-pass-plugin', llfilib, '-genllfiindexpass', '-o',
               llfi_indexed_file + _suffixOfIR(), options['source']]
   if options["readable"]:
     execlist.append('-S')
   if options["genDotGraph"]:
     execlist.append('-dotgraphpass')
   retcode = execCompilation(execlist)
-  
+
   if retcode == 0:
-    execlist = [optbin, '-load', llfilib, '-profilingpass', '-enable-new-pm=0']
+    execlist = [optbin, '-load-pass-plugin', llfilib, '-profilingpass']
     execlist2 = ['-o', proffile + _suffixOfIR(), llfi_indexed_file + _suffixOfIR()]
     execlist.extend(compileOptions)
     execlist.extend(execlist2)
@@ -345,7 +344,7 @@ def compileProg():
     retcode = execCompilation(execlist)
 
   if retcode == 0:
-    execlist = [optbin, '-load', llfilib, '-faultinjectionpass', '-enable-new-pm=0']
+    execlist = [optbin, '-load-pass-plugin', llfilib, '-faultinjectionpass']
     execlist2 = ['-o', fifile + _suffixOfIR(), llfi_indexed_file + _suffixOfIR()]
     execlist.extend(compileOptions)
     execlist.extend(execlist2)

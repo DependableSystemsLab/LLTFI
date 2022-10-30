@@ -22,20 +22,15 @@ add_llvm_library(llfi-passes MODULE
   core/FIInstSelector.cpp
   core/FIInstSelectorManager.cpp
   core/FIRegSelector.cpp
-  core/GenLLFIIndexPass.cpp
   core/ProfilingPass.cpp
+  core/GenLLFIIndexPass.cpp
   core/RegLocBasedFIRegSelector.cpp
 
   hardware_failures/FuncNameFIInstSelector.cpp
   hardware_failures/LLFIIndexFIInstSelector.cpp
   hardware_failures/InstTypeFIInstSelector.cpp
-  
-#  software_failures/_Timing_HighFrequentEventSelector.cpp
-#  software_failures/_SoftwareFaultRegSelectors.cpp
-  
-  #FIDL - DO NOT MODIFY UNTIL '#END'
-  #END
-  
+
+  RegisterPasses.cpp
 )
 
 add_subdirectory(./instruction_duplication)

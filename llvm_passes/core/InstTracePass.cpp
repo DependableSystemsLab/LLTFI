@@ -1,11 +1,11 @@
 /***************
-InstTrace.cpp
+InstTracePass.cpp
 Author: Sam Coulter
   This llvm pass is part of the greater LLFI framework
-  
+
   Run the pass with the opt -InstTrace option after loading LLFI.so
-  
-  This pass injects a function call before every non-void-returning, 
+
+  This pass injects a function call before every non-void-returning,
   non-phi-node instruction that prints trace information about the executed
   instruction to a file specified during the pass.
 ***************/
@@ -28,8 +28,7 @@ Author: Sam Coulter
 #include "llvm/Support/raw_ostream.h"
 
 #include "Utils.h"
-
-using namespace llvm;
+#include "InstTracePass.h"
 
 cl::opt<bool> debugtrace("debugtrace",
               cl::desc("Print tracing instrucmented instruction information"),
@@ -38,19 +37,11 @@ cl::opt<int> maxtrace( "maxtrace",
     cl::desc("Maximum number of dynamic instructions that will be traced after fault injection"),
             cl::init(1000));
 
+using namespace llvm;
+
 namespace llfi {
 
-struct InstTrace : public FunctionPass {
-
-  static char ID;
-
-  InstTrace() : FunctionPass(ID) {}
-
-  virtual bool doInitialization(Module &M) {
-    return false;
-  }
-
-  virtual bool doFinalization(Module &M) {
+  bool InstTrace::doFinalization(Module &M) {
     //Dont forget to delete the output filename string!
     Function* mainfunc = M.getFunction("main");
     if (mainfunc == NULL) {
@@ -67,7 +58,7 @@ struct InstTrace : public FunctionPass {
 
     std::set<Instruction*> exitinsts;
     getProgramExitInsts(M, exitinsts);
-    assert (exitinsts.size() != 0 
+    assert (exitinsts.size() != 0
             && "Program does not have explicit exit point");
 
     for (std::set<Instruction*>::iterator it = exitinsts.begin();
@@ -79,11 +70,11 @@ struct InstTrace : public FunctionPass {
     return true;
   }
 
-  long fetchLLFIInstructionID(Instruction *targetInst) {
+  long InstTrace::fetchLLFIInstructionID(Instruction *targetInst) {
     return llfi::getLLFIIndexofInst(targetInst);
   }
-  
-  Instruction* getInsertPoint(Instruction* llfiIndexedInst) {
+
+  Instruction* InstTrace::getInsertPoint(Instruction* llfiIndexedInst) {
     Instruction *insertPoint;
     if (!llfiIndexedInst->isTerminator()) {
       insertPoint = llfi::getInsertPtrforRegsofInst(llfiIndexedInst, llfiIndexedInst);
@@ -97,14 +88,14 @@ struct InstTrace : public FunctionPass {
     return insertPoint;
   }
 
-  virtual bool runOnFunction(Function &F) {
+  bool InstTrace::runOnFunction(Function &F) {
     //Create handles to the functions parent module and context
     LLVMContext& context = F.getContext();
     Module *M = F.getParent();
 
     //iterate through each instruction of the function
     inst_iterator lastInst;
-    for (inst_iterator instIterator = inst_begin(F), 
+    for (inst_iterator instIterator = inst_begin(F),
          lastInst = inst_end(F);
          instIterator != lastInst; ++instIterator) {
 
@@ -118,15 +109,16 @@ struct InstTrace : public FunctionPass {
           errs() << "Instruction " << *inst << " was indexed\n";
         }
       }
+
       if (llfi::isLLFIIndexedInst(inst)) {
 
         //Find instrumentation point for current instruction
         Instruction *insertPoint = getInsertPoint(inst);
-        
+
         //Skip instrumentation for terminating instructions
         if (insertPoint->isTerminator()) {
-			continue;
-		}
+          continue;
+        }
 
         //======== Find insertion location for alloca QINING @SET 15th============
         Instruction* alloca_insertPoint = inst->getParent()->getParent()->begin()->getFirstNonPHIOrDbgOrLifetime();
@@ -151,14 +143,13 @@ struct InstTrace : public FunctionPass {
         else {
           ptrInst = new AllocaInst(Type::getInt32Ty(context), 0, "llfi_trace",
                                    alloca_insertPoint);
-          new StoreInst(ConstantInt::get(IntegerType::get(context, 32), 0), 
+          new StoreInst(ConstantInt::get(IntegerType::get(context, 32), 0),
                         ptrInst, insertPoint);
           bitSize = 32;
         }
         int byteSize = (int)ceil(bitSize / 8.0);
 
         //Insert instructions to allocate stack memory for opcode name
-        
         const char* opcodeNamePt = inst->getOpcodeName();
         const std::string str(inst->getOpcodeName());
         ArrayRef<uint8_t> opcode_name_array_ref((uint8_t*)opcodeNamePt, str.size() + 1);
@@ -173,7 +164,7 @@ struct InstTrace : public FunctionPass {
         //Create the decleration of the printInstTracer Function
         std::vector<Type*> parameterVector(5);
         parameterVector[0] = Type::getInt32Ty(context); //ID
-        parameterVector[1] = OPCodePtr->getType(); 
+        parameterVector[1] = OPCodePtr->getType();
         //======== opcode_str QINING @SET 15th============
         //parameterVector[1] = PointerType::get(Type::getInt8Ty(context), 0);     //Ptr to OpCode
         //================================================
@@ -229,12 +220,11 @@ struct InstTrace : public FunctionPass {
 
     return true; //Tell LLVM that the Function was modified
   }//RunOnFunction
-};//struct InstTrace
 
 //Register the pass with the llvm
 char InstTrace::ID = 0;
-static RegisterPass<InstTrace> X("insttracepass", 
-    "Add tracing function calls in program to trace instruction value at runtime", 
+static RegisterPass<InstTrace> X("insttracepass",
+    "Add tracing function calls in program to trace instruction value at runtime",
     false, false);
 
 }//namespace llfi

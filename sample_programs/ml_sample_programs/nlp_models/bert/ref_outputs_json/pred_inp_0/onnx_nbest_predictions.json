@@ -1,0 +1,124 @@
+{
+    "56be4db0acb8001400a502ec": [
+        {
+            "text": "Denver Broncos",
+            "probability": 0.8596979568275505,
+            "start_logit": 6.13153076171875,
+            "end_logit": 6.04250955581665
+        },
+        {
+            "text": "Denver Broncos defeated the National Football Conference (NFC) champion Carolina Panthers",
+            "probability": 0.12367088702095945,
+            "start_logit": 6.13153076171875,
+            "end_logit": 4.103552341461182
+        },
+        {
+            "text": "Carolina Panthers",
+            "probability": 0.011289256672658704,
+            "start_logit": 3.7377583980560303,
+            "end_logit": 4.103552341461182
+        },
+        {
+            "text": "Denver",
+            "probability": 0.0012933131913693302,
+            "start_logit": 6.13153076171875,
+            "end_logit": -0.45686426758766174
+        },
+        {
+            "text": "Broncos",
+            "probability": 0.0012481951137807942,
+            "start_logit": -0.403351753950119,
+            "end_logit": 6.04250955581665
+        },
+        {
+            "text": "The American Football Conference (AFC) champion Denver Broncos",
+            "probability": 0.0009830712843098975,
+            "start_logit": -0.6421239972114563,
+            "end_logit": 6.04250955581665
+        },
+        {
+            "text": "American Football Conference (AFC) champion Denver Broncos",
+            "probability": 0.0003725047873063654,
+            "start_logit": -1.612555742263794,
+            "end_logit": 6.04250955581665
+        },
+        {
+            "text": "Denver Broncos defeated the National Football Conference (NFC)",
+            "probability": 0.00027429550928661855,
+            "start_logit": 6.13153076171875,
+            "end_logit": -2.0076208114624023
+        },
+        {
+            "text": "AFC) champion Denver Broncos",
+            "probability": 0.00023871940356751415,
+            "start_logit": -2.0575168132781982,
+            "end_logit": 6.04250955581665
+        },
+        {
+            "text": "Broncos defeated the National Football Conference (NFC) champion Carolina Panthers",
+            "probability": 0.00017955771055468828,
+            "start_logit": -0.403351753950119,
+            "end_logit": 4.103552341461182
+        },
+        {
+            "text": "Denver Broncos defeated the National Football Conference (NFC) champion Carolina",
+            "probability": 0.0001526022469025961,
+            "start_logit": 6.13153076171875,
+            "end_logit": -2.593991994857788
+        },
+        {
+            "text": "The American Football Conference (AFC) champion Denver Broncos defeated the National Football Conference (NFC) champion Carolina Panthers",
+            "probability": 0.00014141861891132357,
+            "start_logit": -0.6421239972114563,
+            "end_logit": 4.103552341461182
+        },
+        {
+            "text": "Denver Broncos defeated the National Football Conference (NFC) champion Carolina Panthers 24\u201310 to earn their third Super Bowl title.",
+            "probability": 0.00010255584940095664,
+            "start_logit": 6.13153076171875,
+            "end_logit": -2.9914193153381348
+        },
+        {
+            "text": "Denver Broncos defeated the National Football Conference (NFC",
+            "probability": 8.099712500214648e-05,
+            "start_logit": 6.13153076171875,
+            "end_logit": -3.2274131774902344
+        },
+        {
+            "text": "Panthers",
+            "probability": 6.100664095055655e-05,
+            "start_logit": -1.4828656911849976,
+            "end_logit": 4.103552341461182
+        },
+        {
+            "text": "American Football Conference (AFC) champion Denver Broncos defeated the National Football Conference (NFC) champion Carolina Panthers",
+            "probability": 5.358625910399013e-05,
+            "start_logit": -1.612555742263794,
+            "end_logit": 4.103552341461182
+        },
+        {
+            "text": "Denver Broncos defeated the National Football Conference",
+            "probability": 4.922759227325457e-05,
+            "start_logit": 6.13153076171875,
+            "end_logit": -3.725372552871704
+        },
+        {
+            "text": "Denver Broncos defeated the National Football Conference (NFC) champion Carolina Panthers 24\u201310",
+            "probability": 4.2083427401996265e-05,
+            "start_logit": 6.13153076171875,
+            "end_logit": -3.8821728229522705
+        },
+        {
+            "text": "Denver Broncos defeated the National Football Conference (NFC) champion",
+            "probability": 3.442400619089115e-05,
+            "start_logit": 6.13153076171875,
+            "end_logit": -4.083072662353516
+        },
+        {
+            "text": "AFC) champion Denver Broncos defeated the National Football Conference (NFC) champion Carolina Panthers",
+            "probability": 3.434071251867696e-05,
+            "start_logit": -2.0575168132781982,
+            "end_logit": 4.103552341461182
+        }
+    ]
+}

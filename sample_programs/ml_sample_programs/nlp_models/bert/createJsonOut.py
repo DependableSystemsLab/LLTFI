@@ -73,9 +73,9 @@ def main(inpSample):
     with open(refOutFile, "r") as read_file:
           refOut = json.load(read_file)
 
-    refOutNbestFile = f"ref_outputs_json/pred_inp_{str(inpSample)}/onnx_nbest_predictions.json"
-    with open(refOutNbestFile, "r") as read_file:
-          refOutNbest = json.load(read_file)
+    #refOutNbestFile = f"ref_outputs_json/pred_inp_{str(inpSample)}/onnx_nbest_predictions.json"
+    #with open(refOutNbestFile, "r") as read_file:
+          #refOutNbest = json.load(read_file)
 
     # field 'unique_id' 
     if inpSample == 8:
@@ -106,11 +106,11 @@ def main(inpSample):
       if out != refOut:
           print(f"FI in run number {index} led to incorrect output")
 
-      with open(os.path.join(OUT, out_nbestpredictions_json), "r") as read_file:
-        outNbest = json.load(read_file)
-
-      if outNbest != refOutNbest:
-          print(f"FI in run number {index} led to incorrect output(N best)")
+      #with open(os.path.join(OUT, out_nbestpredictions_json), "r") as read_file:
+        #outNbest = json.load(read_file)
+         
+      #if outNbest != refOutNbest:
+          #print(f"FI in run number {index} led to incorrect output(N best)")
 
 
       # Save the text output

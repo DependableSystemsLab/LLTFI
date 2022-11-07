@@ -9,4 +9,4 @@
 ./createJsonOut.sh 0
 ```
 
-`bert_helper` contains files from [BERT](https://github.com/google-research/bert) repository.
+`bert_v2` contains files from [BERT](https://github.com/google-research/bert) repository.

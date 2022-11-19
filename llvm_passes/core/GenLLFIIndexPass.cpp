@@ -9,7 +9,7 @@ namespace llfi {
 
   // Main functionality of this pass
   bool runOnModuleMain(Module &M) {
-    Instruction *currinst;
+    Instruction *currinst = NULL;
 
     for (Module::iterator m_it = M.begin(); m_it != M.end(); ++m_it) {
       if (!m_it->isDeclaration()) {

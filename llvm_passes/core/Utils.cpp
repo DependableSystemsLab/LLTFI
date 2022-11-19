@@ -7,10 +7,13 @@ std::string demangleFuncName(std::string func) {
   std::string ret =  func;
   // Check for name mangling. C++ functions will always start with _Z
   // Demangled form is processed to remove type information.
-  if(func[0] == '_' && func[1] == 'Z') {
+  if(func.length() >= 2 && (func[0] == '_' && func[1] == 'Z')) {
     int stat;
     char *test = itaniumDemangle(func.c_str(), NULL, NULL, &stat);
-    std::string demangled = test;
+
+    // Check if the demangeled function name is null or not.
+    // Thanks Allesio for bringing this up.
+    std::string demangled = (test != nullptr) ? test : func;
     free(test);
 
     // Select up to the first ( to only insert function name

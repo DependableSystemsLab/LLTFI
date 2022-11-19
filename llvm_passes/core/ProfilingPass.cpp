@@ -118,10 +118,6 @@ void LegacyProfilingPass::addEndProfilingFuncCall(Module &M) {
       Instruction *term = *it;
       CallInst::Create(endprofilefunc, "", term);
     }
-  } else {
-    errs() << "ERROR: Function main does not exist, " <<
-        "which is required by LLFI\n";
-    exit(1);
   }
 }
 

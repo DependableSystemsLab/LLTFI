@@ -46,7 +46,7 @@ static struct {
   int fi_max_multiple; //JUNE 3rd
   long long fi_next_cycles[MULTIPLE_CYCLE_LENGTH];
   //==============================================================
-} config = {"bitflip", false, -1, -1, -1, -1, 1, -1, -1, {-1}}; 
+} config = {"bitflip", false, -1, -1, -1, -1, 1, -1, -1, {-1}};
 // -1 to tell the value is not specified in the config file
 
 // declaration of the real implementation of the fault injection function

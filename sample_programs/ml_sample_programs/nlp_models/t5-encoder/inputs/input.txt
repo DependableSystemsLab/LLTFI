@@ -1,0 +1,5 @@
+0: 'translate English to German: I was a victim of accidents')
+1: 'translate English to French: Today is a bright, sunny day')
+2: 'translate English to German: Vancouver is a beautiful city')
+3: 'translate English to French: She sings beautifully')
+4: 'translate English to German: The cake is very tasty')

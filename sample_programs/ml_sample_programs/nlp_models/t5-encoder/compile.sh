@@ -8,6 +8,14 @@ else
     wget https://github.com/onnx/models/raw/main/text/machine_comprehension/t5/model/t5-encoder-12.onnx
 fi
 
+DEC_FILE=FILE=t5-encoder-12.onnx
+if [ -f "$DEC_FILE" ]; then
+    echo "$DEC_FILE exists."
+else
+    echo "$DEC_FILE does not exist."
+    wget https://github.com/onnx/models/raw/main/text/machine_comprehension/t5/model/t5-decoder-with-lm-head-12.onnx
+fi
+
 printf "\n[Compile Script]: Convert TF model to LLVM IR\n"
 onnx-mlir --EmitLLVMIR  --instrument-onnx-ops="ALL" --InstrumentBeforeAndAfterOp t5-encoder-12.onnx
 mlir-translate -mlir-to-llvmir t5-encoder-12.onnx.mlir > model.mlir.ll

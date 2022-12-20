@@ -22,9 +22,7 @@ prompts.append('translate English to German: The cake is very tasty')
 
 
 class GenerativeT5_custom_encoder(torch.nn.Module):
-    """ This wrapper utility function implements a single beam search to generate efficiently text.
-        A lot of the credit goes to the huggingface team and its chief scientist Thomas Wolf whose implementation I based
-        myself off.
+    """ Code Ref: https://github.com/abelriboulot/onnxt5
         Args:
             encoder: huggingface encoder or onnx session for the encoder of T5. Can be obtained with the
                 create_t5_encoder_decoder utility function for pytorch, see examples below.

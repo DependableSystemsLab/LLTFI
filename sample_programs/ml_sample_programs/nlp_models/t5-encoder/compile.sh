@@ -8,7 +8,7 @@ else
     wget https://github.com/onnx/models/raw/main/text/machine_comprehension/t5/model/t5-encoder-12.onnx
 fi
 
-DEC_FILE=FILE=t5-encoder-12.onnx
+DEC_FILE=t5-decoder-with-lm-head-12.onnx
 if [ -f "$DEC_FILE" ]; then
     echo "$DEC_FILE exists."
 else

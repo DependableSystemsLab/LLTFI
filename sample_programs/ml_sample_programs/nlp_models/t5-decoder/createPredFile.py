@@ -112,10 +112,10 @@ def main(inpSample):
         with open(filename, "r") as read_file:
             resultJson = json.load(read_file)
     
-    for key, value in resultJson.items():
-        resforSingleInput.append(value['Data'])
-    listResArr.append(resforSingleInput)
-                        
+        for key, value in resultJson.items():
+            resforSingleInput.append(value['Data'])
+        listResArr.append(resforSingleInput)
+   
     list_output_np = []
     # Reshape the output and store as numpy array
     for elem in listResArr:
@@ -123,7 +123,7 @@ def main(inpSample):
             output_dec_np = output_dec_np.reshape(1,-1,32128)
             output_dec_tensor = torch.from_numpy(output_dec_np)
             list_output_np.append(output_dec_tensor) 
-            
+    
     # Get predictions
     final_out_list = []
     for elemIndex in range(len(list_output_np)):
@@ -132,7 +132,7 @@ def main(inpSample):
         tokens, logits = generative_t5(1, prev_dec_out[inpSample], temperature=0.)
         final_out = prev_out[inpSample] + " " + tokens
         final_out_list.append(f"Run #{elemIndex} Prediction:{final_out}\n")
-        
+    
     myfile = open('prediction/PredResult.txt', 'w')
     myfile.writelines(final_out_list)
     myfile.close()

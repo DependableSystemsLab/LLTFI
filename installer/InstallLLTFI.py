@@ -50,6 +50,17 @@ def ninjaParse(version):
 # Error Message to display if the appropriate ninja version is not found
 ninjaMsg = "\tNinja 1.10+ can be downloaded from:\n\thttps://ninja-build.org/"
 
+# Helper function to return the pip version installed in the system
+def pipPrintParse(version):
+  return version.split()[1]
+
+# Get the pip major version and minor version
+def pipParse(version):
+  return version.split()[1].split('.')[:2]
+
+# Error Message to display if the appropriate pip version is not found
+pipMsg = "\tPIP missing. Please install pip: apt-get install -y python3-pip"
+
 # Helper function to check if dependency versions present in the system are correct       
 def checkDep(name, execName, versionArg, printParseFunc, parseFunc, minVersion, msg):
   try:
@@ -93,7 +104,11 @@ def checkDependencies():
     hasAll = checkDep("Python 3", "python3", "--version", python3PrintParse, python3Parse, [3,8], python3Msg) and hasAll
     hasAll = checkDep("Cmake","cmake","--version", CmakePrintParse, CmakeParse, [3,15], cmakeMsg) and hasAll
     hasAll = checkDep("Ninja","ninja","--version", ninjaPrintParse, ninjaParse, [1,10], ninjaMsg) and hasAll
+    hasAll = checkDep("pip3","pip3","--version", pipPrintParse, pipParse, [20,0], pipMsg) and hasAll
     
+    if not hasAll:
+        return hasAll
+
     try:
         import pkg_resources
         versionInfo = pkg_resources.get_distribution("pyyaml").version

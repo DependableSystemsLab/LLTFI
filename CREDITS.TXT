@@ -52,3 +52,7 @@ D: Added support for multiple bit fault injections for hardware faults.
 
 N: Udit Kumar Agarwal
 D: Added support for FI in ML applications along with the ability to inject custom fault patterns according to the TPU and GPU HW models.
+
+N: Anushree Bannadabhavi
+D: Added support for FI in NLP applications along with post processing scripts to study the effect of FI in the generated text output
+D: Improved documentation and autoinstaller, Added docker support to enable ease of LLTFI installation

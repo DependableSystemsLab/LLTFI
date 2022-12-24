@@ -73,7 +73,7 @@ In this method, the developer has more control over the location of the LLVM bui
 		cd llvm-project/build
 		
 		cmake -G Ninja ../llvm \
-			-DLLVM_ENABLE_PROJECTS="clang;mlir;tools" \
+			-DLLVM_ENABLE_PROJECTS="clang;mlir" \
 			-DLLVM_BUILD_TESTS=ON \
 			-DLLVM_TARGETS_TO_BUILD="host" \
 			-DLLVM_ENABLE_ASSERTIONS=ON \

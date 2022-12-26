@@ -54,7 +54,7 @@ void FIRegSelector::getFIInstRegMap(
     
     // Insert an instruction for FI only if the regList is non-empty
     if (reglist->size() != 0) {
-      	dbgs() << "Inserting FI function for instruction " << *inst <<"\n";
+      	// dbgs() << "Inserting FI function for instruction " << *inst <<"\n";
 	instregmap->insert(
           std::pair<Instruction*, std::list< int >* >(inst, reglist));
     } else if (!err) {

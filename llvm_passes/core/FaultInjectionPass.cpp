@@ -96,7 +96,10 @@ void FaultInjectionPass::insertInjectionFuncCall(
       
       // The return type is not a valid return type, and should hence be ignored
       // This is to deal with types such as Metadata that are not valid return types
-      if (! FunctionType::isValidReturnType(returntype) ) continue;
+      // Or if the instruction is an intrinsic one (starts with 'llvm_', ignore it
+      if (! FunctionType::isValidReturnType(returntype) 
+	 || isa<IntrinsicInst>(fi_inst) ) 
+	      continue;
 
       // Get the context for the function
       LLVMContext &context = M.getContext();
@@ -119,7 +122,7 @@ void FaultInjectionPass::insertInjectionFuncCall(
 
       //LLVM 3.3 Upgrade
       ArrayRef<Type*> paramtypes_array_ref(paramtypes);
-      dbgs() << "Getting function of type : " << *returntype <<"\n";
+      // dbgs() << "Getting function of type : " << *returntype <<"\n";
       FunctionType* injectfunctype = FunctionType::get(returntype, paramtypes_array_ref, false);
 
       std::string funcname = getFIFuncNameforType(returntype);

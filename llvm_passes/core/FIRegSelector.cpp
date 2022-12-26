@@ -40,7 +40,7 @@ void FIRegSelector::getFIInstRegMap(
       if (isRegofInstFITarget(src, inst, pos)) {
         if (isRegofInstInjectable(src, inst)) {
           reglist->push_back(pos);
-          dbgs()<<"srcreg "<<" inst:"<<*inst<<" reg:"<<*inst->getOperand(pos)<<" pos:"<<pos<<"\n";
+          // dbgs()<<"srcreg "<<" inst:"<<*inst<<" reg:"<<*inst->getOperand(pos)<<" pos:"<<pos<<"\n";
         } else if (!err) {
           logFile << "LLFI cannot inject faults in source reg ";
           if (isa<BasicBlock>(src)) 

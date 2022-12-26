@@ -7,13 +7,9 @@ compileOption:
             - ret
 
     regSelMethod: regloc
-    regloc: dstreg
+    regloc: allsrcreg
 
-    includeInjectionTrace: 
-        - forward
-        - backward
-
-    tracingPropagation: True # trace dynamic instruction values.
+    tracingPropagation: False # trace dynamic instruction values.
 
     tracingPropagationOption:
         maxTrace: 250 # max number of instructions to trace during fault injection run
@@ -22,9 +18,6 @@ compileOption:
 
 runOption:
     - run:
-        numOfRuns: 3
+        numOfRuns: 5 
         fi_type: bitflip
 
-    - run:
-        numOfRuns: 3
-        fi_type: stuck_at_0

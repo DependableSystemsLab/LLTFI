@@ -7,7 +7,7 @@ compileOption:
             - ret
 
     regSelMethod: regloc
-    regloc: allsrcreg
+    regloc: allreg
 
     tracingPropagation: False # trace dynamic instruction values.
 

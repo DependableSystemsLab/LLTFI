@@ -29,7 +29,7 @@ enum FIRegSelMethod {
 };
 
 enum FIRegLoc {
-  dstreg, allsrcreg, srcreg1, srcreg2, srcreg3, srcreg4
+  dstreg, allreg, allsrcreg, srcreg1, srcreg2, srcreg3, srcreg4
 };
 
 class Controller {

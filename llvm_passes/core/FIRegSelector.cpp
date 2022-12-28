@@ -25,9 +25,10 @@ void FIRegSelector::getFIInstRegMap(
     
     // destination register
     if (isRegofInstFITarget(inst, inst)) {
-      if (isRegofInstInjectable(inst, inst))
+      if (isRegofInstInjectable(inst, inst)) {
+        // dbgs() << "dstreg " << " inst: "<< *inst<<"\n";  
         reglist->push_back(DST_REG_POS);
-      else if (!err) {
+      } else if (!err) {
         logFile << "LLFI cannot inject faults in destination reg of " << *inst
               << "\n";
       }
@@ -54,7 +55,7 @@ void FIRegSelector::getFIInstRegMap(
     
     // Insert an instruction for FI only if the regList is non-empty
     if (reglist->size() != 0) {
-      	// dbgs() << "Inserting FI function for instruction " << *inst <<"\n";
+      	// dbgs() << "Inserting FI function for instruction " << *inst << " " << reglist->size() << "\n";
 	instregmap->insert(
           std::pair<Instruction*, std::list< int >* >(inst, reglist));
     } else if (!err) {

@@ -1,0 +1,21 @@
+timeOut: 10
+
+compileOption:
+    instSelMethod:
+      - insttype:
+          include:
+            - load
+            - add
+      - funcname:
+          include: 
+            - all
+
+    regSelMethod: regloc
+    regloc: allreg
+
+runOption:
+    - run:
+        numOfRuns: 5
+        fi_type: bitflip
+        verbose: True
+

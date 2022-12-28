@@ -14,6 +14,7 @@ Add the following environment variables.
 export ONNX_MLIR_SRC=<path to onnx-mlir source>
 export ONNX_MLIR_BUILD=<path to where onnx-mlir has been built>
 export LLFI_BUILD_ROOT=<path to where LLFI has been built>
+export LLVM_DST_ROOT=<path to where LLVM has been built>
 ```
 
 ## Steps to execute an application: 

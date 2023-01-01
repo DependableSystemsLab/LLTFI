@@ -73,7 +73,7 @@ static cl::opt<FIRegSelMethod> firegselmethod(
 static cl::opt<FIRegLoc> fireglocation(
     cl::desc("Choose fault injection register location:"), cl::init(dstreg),
     cl::values(clEnumVal(dstreg, "Inject into destination register"),
-               clEnumVal(allreg, "Injection randomly into either destination register or one of the source registers"),
+               clEnumVal(allreg, "Inject randomly into either destination register or one of the source registers"),
 	       clEnumVal(allsrcreg, "Inject randomly into one of the source registers"),
                clEnumVal(srcreg1, "Inject into 1st source register"),
                clEnumVal(srcreg2, "Inject into 2nd source register"),

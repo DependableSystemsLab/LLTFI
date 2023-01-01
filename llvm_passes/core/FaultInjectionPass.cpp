@@ -97,8 +97,8 @@ void FaultInjectionPass::insertInjectionFuncCall(
       // The return type is not a valid return type, and should hence be ignored
       // This is to deal with types such as Metadata that are not valid return types
       // Or if the instruction is an intrinsic one (starts with 'llvm_', ignore it
-      if (! FunctionType::isValidReturnType(returntype) 
-	 || isa<IntrinsicInst>(fi_inst) ) 
+      if ( !FunctionType::isValidReturnType(returntype) ||
+		 isa<IntrinsicInst>(fi_inst) ) 
 	      continue;
 
       // Get the context for the function

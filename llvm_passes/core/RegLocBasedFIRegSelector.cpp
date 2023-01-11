@@ -11,6 +11,9 @@ bool RegLocBasedFIRegSelector::isRegofInstFITarget(Value *reg,
       if(inst->getOperand(inst->getNumOperands()-1) == reg && isa<Constant>(reg)) return false;
     }
     return reg != inst;
+  } else if (firegloc == allreg) {
+       // dbgs() << "Choosing all regs" << "\n";
+       return true;
   } else {
     unsigned srcindex = (unsigned) (firegloc - srcreg1);
     unsigned totalsrcregnum = inst->getNumOperands();
@@ -27,8 +30,11 @@ bool RegLocBasedFIRegSelector::isRegofInstFITarget(Value *reg,
 bool RegLocBasedFIRegSelector::isRegofInstFITarget(Value *reg, 
                                                           Instruction *inst,
                                                           int pos) {
-  if(firegloc == allsrcreg || firegloc == dstreg) return isRegofInstFITarget(reg, inst);
-  else return isRegofInstFITarget(reg, inst) && (firegloc - srcreg1) == pos;
+  bool result =  isRegofInstFITarget(reg, inst);
+  // Only check position if it's not allsrcreg, dstreg or all reg
+  if (! (firegloc == allsrcreg || firegloc == dstreg || firegloc == allreg) ) 
+	  result = result && (firegloc - srcreg1) == pos;
+  return result;
 }
 
 }

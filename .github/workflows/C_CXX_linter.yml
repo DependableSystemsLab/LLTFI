@@ -1,0 +1,46 @@
+- name: C/C++ Linter
+  # You may pin to the exact commit or the version.
+  # uses: cpp-linter/cpp-linter-action@51c398ec880d48ba29b2cfb8550dcd0d188e3cfa
+  uses: cpp-linter/cpp-linter-action@v2.4.0
+  with:
+    # Set this option to false to disable the use of thread comments as feedback. Defaults to false.
+    thread-comments: # optional
+    # Set this option to false to disable the use of file annotations as feedback. Defaults to true.
+    file-annotations: # optional, default is true
+    # The style rules to use (defaults to 'llvm'). Set this to 'file' to have clang-format use the closest relative .clang-format file.
+
+    style: # optional, default is llvm
+    # The file extensions to run the action against. This comma-separated string defaults to 'c,h,C,H,cpp,hpp,cc,hh,c++,h++,cxx,hxx'.
+
+    extensions: # optional, default is c,h,C,H,cpp,hpp,cc,hh,c++,h++,cxx,hxx
+    # A string of regex-like patterns specifying what checks clang-tidy will use. This defaults to 'boost-*,bugprone-*,performance-*,readability-*,portability-*,modernize-*,clang-analyzer-*,cppcoreguidelines-*'. See also clang-tidy docs for more info.
+
+    tidy-checks: # optional, default is boost-*,bugprone-*,performance-*,readability-*,portability-*,modernize-*,clang-analyzer-*,cppcoreguidelines-*
+    # The relative path to the repository root directory. The default value '.' is relative to the runner's GITHUB_WORKSPACE environment variable.
+
+    repo-root: # optional, default is .
+    # The desired version of the clang tools to use. Accepted options are strings which can be 14, 13, 12, 11, 10, 9, or 8. Defaults to 12.
+    version: # optional, default is 12
+    # A hidden option to control the action's log verbosity. This is the `logging` level (defaults to DEBUG).
+    verbosity: # optional, default is 10
+    # Set this option to 'true' to only analyze changes in the event's diff. Defaults to 'false'.
+    lines-changed-only: # optional
+    # Set this option to 'false' to analyze any source files in the repo. Defaults to 'true'.
+    files-changed-only: # optional, default is true
+    # Set this option with string of path(s) to ignore.
+- In the case of multiple paths, you can use a pipe character ('|')
+  to separate the multiple paths. Multiple lines are forbidden as input to this option.
+- This can also have files, but the file's relative path has to be specified
+  as well.
+- There is no need to use './' for each entry; a blank string ('') represents
+  the repo-root path (specified by the `repo-root` input option).
+- Path(s) containing a space should be inside single quotes. - Submodules are automatically ignored. - Prefix a path with a bang (`!`) to make it explicitly not ignored - order of
+  multiple paths does take precedence. The `!` prefix can be applied to
+  submodules if desired.
+- Glob patterns are not supported here. All asterisk characters ('*') are literal.
+
+    ignore: # optional, default is .github
+    # The directory containing compile_commands.json file.
+    database: # optional, default is 
+    # A string of extra arguments passed to clang-tidy for use as compiler arguments. Multiple arguments are separated by spaces so the argument name and value should use an '=' sign instead of a space.
+    extra-args: # optional, default is 

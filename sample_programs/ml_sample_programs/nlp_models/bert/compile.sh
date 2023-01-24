@@ -1,9 +1,9 @@
-printf "[Compile Script]: Getting the ONNX model\n"
+printf "\n[Compile Script]: Getting the ONNX model\n"
 FILE=bertsquad-12.onnx
 if [ -f "$FILE" ]; then
-    echo "$FILE exists."
+    echo "\n$FILE exists. Skip downloading."
 else
-    echo "$FILE does not exist."
+    echo "\n$FILE does not exist. Downloading the model..."
     wget https://github.com/onnx/models/raw/main/text/machine_comprehension/bert-squad/model/bertsquad-12.onnx
 fi
 
@@ -12,7 +12,7 @@ onnx-mlir --EmitLLVMIR  --instrument-onnx-ops="ALL" --InstrumentBeforeAndAfterOp
 mlir-translate -mlir-to-llvmir bertsquad-12.onnx.mlir > model.mlir.ll
 
 printf "\n[Compile Script]: Compile main driver program and link to TF model in LLVM IR\n"
-clang++ -DONNX_ML=1 input.c -o main.ll -O0 -S -emit-llvm -lonnx_proto -lprotobuf -I$ONNX_MLIR_SRC/include 
+clang++ -DONNX_ML=1 input.c -o main.ll -O0 -S -emit-llvm -lonnx_proto -lprotobuf -I$ONNX_MLIR_SRC/include
 llvm-link -o model.ll -S main.ll model.mlir.ll
 
 printf "\n[Compile Script]: Generate model.exe \n"

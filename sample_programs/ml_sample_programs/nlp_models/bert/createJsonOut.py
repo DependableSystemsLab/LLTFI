@@ -63,7 +63,6 @@ def main(inpSample):
               resforSingleInput.append(value['Data'])
           listResArr.append(resforSingleInput)
 
-
     RawResult = collections.namedtuple("RawResult", ["unique_id", "start_logits", "end_logits"])
     pathOutput = os.path.join(OUT, 'onnx-pred')
     pathnBestOutput = os.path.join(OUT, 'onnx-nbest-pred')
@@ -77,7 +76,7 @@ def main(inpSample):
     #with open(refOutNbestFile, "r") as read_file:
           #refOutNbest = json.load(read_file)
 
-    # field 'unique_id' 
+    # field 'unique_id'
     if inpSample == 8:
         uniqueId = 1000000000 + inpSample + 2
     elif inpSample == 9:
@@ -87,14 +86,14 @@ def main(inpSample):
 
     # Get output from 'listResArr' array and convert to text
     for index in range(len(listResArr)):
-      all_results = [] 
+      all_results = []
       all_results.append(RawResult(unique_id=uniqueId, start_logits=listResArr[index][1], end_logits=listResArr[index][0]))
 
       out_predictions_json = f"onnx_predictions{index}.json"
       out_nbestpredictions_json = f"onnx_nbest_predictions{index}.json"
       out_null_odds_json = f"onnx_null_odds{index}.json"
       run_squad.write_predictions(eval_examples[:1], eval_features[:1], all_results,
-                                  N_BEST_SIZE, MAX_ANSWER_LENGTH, True, 
+                                  N_BEST_SIZE, MAX_ANSWER_LENGTH, True,
                                   os.path.join(OUT, out_predictions_json),
                                   os.path.join(OUT, out_nbestpredictions_json), 
                                   os.path.join(OUT, out_null_odds_json))
@@ -105,16 +104,18 @@ def main(inpSample):
 
       if out != refOut:
           print(f"FI in run number {index} led to incorrect output")
+      else:
+          print(f"FI in run number {index} led to correct output")
 
       #with open(os.path.join(OUT, out_nbestpredictions_json), "r") as read_file:
         #outNbest = json.load(read_file)
-         
+
       #if outNbest != refOutNbest:
           #print(f"FI in run number {index} led to incorrect output(N best)")
 
 
       # Save the text output
-      if not os.path.isdir(pathOutput): 
+      if not os.path.isdir(pathOutput):
         os.mkdir(pathOutput)
       if not os.path.isdir(pathnBestOutput):
         os.mkdir(pathnBestOutput)
@@ -124,8 +125,6 @@ def main(inpSample):
 
       shutil.move(os.path.join(OUT, out_predictions_json), os.path.join(ONNX_PRED, out_predictions_json))
       shutil.move(os.path.join(OUT, out_nbestpredictions_json), os.path.join(ONNX_NBEST_PRED, out_nbestpredictions_json))
-
-    
 
 if __name__ == "__main__":
     inpSample = int(sys.argv[1])

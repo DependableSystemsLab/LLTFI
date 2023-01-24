@@ -1,5 +1,5 @@
-## Steps to generate text output: 
-1. After converting the ONNX model to LLVM IR, run LLTFI on the required input. Below is the command to execute the model on 'input 0'. 
+## Steps to generate text output:
+1. After converting the ONNX model to LLVM IR, run LLTFI on the required input. Below is the command to execute the model on 'input 0'.
 ```
 ./runllfiSingleInp.sh 0
 ```

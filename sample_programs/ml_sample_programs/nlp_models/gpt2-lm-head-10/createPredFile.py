@@ -4,7 +4,7 @@ import os
 import json
 import sys
 from transformers import GPT2Tokenizer
-import tensorflow as tf 
+import tensorflow as tf
 
 ROOT = os.getcwd()
 LLFI_OUT = os.path.join(ROOT, 'llfi')
@@ -36,18 +36,17 @@ def main(inpSample):
             for key, value in resultJson.items():
                 resforSingleInput.append(value['Data'])
             listResArr.append(resforSingleInput)
-                    
+
     list_output_np = []
     # Reshape the output and store as numpy array
     for elem in listResArr:
         output_np = np.asarray(elem[0])
         output_np = output_np.reshape(1,1,-1,50257) # Shape (1,1,len,50257)
-        list_output_np.append(output_np) 
-      
+        list_output_np.append(output_np)
+
     tokens = np.array(tokenizer.encode(input[inpSample]))
 
     # Script to convert numpy output to text
-
     listPreds = []
     for elemIndex in range(len(list_output_np)):
         input_to_model = tf.convert_to_tensor(
@@ -59,13 +58,17 @@ def main(inpSample):
         logits = logits[:, -1, :]
         logits = tf.convert_to_tensor(logits)
         log_probs = tf.nn.softmax(logits,axis=-1)
-        _, prev = tf.math.top_k(log_probs, k=1)
+        prob, prev = tf.math.top_k(log_probs, k=10)
         output = tf.concat((output, prev), axis=1)
 
         final_output = output[:, len(tokens):].numpy().tolist()
-        text = tokenizer.decode(final_output[0])
-        listPreds.append(f"Run #{elemIndex} Prediction:{text}\n")
-           
+
+        listPreds.append(f"Run #{elemIndex} Predictions and Probability:\n")
+        for opNum in range(0, len(final_output[0])):
+            text = tokenizer.decode(final_output[0][opNum])
+            opProb = prob.numpy()[0][opNum]
+            listPreds.append(f"{text} : {opProb}\n")
+
         myfile = open('prediction/PredResult.txt', 'w')
         myfile.writelines(listPreds)
         myfile.close()

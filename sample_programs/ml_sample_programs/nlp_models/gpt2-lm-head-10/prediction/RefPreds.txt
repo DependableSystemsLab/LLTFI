@@ -1,0 +1,5 @@
+Input sample #0 Prediction: black
+Input sample #1 Prediction: sunny
+Input sample #2 Prediction: hospital
+Input sample #3 Prediction: friends
+Input sample #4 Prediction: sweet

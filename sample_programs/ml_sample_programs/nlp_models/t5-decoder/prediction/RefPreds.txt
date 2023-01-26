@@ -1,0 +1,2 @@
+Input sample #0 Prediction: Ich war
+Input sample #1 Prediction: Heute ist ein

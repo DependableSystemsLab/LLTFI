@@ -96,32 +96,32 @@ def main(inpSample):
     with torch.no_grad():
         generated = torch.tensor(tokenizer(prompts[inpSample])['input_ids'])[:max_context_length - 1].unsqueeze(0)
         encoder_hidden_state = encoder_sess.run(None, {"input_ids": generated.cpu().numpy()})[0]
-    
-    # Convert lltfi output to text        
+
+    # Convert lltfi output to text
     listResArr = []
     list_of_files = sorted( filter( lambda x: os.path.isfile(os.path.join(PROG_OUT, x)),
                                 os.listdir(PROG_OUT) ) )
-    
+
     for i in range(len(list_of_files)):
             list_of_files[i] = os.path.join(PROG_OUT, list_of_files[i])
-    
+
     for filename in list_of_files:
         resforSingleInput = []
         with open(filename, "r") as read_file:
             resultJson = json.load(read_file)
-    
+
         for key, value in resultJson.items():
             resforSingleInput.append(value['Data'])
         listResArr.append(resforSingleInput)
-   
+
     list_output_np = []
     # Reshape the output and store as numpy array
     for elem in listResArr:
             output_dec_np = np.asarray(elem[0], dtype=np.float32)
             output_dec_np = output_dec_np.reshape(1,-1,32128)
             output_dec_tensor = torch.from_numpy(output_dec_np)
-            list_output_np.append(output_dec_tensor) 
-    
+            list_output_np.append(output_dec_tensor)
+
     # Get predictions
     final_out_list = []
     for elemIndex in range(len(list_output_np)):
@@ -130,12 +130,12 @@ def main(inpSample):
         tokens, logits = generative_t5(1, prev_dec_out[inpSample], temperature=0.)
         final_out = prev_out[inpSample] + " " + tokens
         final_out_list.append(f"Run #{elemIndex} Prediction:{final_out}\n")
-    
+
     myfile = open('prediction/PredResult.txt', 'w')
     myfile.writelines(final_out_list)
     myfile.close()
-    
+
 if __name__ == "__main__":
     inpSample = int(sys.argv[1])
     main(inpSample)
-        
+

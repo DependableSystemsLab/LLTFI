@@ -1,3 +1,5 @@
+#!/bin/bash
+
 rm -rf llfi*
 inputSample=$1
 

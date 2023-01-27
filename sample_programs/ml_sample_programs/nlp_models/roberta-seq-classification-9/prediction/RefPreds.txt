@@ -1,0 +1,10 @@
+Input sample #0 Prediction: Positive
+Input sample #1 Prediction: Negative
+Input sample #2 Prediction: Positive
+Input sample #3 Prediction: Negative
+Input sample #4 Prediction: Positive
+Input sample #5 Prediction: Positive
+Input sample #6 Prediction: Positive
+Input sample #7 Prediction: Negative
+Input sample #8 Prediction: Negative
+Input sample #9 Prediction: Negative

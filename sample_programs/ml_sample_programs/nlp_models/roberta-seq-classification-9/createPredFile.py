@@ -22,7 +22,7 @@ def main():
 
 			for key, value in resultJson.items():
 				listResArr.append(value['Data'])
-				
+
 	listPreds = []
 	# Get Sentiment (positive/negative) prediction
 	for resIndex in range(len(listResArr)):
@@ -32,7 +32,7 @@ def main():
 			listPreds.append(f"Run #{resIndex} Prediction: Negative\n")
 		elif(pred == 1):
 			listPreds.append(f"Run #{resIndex} Prediction: Positive\n")
-			
+
 	myfile = open('prediction/PredResult.txt', 'w')
 	myfile.writelines(listPreds)
 	myfile.close()

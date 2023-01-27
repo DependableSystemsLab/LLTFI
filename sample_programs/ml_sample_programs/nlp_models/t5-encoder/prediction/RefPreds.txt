@@ -1,0 +1,5 @@
+Input sample #0 Prediction: Ich war Opfer von Unfällen
+Input sample #1 Prediction: Aujourd'hui, c'est une journée claire et ensoleillée
+Input sample #2 Prediction: Vancouver ist eine schöne Stadt
+Input sample #3 Prediction: Elle chante merveilleusement
+Input sample #4 Prediction: Der Kuchen ist sehr schmackhaft

@@ -21,7 +21,7 @@ onnx-mlir --EmitLLVMIR  --instrument-onnx-ops="ALL" --InstrumentBeforeAndAfterOp
 mlir-translate -mlir-to-llvmir t5-encoder-12.onnx.mlir > model.mlir.ll
 
 printf "\n[Compile Script]: Compile main driver program and link to TF model in LLVM IR\n"
-clang++ -DONNX_ML=1 input.c -o main.ll -O0 -S -emit-llvm -lonnx_proto -lprotobuf -I$ONNX_MLIR_SRC/include 
+clang++ -DONNX_ML=1 input.c -o main.ll -O0 -S -emit-llvm -lonnx_proto -lprotobuf -I$ONNX_MLIR_SRC/include
 llvm-link -o model.ll -S main.ll model.mlir.ll
 
 printf "\n[Compile Script]: Generate model.exe \n"

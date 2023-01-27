@@ -97,13 +97,13 @@ def main():
         for key, value in resultJson.items():
             resforSingleInput.append(value['Data'])
         listResArr.append(resforSingleInput)
-                    
+
     list_output_np = []
     # Reshape the output and store as numpy array
     for elem in listResArr:
         output_np = np.asarray(elem[0], dtype=np.float32)
         output_np = output_np.reshape(1,-1,768)
-        list_output_np.append(output_np) 
+        list_output_np.append(output_np)
 
     # Script to convert numpy output to text
     listPreds = []

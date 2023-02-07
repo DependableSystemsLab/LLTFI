@@ -149,6 +149,7 @@ extern "C" {
     return 0;
   }
 
+  // Function to actually inject the fault.
   void injectFunc(long llfi_index, unsigned size, char *buf,
                   unsigned my_reg_index, unsigned reg_pos, char* opcode_str) {
 

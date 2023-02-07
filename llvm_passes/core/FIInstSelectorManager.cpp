@@ -7,12 +7,10 @@ namespace llfi {
 void FIInstSelectorManager::getFIInsts(Module &M,
                                          std::set<Instruction*> *fiinsts) {
 
-  std::cout<<"Here\n Selector size is: "<<selectors.size()<<"\n";
   // Create a set for each selector and print compiletime info
   std::vector<std::set<Instruction*>*> allInsts;
   for(it = selectors.begin(); it != selectors.end(); ++it) {
     allInsts.push_back(new std::set<Instruction*>);
-    std::cout<<"Here2\n";
      std::map<std::string, std::string> info;
      (*it)->getCompileTimeInfo(info);
      printCompileTimeInfo(info);

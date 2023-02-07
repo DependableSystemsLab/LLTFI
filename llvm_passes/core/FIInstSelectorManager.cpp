@@ -6,6 +6,7 @@ namespace llfi {
 
 void FIInstSelectorManager::getFIInsts(Module &M,
                                          std::set<Instruction*> *fiinsts) {
+
   // Create a set for each selector and print compiletime info
   std::vector<std::set<Instruction*>*> allInsts;
   for(it = selectors.begin(); it != selectors.end(); ++it) {

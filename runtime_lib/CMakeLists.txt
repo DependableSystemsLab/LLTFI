@@ -6,7 +6,6 @@ endif()
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
-
 project(llfi-rt)
 
 add_library(llfi-rt SHARED
@@ -16,9 +15,12 @@ add_library(llfi-rt SHARED
     InstTraceLib.c
     ProfilingLib.c
     Utils.c
-    _FIDLSoftwareFaultInjectors.cpp #_SoftwareFaultInjector.cpp is included in this file
+    #_FIDLSoftwareFaultInjectors.cpp
+    #_SoftwareFaultInjector.cpp is included in this file
 )
 
+# For ML backends. This static library is intended to be linked with the ML
+# application, to provide fast FI.
 add_library(ml-lltfi-rt
     MLFaultInjectionLib.cpp
 )

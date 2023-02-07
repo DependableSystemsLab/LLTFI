@@ -15,15 +15,8 @@ namespace llfi {
   // New PM Registration
   //-----------------------------------------------------------------------------
   llvm::PassPluginLibraryInfo getLLFIPassPluginInfo() {
-    return {LLVM_PLUGIN_API_VERSION, "llfi", LLVM_VERSION_STRING,
+    return {LLVM_PLUGIN_API_VERSION, "llfi_passes", LLVM_VERSION_STRING,
             [](PassBuilder &PB) {
-
-              PB.registerPipelineStartEPCallback([]
-                  (ModulePassManager &MPM, OptimizationLevel Level) {
-                    MPM.addPass(llfi::GenLLFIIndexPass());
-                    MPM.addPass(llfi::ProfilingPass());
-              });
-
 
               // For GenLLFIIndexPass
               PB.registerPipelineParsingCallback(

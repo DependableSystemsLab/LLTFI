@@ -15,6 +15,7 @@ List of options:
 --IRonly:                   Only generate the instrumented IR files, and you will do the linking and create the executables manually
 --verbose:                  Show verbose information
 --help(-h):                 Show help information
+--use-ml-specific-rt        Use ML-Specific FI runtime, that statically-links with the ML application to speedup the FI.
 
 Prerequisite:
 You need to have 'input.yaml' under the same directory as <source IR file>, which contains appropriate options for LLFI
@@ -64,6 +65,7 @@ options = {
   "verbose": False,
   "IRonly": False,
   "genDotGraph": False,
+  "useMLSpecificRT": False,
 }
 
 
@@ -104,6 +106,8 @@ def parseArgs(args):
         options["verbose"] = True
       elif arg == "--IRonly":
         options["IRonly"] = True
+      elif arg == "--use-ml-specific-rt":
+        options["useMLSpecificRT"] = True
       elif arg == "--help" or arg == "-h":
         usage()
       else:
@@ -137,7 +141,7 @@ def parseArgs(args):
       except:
         usage("Unable to create a directory named " + options["dir"] +\
               " under " + srcpath)
-    
+
 
 def checkInputYaml():
   #Check for input.yaml's presence
@@ -149,7 +153,7 @@ def checkInputYaml():
     print("ERROR: No input.yaml file in the %s directory." % srcpath)
     os.rmdir(options["dir"])
     exit(1)
-  
+
   #Check for input.yaml's correct formmating
   try:
     doc = yaml.load(f)
@@ -159,7 +163,7 @@ def checkInputYaml():
     print("Error: input.yaml is not formatted in proper YAML (reminder: use spaces, not tabs)")
     os.rmdir(options["dir"])
     exit(1)
-  
+
   #Check for compileOption in input.yaml
   try:
     cOpt = doc["compileOption"]
@@ -169,7 +173,7 @@ def checkInputYaml():
     exit(1)
 
 
-    
+
 ################################################################################
 def execCompilation(execlist):
   verbosePrint(' '.join(execlist), options["verbose"])
@@ -180,9 +184,9 @@ def execCompilation(execlist):
 ################################################################################
 def readCompileOption():
   global compileOptions
-  
+
   ###Instruction selection method
-  if "instSelMethod" not in cOpt:  
+  if "instSelMethod" not in cOpt:
     print(("\n\nERROR: Please include an 'instSelMethod' key value pair under compileOption in input.yaml.\n"))
     exit(1)
   else:
@@ -200,10 +204,10 @@ def readCompileOption():
     #Select by instruction type
     if methodName == "insttype" or methodName == "funcname":
         compileOptions.append("-%s" % (str(methodName)))
-    #Select by custom instruction 
+    #Select by custom instruction
     elif methodName == "customInstselector":
       compileOptions = ['-custominstselector']
-      
+
     # Ensure that 'include' is specified at least
     # TODO: This isn't a very extendible way of doing this.
     if "include" not in method[methodName]:
@@ -238,7 +242,7 @@ def readCompileOption():
         compileOptions.extend(opts)
 
   ###Register selection method
-  if "regSelMethod" not in cOpt:  
+  if "regSelMethod" not in cOpt:
     print(("\n\nERROR: Please include an 'regSelMethod' key value pair under compileOption in input.yaml.\n"))
     exit(1)
   else:
@@ -254,7 +258,7 @@ def readCompileOption():
     #Select by custom register
     elif cOpt["regSelMethod"]  == 'customregselector':
       compileOptions.append('-customregselector')
-      if "customRegSelector" not in cOpt:  
+      if "customRegSelector" not in cOpt:
         print(("\n\nERROR: An 'customRegSelector' key value pair must be present for the customregselector method in input.yaml.\n"))
         exit(1)
       else:
@@ -276,7 +280,7 @@ def readCompileOption():
       print(("\n\nERROR: Unknown Register selection method in input.yaml.\n"))
       exit(1)
 
-  ###Injection Trace selection 
+  ###Injection Trace selection
   if "includeInjectionTrace" in cOpt:
     for trace in cOpt["includeInjectionTrace"]:
       if trace == 'forward':
@@ -380,7 +384,10 @@ def compileProg():
     liblist.append(llfilinklib)
 
     if retcode == 0:
-      execlist = [llvmgcc, '-o', proffile + '.exe', proffile + '.o', '-L'+llfilinklib , '-lllfi-rt']
+      execlist = [llvmgcc, '-o', proffile + '.exe', proffile + '.o', '-L'+llfilinklib]
+
+      # Check whether we should use static or dynamic FI RT
+      execlist.extend(["-lllfi-rt"])
       execlist.extend(liblist)
       retcode = execCompilation(execlist)
       if retcode != 0:
@@ -388,7 +395,14 @@ def compileProg():
         execlist[0] = llvmgxx
         retcode = execCompilation(execlist)
     if retcode == 0:
-      execlist = [llvmgcc, '-o', fifile + '.exe', fifile + '.o', '-L'+llfilinklib , '-lllfi-rt']
+      execlist = [llvmgcc, '-o', fifile + '.exe', fifile + '.o', '-L'+llfilinklib]
+
+      # Check whether we should use static or dynamic FI RT
+      if options['useMLSpecificRT']:
+          execlist.extend(["-lml-lltfi-rt"])
+      else:
+          execlist.extend(["-lllfi-rt"])
+
       execlist.extend(liblist)
       retcode = execCompilation(execlist)
       if retcode != 0:

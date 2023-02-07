@@ -46,7 +46,7 @@ std::vector<std::string> getCommaSeperateVals(std::string inp) {
     if ((pos = s.find(delimiter)) == std::string::npos) {
         retval.push_back(s);
     }
-    
+
     return retval;
 }
 
@@ -170,7 +170,7 @@ private:
 
             // if this operator is already in the map
             if (map.find(code) != map.end()) {
-                
+
                 Operator *temp = new Operator(name, number);
                 map[code].push_back(temp);
             }
@@ -205,7 +205,7 @@ private:
 
     virtual bool isInstFITarget(Instruction *inst) {
         if (inst->getParent()->getParent()->getName() == "main_graph") {
-                
+
             if (map.size() == 0 && !injectInAll){
                 initializeLayerNameAndNumber(layerNo[0], layerName[0]);
             }
@@ -216,24 +216,24 @@ private:
                 // If this is OMInstrument function?
                 if ((callinst->getCalledFunction())->getName() ==
                     "OMInstrumentPoint") {
-                    
-                    Value* arg1 = callinst->getArgOperand(0); 
+
+                    Value* arg1 = callinst->getArgOperand(0);
                     Value* arg2 = callinst->getArgOperand(1);
 
-                    ConstantInt* ci1 = dyn_cast<ConstantInt>(arg1); 
+                    ConstantInt* ci1 = dyn_cast<ConstantInt>(arg1);
                     ConstantInt* ci2 = dyn_cast<ConstantInt>(arg2);
 
                     int64_t argValue1 = ci1->getSExtValue();
                     int64_t argValue2 = ci2->getSExtValue();
 
                     if (argValue2 == 1 && shouldInjectFault(argValue1)) {
-                        
+
                         // Inject fault!
                         isCustomTensorOperator = true;
                     }
-                    
+
                     if (argValue2 == 2) {
-                        
+
                         // Set this to false after the operator ends.
                         isCustomTensorOperator = false;
                     }
@@ -252,7 +252,7 @@ private:
                 addMetadata(inst, "Injected fault");
                 return true;
             }
-            
+
             return false; // Inject Fault in all instructions
         }
         return false;

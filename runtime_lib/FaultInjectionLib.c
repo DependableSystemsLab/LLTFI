@@ -1,3 +1,6 @@
+// Copyright (C) 2023 Intel Corporation (HDFIT components)
+// SPDX-License-Identifier: Apache-2.0
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,6 +13,21 @@
 /*BEHROOZ: We assume that the maximum number of fault injection locations is 100 when
 it comes to multiple bit-flip model.*/
 #define MULTIPLE_CYCLE_LENGTH 100
+
+// HDFIT: Defines required for env variable-based initialization
+#define BLASFIOPSCNT_ENV_VAR "BLASFI_OPSCNT"
+
+#define BLASFIMODE_ENV_VAR "BLASFI_MODE"
+#define BLASFIMODE_NONE_CONST "NONE"
+#define BLASFIMODE_TRANSIENT_CONST "TRANSIENT"
+
+#define BLASFICORRUPTION_ENV_VAR "BLASFI_CORRUPTION"
+#define BLASFICORRUPTION_NONE_CONST "NONE"
+#define BLASFICORRUPTION_STUCKHIGH_CONST "STUCKHIGH"
+#define BLASFICORRUPTION_STUCKLOW_CONST "STUCKLOW"
+#define BLASFICORRUPTION_FLIP_CONST "FLIP"
+//--------------------------------------------------------------
+
 /*BEHROOZ: This variable keeps track of the number of next_cycles*/
 static int fi_next_cycles_count = 0;
 //==============================================================
@@ -21,8 +39,10 @@ static FILE *injectedfaultsFile;
 
 static int fiFlag = 1;	// Should we turn on fault injections ?
 
+//TODO: this is all not thread-safe, fix if relevant
 static int opcodecyclearray[OPCODE_CYCLE_ARRAY_LEN];
 static bool is_fault_injected_in_curr_dyn_inst = false;
+static bool reg_selected = false;
 
 static struct {
   char fi_type[OPTION_LENGTH];
@@ -70,157 +90,146 @@ bool _getDecision(double probability) {
   return (rand() / (RAND_MAX * 1.0)) <= probability;
 }
 
-void _parseLLFIConfigFile() {
-  char ficonfigfilename[80];
-  strncpy(ficonfigfilename, "llfi.config.runtime.txt", 80);
-  FILE *ficonfigFile;
-  ficonfigFile = fopen(ficonfigfilename, "r");
-  if (ficonfigFile == NULL) {
-    fprintf(stderr, "ERROR: Unable to open llfi config file %s\n",
-            ficonfigfilename);
-    exit(1);
-  }
+// HDFIT: Re-using some utility code from our OpenBLAS implementation
+unsigned long long _rand_uint128() {
+	unsigned long long val = 0;
+	for (size_t i=0; i<9; i++) {
+		// Calling rand() 9 times, leveraging 15 bits at a time
+		// RAND_MAX is guaranteed to be at least 32767
+		// Multiplying val by RAND_MAX + 1 is equivalent to bit-shifting
+		// by RAND_MAX'2 bit width - assuming it is a power of 2 - 1
+		// After that, we can sum (or bitwise OR) to a new rand() call
 
-  const unsigned CONFIG_LINE_LENGTH = 1024;
-  char line[CONFIG_LINE_LENGTH];
-  char option[OPTION_LENGTH];
-  char *value = NULL;
-  /*BEHROOZ: */
-  int fi_next_cycles_index = 0;
-  /*=================================================*/
-  while (fgets(line, CONFIG_LINE_LENGTH, ficonfigFile) != NULL) {
-    if (line[0] == '#')
-      continue;
-
-    value = strtok(line, "=");
-    strncpy(option, value, OPTION_LENGTH);
-    value = strtok(NULL, "=");
-
-    //debug(("option, %s, value, %s;", option, value));
-
-    if (strcmp(option, "fi_type") == 0) {
-      strncpy(config.fi_type, value, OPTION_LENGTH);
-      if (config.fi_type[strlen(config.fi_type) - 1] == '\n')
-        config.fi_type[strlen(config.fi_type) - 1] = '\0';
-    } else if (strcmp(option, "fi_cycle") == 0) {
-      config.fi_accordingto_cycle = true;
-      config.fi_cycle = atoll(value);
-      /*BEHROOZ: I changed the below line to the current one to fix the fi_cycle*/
-      assert(config.fi_cycle > 0 && "invalid fi_cycle in config file"); //assert(config.fi_cycle >= 0 && "invalid fi_cycle in config file");
-    } else if (strcmp(option, "fi_index") == 0) {
-      config.fi_index = atol(value);
-      assert(config.fi_index >= 0 && "invalid fi_index in config file");
-    } else if (strcmp(option, "fi_reg_index") == 0) {
-      config.fi_reg_index = atoi(value);
-      assert(config.fi_reg_index >= 0 && "invalid fi_reg_index in config file");
-    } else if (strcmp(option, "fi_bit") == 0) {
-      config.fi_bit = atoi(value);
-      assert(config.fi_bit >= 0 && "invalid fi_bit in config file");
-    //======== Add number of corrupted bits QINING @MAR 13th========
-    } else if (strcmp(option, "fi_num_bits") == 0){
-    	config.fi_num_bits = atoi(value);
-    	assert(config.fi_num_bits >=0 && "invalid fi_num_bits in config file");
-    //==============================================================	
-    //======== Add second corrupted regs QINING @MAR 27th===========
-    } else if (strcmp(option, "fi_second_cycle") == 0){
-    	config.fi_second_cycle = atoll(value);
-      /*BEHROOZ: I changed the below line to the current one to fix the fi_cycle*/        
-    	assert(config.fi_second_cycle > 0 && "invalid fi_second_cycle in config file"); //assert(config.fi_second_cycle >= 0 && "invalid fi_second_cycle in config file");
-    //==============================================================
-    //==============================================================	
-    /*BEHROOZ: Add multiple corrupted regs*/
-    } else if (strcmp(option, "fi_max_multiple") == 0){
-        assert(atoll(value) > 0 && "invalid fi_max_multiple in config file");
-    	config.fi_max_multiple = atoi(value);
-    } else if (strcmp(option, "fi_next_cycle") == 0){
-    	assert(atoll(value) > 0 && "invalid fi_next_cycle in config file");
-    	config.fi_next_cycles[fi_next_cycles_index] = atoll(value);
-        fi_next_cycles_index++;
-        fi_next_cycles_count = fi_next_cycles_index;
-    //==============================================================
-    } else {
-      fprintf(stderr, 
-              "ERROR: Unknown option %s for LLFI runtime fault injection\n",
-              option);
-      exit(1);
-    }
-  }
-  /*
-  debug(("type, %s; cycle, %lld; index, %ld; reg_index, %d; fi_bit, %d\n", 
-         config.fi_type, config.fi_cycle, config.fi_index, 
-         config.fi_reg_index, config.fi_bit));
-  */
-  fclose(ficonfigFile);
+		// coverity[DC.WEAK_CRYPTO]
+		val = val * ((unsigned long long)RAND_MAX + 1) + rand();
+	}
+	return val;
 }
+
+void _parseHDFITVariables() {
+	char* env_buf = NULL;
+	long long totCycles = 0;
+	config.fi_accordingto_cycle = true;
+	config.fi_cycle = -1;
+	config.fi_bit = -1;
+
+	// Parsing total ops counter
+	if(env_buf = getenv(BLASFIOPSCNT_ENV_VAR)) {
+		totCycles = atoll(env_buf);
+	} else {
+		printf("%s environment variable uninitialized!\n", BLASFIOPSCNT_ENV_VAR);
+		return;
+	}
+
+	// Parsing type of corruption
+	if(env_buf = getenv(BLASFICORRUPTION_ENV_VAR)) {
+		if(strcmp(env_buf, BLASFICORRUPTION_STUCKHIGH_CONST) == 0) {
+			strncpy(config.fi_type, "stuck_at_1", OPTION_LENGTH);
+		} else if(strcmp(env_buf, BLASFICORRUPTION_STUCKLOW_CONST) == 0) {
+			strncpy(config.fi_type, "stuck_at_0", OPTION_LENGTH);
+		} else if(strcmp(env_buf, BLASFICORRUPTION_FLIP_CONST) == 0) {
+			strncpy(config.fi_type, "bitflip", OPTION_LENGTH);
+		} else {
+			printf("Invalid %s setting for environment variable %s!\n", env_buf, BLASFICORRUPTION_ENV_VAR);
+			exit(-1);
+		}
+	} else {
+		printf("%s environment variable uninitialized!\n", BLASFICORRUPTION_ENV_VAR);
+		return;
+	}
+
+	// Parsing FI mode (just transient or disabled)
+        if(env_buf = getenv(BLASFIMODE_ENV_VAR)) {
+                if(strcmp(env_buf, BLASFIMODE_TRANSIENT_CONST) == 0) {
+                        config.fi_cycle = totCycles>0 ? 1 + (_rand_uint128() % totCycles) : -1;
+                } else if(strcmp(env_buf, BLASFIMODE_NONE_CONST) != 0) {
+                        printf("Invalid %s setting for environment variable %s!\n", env_buf, BLASFIMODE_ENV_VAR);
+                        exit(-1);
+                }
+        } else {
+                printf("%s environment variable uninitialized!\n", BLASFIMODE_ENV_VAR);
+                return;
+        }
+}
+
+void _printHDFITOpsCnt() {
+        printf("[HDFIT]\t Rank 0: OpsCnt = %lld\n", curr_cycle-1);
+        fflush(stdout);
+}
+
+void _printHDFITVariables(long long fi_cycle, int fi_bit, unsigned size, char* opcode) {
+#ifndef HDFIT_DOUBLE
+	int fi_width = 32;
+#else // HDFIT_DOUBLE
+	int fi_width = 64;
+#endif
+	printf("[HDFIT]\t\t FI enabled on rank = 0\n");
+	if(fi_cycle > 0)
+	{
+		printf("[HDFIT]\t\t FI at op = %lld\n", fi_cycle-1);
+		printf("[HDFIT]\t\t Bit pos = %d\n", fi_bit%fi_width);
+		printf("[HDFIT]\t\t Raw bit pos = %d\n", fi_bit);
+		printf("[HDFIT]\t\t Size = %d\n", size);
+		printf("[HDFIT]\t\t Op code = %s\n", opcode);
+	}
+	fflush(stdout);
+}
+//-------------------------------------------------------------------
 
 /**
  * external libraries
  */
+// HDFIT: Replacing standard configuration parsing with HDFIT interface
 void initInjections() {
   _initRandomSeed();
-  _parseLLFIConfigFile();
+  _parseHDFITVariables();
+  // Registering function to print ops count with atexit
+  atexit(_printHDFITOpsCnt);
   getOpcodeExecCycleArray(OPCODE_CYCLE_ARRAY_LEN, opcodecyclearray);
-
-  char injectedfaultsfilename[80];
-  strncpy(injectedfaultsfilename, "llfi.stat.fi.injectedfaults.txt", 80);
-  injectedfaultsFile = fopen(injectedfaultsfilename, "a");
-  if (injectedfaultsFile == NULL) {
-    fprintf(stderr, "ERROR: Unable to open injected faults stat file %s\n",
-            injectedfaultsfilename);
-    exit(1);
-  }
-
   start_tracing_flag = TRACING_FI_RUN_INIT; //Tell instTraceLib that we are going to inject faults
 }
+//--------------------------------------------------------------------
 
-bool preFunc(long llfi_index, unsigned opcode, unsigned my_reg_index, 
+// HDFIT: simplified preFunc to improve performance
+bool preFunc(long llfi_index, unsigned opcode, unsigned my_reg_index,
              unsigned total_reg_target_num) {
-  if (opcodecyclearray[opcode] < 0 &&
-          "opcode does not exist, need to update instructions.def")
-     return false;
-  
-   if (! fiFlag) return false;
-   if (my_reg_index == 0)
-    is_fault_injected_in_curr_dyn_inst = false;
 
-  bool inst_selected = false;
-  bool reg_selected = false;
-  if (config.fi_accordingto_cycle) {
-    if (config.fi_cycle >= curr_cycle && 
-        config.fi_cycle < curr_cycle + opcodecyclearray[opcode])
-      inst_selected = true;
-  } else {
-    // inject into every runtime instance of the specified instruction
-    if (llfi_index == config.fi_index)
-      inst_selected = true;
-  }
+	reg_selected = false;
+	if (config.fi_cycle == curr_cycle && !is_fault_injected_in_curr_dyn_inst) {
+	// each register target of the instruction get equal probability of getting
+	// selected. the idea comes from equal probability of drawing lots
+	// NOTE: if fi_reg_index specified, use it, otherwise, randomly generate
+		if (config.fi_reg_index >= 0)
+			reg_selected = (my_reg_index == config.fi_reg_index);
+		else
+			reg_selected = _getDecision(1.0 / (total_reg_target_num - my_reg_index));
 
-  // each register target of the instruction get equal probability of getting
-  // selected. the idea comes from equal probability of drawing lots
-  if (inst_selected && (!is_fault_injected_in_curr_dyn_inst)) {
-    // NOTE: if fi_reg_index specified, use it, otherwise, randomly generate
-    if (config.fi_reg_index >= 0)
-      reg_selected = (my_reg_index == config.fi_reg_index);
-    else 
-      reg_selected = _getDecision(1.0 / (total_reg_target_num - my_reg_index));
+		if (reg_selected) {
+			//debug(("selected reg index %u\n", my_reg_index));
+			is_fault_injected_in_curr_dyn_inst = true;
+		}
+	}
 
-    if (reg_selected) {
-      //debug(("selected reg index %u\n", my_reg_index));
-      is_fault_injected_in_curr_dyn_inst = true;
-    }
-  }
+	if (my_reg_index == 0) {
+		is_fault_injected_in_curr_dyn_inst = false;
+		curr_cycle++;
+	}
 
-  if (my_reg_index == total_reg_target_num - 1)
-    curr_cycle += opcodecyclearray[opcode];
-
-  return reg_selected;
+	return reg_selected;
 }
+//-------------------------------------------------
 
 void injectFunc(long llfi_index, unsigned size, 
                 char *buf, unsigned my_reg_index, unsigned reg_pos, char* opcode_str) {
   fprintf(stderr, "MSG: injectFunc() has being called\n");
   if (! fiFlag) return;
   start_tracing_flag = TRACING_FI_RUN_FAULT_INSERTED; //Tell instTraceLib that we have injected a fault
+
+// HDFIT: Optionally re-initializing seed for apps that need it
+#ifdef HDFIT_SRAND
+  _initRandomSeed();
+#endif
+//------------------------------------------------------------
 
   unsigned fi_bit, fi_bytepos, fi_bitpos;
   unsigned char oldbuf;
@@ -258,18 +267,23 @@ void injectFunc(long llfi_index, unsigned size,
 	  memcpy(&oldbuf, &buf[fi_bytepos], 1);
 	
 	  //======== Add opcode_str QINING @MAR 11th========
+// HDFIT: Using custom print function instead of default file
+	  _printHDFITVariables(config.fi_cycle, fi_bit, size, opcode_str);
+/*
 	  fprintf(injectedfaultsFile, 
           "FI stat: fi_type=%s, fi_max_multiple=%d, fi_index=%ld, fi_cycle=%lld, fi_reg_index=%u, "
           "fi_reg_pos=%u, fi_reg_width=%u, fi_bit=%u, opcode=%s\n", config.fi_type, config.fi_max_multiple,
           llfi_index, fi_cycle_to_print, my_reg_index, reg_pos, size, fi_bit, opcode_str);
+*/
 	  /*BEHROOZ: The below line is substituted with the above one as there was an 
            issue when we wanted to both inject in multiple bits and multiple
            locations.
            llfi_index, config.fi_cycle, my_reg_index, reg_pos, size, fi_bit, opcode_str);*/
 	  //===============================================================
- 	  fflush(injectedfaultsFile); 
+	  //fflush(injectedfaultsFile);
 	  //===============================================================
-	  
+//-----------------------------------------------------------
+
 	  //======== Add second corrupted regs QINING @MAR 27th===========
 	  //update the fi_cycle to the fi_second_cycle,
 	  // so later procedures can still use fi_cycle to print stat info
@@ -313,6 +327,9 @@ void turnOnInjections() {
 	fiFlag = 1;
 }
 
+// HDFIT: dropping fclose for output file
 void postInjections() {
-	fclose(injectedfaultsFile); 
+       //fclose(injectedfaultsFile);
 }
+
+//------------------------------------------------------------

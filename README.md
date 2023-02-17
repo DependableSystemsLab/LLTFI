@@ -1,3 +1,10 @@
+HDFIT + LLTFI Information
+=====
+
+This version of LLTFI is customized in order to operate in conjunction with the [HDFIT](https://intellabs.github.io/HDFIT/) fault injection framework, on a variety of HPC workloads. Please refer to the README below for instructions on how to build LLTFI, as well as to the HDFIT [documentation](https://github.com/IntelLabs/HDFIT.ScriptsHPC).
+
+Please note that a series of HDFIT-specific build options were added to LLTFI: these are documented, and can be toggled, in LLTFI's global [CMakeLists.txt](CMakeLists.txt) file.
+
 LLTFI
 =====
 LLTFI (Low Level Tensor Fault Injector) is a unified SWiFI (Software-implemented fault injection) tool that supports fault injection of both C/C++ programs and ML applications written using high-level frameworks such as TensorFlow and PyTorch.

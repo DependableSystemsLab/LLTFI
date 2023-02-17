@@ -1,3 +1,6 @@
+// Copyright (C) 2023 Intel Corporation (HDFIT components)
+// SPDX-License-Identifier: Apache-2.0
+
 #ifndef FAULTINJECTION_PASS_H
 #define FAULTINJECTION_PASS_H
 
@@ -25,7 +28,9 @@ namespace llfi {
     static char ID;
 
    private:
-    void checkforMainFunc(Module &M);
+// HDFIT: we need this method to return a bool and not abort compilation
+    bool checkforMainFunc(Module &M);
+// ---------------------------------------------------------------------
     void finalize(Module& M);
 
     void insertInjectionFuncCall(
@@ -36,7 +41,9 @@ namespace llfi {
     void createInjectionFunctions(Module &M);
 
   private:
-    std::string getFIFuncNameforType(const Type* type);
+// HDFIT: adding Module as input to disambiguate FI function names
+    std::string getFIFuncNameforType(const Type* type, Module &M);
+// --------------------------------------------------------------
 
     FunctionCallee getLLFILibPreFIFunc(Module &M);
     FunctionCallee getLLFILibFIFunc(Module &M);

@@ -11,6 +11,7 @@
 // See profiling_lib.c doProfiling() function for more details. This function
 // definition is linked to the instrumented bitcode file (after this pass).
 //===----------------------------------------------------------------------===//
+// Copyright (C) 2023 Intel Corporation (HDFIT components)
 
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/Function.h"
@@ -102,6 +103,7 @@ bool LegacyProfilingPass::runOnModule(Module &M) {
   return true;
 }
 
+// HDFIT: do not abort if main function does not exist
 void LegacyProfilingPass::addEndProfilingFuncCall(Module &M) {
   Function* mainfunc = M.getFunction("main");
   if (mainfunc != NULL) {
@@ -118,12 +120,13 @@ void LegacyProfilingPass::addEndProfilingFuncCall(Module &M) {
       Instruction *term = *it;
       CallInst::Create(endprofilefunc, "", term);
     }
-  } else {
+  } /* else {
     errs() << "ERROR: Function main does not exist, " <<
         "which is required by LLFI\n";
     exit(1);
-  }
+  } */
 }
+//-----------------------------------------------------
 
 FunctionCallee LegacyProfilingPass::getLLFILibProfilingFunc(Module &M) {
   LLVMContext &context = M.getContext();

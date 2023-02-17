@@ -1,9 +1,32 @@
+// Copyright (C) 2023 Intel Corporation (HDFIT components)
+// SPDX-License-Identifier: Apache-2.0
+
 #include "RegLocBasedFIRegSelector.h"
 
 namespace llfi {
 
+// HDFIT: Utility function to identify FP32 (vector) registers
+bool isRegFP32(Value* reg) {
+	Type* regType = reg->getType();
+	if (!regType) {
+		return false;
+	}
+
+#ifndef HDFIT_DOUBLE
+	return regType->getScalarType()->isFloatTy();
+#else // HDFIT_DOUBLE
+	return regType->getScalarType()->isDoubleTy();
+#endif
+}
+// ---------------------------------------------------------------
+
 bool RegLocBasedFIRegSelector::isRegofInstFITarget(Value *reg, 
                                                           Instruction *inst) {
+// HDFIT: FP32 check on the given register
+  if (!isRegFP32(reg)) {
+	  return false;
+  }
+// ---------------------------------------------------------------
   if (firegloc == dstreg) {
     return reg == inst;
   } else if (firegloc == allsrcreg) {

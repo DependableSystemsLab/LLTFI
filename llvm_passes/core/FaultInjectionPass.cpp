@@ -15,6 +15,8 @@
 // fault injection function. This function definition is linked to the 
 // instrumented bitcode file (after this pass). 
 //===----------------------------------------------------------------------===//
+// Copyright (C) 2023 Intel Corporation (HDFIT components)
+
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/LLVMContext.h"
@@ -32,18 +34,20 @@ namespace llfi {
 
 char FaultInjectionPass::ID=0;
 
-std::string FaultInjectionPass::getFIFuncNameforType(const Type *type) {
+//HDFIT: need to use the module name to disambiguate FI functions
+std::string FaultInjectionPass::getFIFuncNameforType(const Type *type, Module &M) {
   std::string funcname;
   if (fi_rettype_funcname_map.find(type) != fi_rettype_funcname_map.end()) {
     funcname = fi_rettype_funcname_map[type];
   } else {
     funcname = "injectFault";
-    int ficount = fi_rettype_funcname_map.size();	
-    funcname += intToString(ficount);
+    int ficount = fi_rettype_funcname_map.size();
+    funcname = M.getModuleIdentifier() + "_" + funcname + intToString(ficount);
     fi_rettype_funcname_map[type] = funcname;
   }
   return funcname;
 }
+//---------------------------------------------------------------
 
 void FaultInjectionPass::insertInjectionFuncCall(
     std::map<Instruction*, std::list< int >* > *inst_regs_map, Module &M) {
@@ -125,7 +129,7 @@ void FaultInjectionPass::insertInjectionFuncCall(
       // dbgs() << "Getting function of type : " << *returntype <<"\n";
       FunctionType* injectfunctype = FunctionType::get(returntype, paramtypes_array_ref, false);
 
-      std::string funcname = getFIFuncNameforType(returntype);
+      std::string funcname = getFIFuncNameforType(returntype, M);
       FunctionCallee injectfunc =
           M.getOrInsertFunction(funcname, injectfunctype);
 
@@ -212,6 +216,9 @@ void FaultInjectionPass::createInjectionFuncforType(
     FunctionCallee pre_fi_func) {
   LLVMContext &context = M.getContext();
   Function *f = M.getFunction(fi_name);
+#ifdef HDFIT_INLINE
+  f->addFnAttr(Attribute::get(context, Attribute::AlwaysInline));
+#endif
   std::vector<Value*> args;
   for(Function::arg_iterator ai = f->arg_begin(); ai != f->arg_end(); ++ai)
     args.push_back(&*ai);
@@ -283,7 +290,7 @@ void FaultInjectionPass::createInjectionFunctions(Module &M) {
 }
 
 bool FaultInjectionPass::runOnModule(Module &M) {
-  checkforMainFunc(M);
+  //checkforMainFunc(M);
 
   std::map<Instruction*, std::list< int >* > *fi_inst_regs_map;
   Controller *ctrl = Controller::getInstance(M);
@@ -294,36 +301,42 @@ bool FaultInjectionPass::runOnModule(Module &M) {
   return true;
 }
 
-void FaultInjectionPass::checkforMainFunc(Module &M) {
+// HDFIT: we need this method to return a bool and not abort compilation
+bool FaultInjectionPass::checkforMainFunc(Module &M) {
   Function* mainfunc = M.getFunction("main");
-  if (mainfunc == NULL) {
-    errs() << "ERROR: Function main does not exist, " <<
-        "which is required by LLFI\n";
-    exit(1);
-  }
+  return mainfunc != NULL;
+  //if (mainfunc == NULL) {
+  //  errs() << "ERROR: Function main does not exist, " <<
+  //      "which is required by LLFI\n";
+  //  exit(1);
+  //}
 }
+// ---------------------------------------------------------------------
 
 void FaultInjectionPass::finalize(Module &M) {
-  Function *mainfunc = M.getFunction("main");
-  BasicBlock *entryblock = &mainfunc->front();
+// HDFIT : creating init/post functions only in main
+    if(checkforMainFunc(M)) {
+        Function *mainfunc = M.getFunction("main");
+        BasicBlock *entryblock = &mainfunc->front();
 
-  // function call for initInjections
-  FunctionCallee initfunc = getLLFILibInitInjectionFunc(M);
-  CallInst::Create(initfunc, "", entryblock->getFirstNonPHI());
-  
-  // function call for postInjections
-  FunctionCallee postfifunc = getLLFILibPostInjectionFunc(M);
+        // function call for initInjections
+        FunctionCallee initfunc = getLLFILibInitInjectionFunc(M);
+        CallInst::Create(initfunc, "", entryblock->getFirstNonPHI());
 
-  std::set<Instruction*> exitinsts;
-  getProgramExitInsts(M, exitinsts);
-  assert (exitinsts.size() != 0 
-            && "Program does not have explicit exit point");
-  for (std::set<Instruction*>::iterator it = exitinsts.begin();
-         it != exitinsts.end(); ++it) {
-    Instruction *term = *it;
-    CallInst::Create(postfifunc, "", term);
-  }
+        // function call for postInjections
+        FunctionCallee postfifunc = getLLFILibPostInjectionFunc(M);
 	
+        std::set<Instruction*> exitinsts;
+        getProgramExitInsts(M, exitinsts);
+        assert (exitinsts.size() != 0
+                && "Program does not have explicit exit point");
+        for (std::set<Instruction*>::iterator it = exitinsts.begin();
+             it != exitinsts.end(); ++it) {
+            Instruction *term = *it;
+            CallInst::Create(postfifunc, "", term);
+        }
+    }
+//--------------------------------------------------
   createInjectionFunctions(M);
 }
 

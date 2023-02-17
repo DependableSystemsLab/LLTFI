@@ -1,5 +1,9 @@
+// Copyright (C) 2023 Intel Corporation (HDFIT components)
+// SPDX-License-Identifier: Apache-2.0
+
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
+#include "llvm/Transforms/IPO/AlwaysInliner.h"
 
 #include "core/ProfilingPass.h"
 #include "core/GenLLFIIndexPass.h"
@@ -17,6 +21,25 @@ namespace llfi {
   llvm::PassPluginLibraryInfo getLLFIPassPluginInfo() {
     return {LLVM_PLUGIN_API_VERSION, "llfi_passes", LLVM_VERSION_STRING,
             [](PassBuilder &PB) {
+
+// HDFIT: We only need the genllfiindex and faultinjection passes
+// Registered as last to not interfere with vectorization and such
+// These two registration calls DO NOT impact opt runs, but only
+// affect the clang frontend when using LLTFI
+#ifndef HDFIT_FIRSTOPT
+              PB.registerOptimizerLastEPCallback(
+#else // HDFIT_FIRSTOPT
+              PB.registerPipelineStartEPCallback(
+#endif
+                  [](ModulePassManager &MPM, OptimizationLevel) {
+                      MPM.addPass(llfi::GenLLFIIndexPass());
+                      MPM.addPass(llfi::NewFaultInjectionPass());
+#ifdef HDFIT_INLINE
+		      MPM.addPass(AlwaysInlinerPass());
+#endif
+                      return true;
+                  });
+// ---------------------------------------------------------------
 
               // For GenLLFIIndexPass
               PB.registerPipelineParsingCallback(

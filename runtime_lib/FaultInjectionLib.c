@@ -46,7 +46,10 @@ static struct {
   int fi_max_multiple; //JUNE 3rd
   long long fi_next_cycles[MULTIPLE_CYCLE_LENGTH];
   //==============================================================
-} config = {"bitflip", false, -1, -1, -1, -1, 1, -1, -1, {-1}};
+  //======== For ML applications ===========
+  int fi_ml_layer_num;
+  char fi_ml_layer_name[100];
+} config = {"bitflip", false, -1, -1, -1, -1, 1, -1, -1, {-1}, -1, ""};
 // -1 to tell the value is not specified in the config file
 
 // declaration of the real implementation of the fault injection function
@@ -120,14 +123,14 @@ void _parseLLFIConfigFile() {
     } else if (strcmp(option, "fi_num_bits") == 0){
     	config.fi_num_bits = atoi(value);
     	assert(config.fi_num_bits >=0 && "invalid fi_num_bits in config file");
-    //==============================================================	
+    //==============================================================
     //======== Add second corrupted regs QINING @MAR 27th===========
     } else if (strcmp(option, "fi_second_cycle") == 0){
     	config.fi_second_cycle = atoll(value);
-      /*BEHROOZ: I changed the below line to the current one to fix the fi_cycle*/        
+      /*BEHROOZ: I changed the below line to the current one to fix the fi_cycle*/
     	assert(config.fi_second_cycle > 0 && "invalid fi_second_cycle in config file"); //assert(config.fi_second_cycle >= 0 && "invalid fi_second_cycle in config file");
     //==============================================================
-    //==============================================================	
+    //==============================================================
     /*BEHROOZ: Add multiple corrupted regs*/
     } else if (strcmp(option, "fi_max_multiple") == 0){
         assert(atoll(value) > 0 && "invalid fi_max_multiple in config file");
@@ -138,16 +141,25 @@ void _parseLLFIConfigFile() {
         fi_next_cycles_index++;
         fi_next_cycles_count = fi_next_cycles_index;
     //==============================================================
+    // ========= Parse FI stats for ML applications ===============
+    } else if (strcmp(option, "ml_layer_name") == 0) {
+      strncpy(config.fi_ml_layer_name, value, 100);
+      // Fix C string terminator.
+      if (config.fi_ml_layer_name[strlen(config.fi_ml_layer_name) - 1] == '\n')
+        config.fi_ml_layer_name[strlen(config.fi_ml_layer_name) - 1] = '\0';
+    } else if (strcmp(option, "ml_layer_number") == 0) {
+        assert(atoll(value) > 0 && "ml_layer_number should be grater than 0");
+        config.fi_ml_layer_num = atoll(value);
     } else {
-      fprintf(stderr, 
+      fprintf(stderr,
               "ERROR: Unknown option %s for LLFI runtime fault injection\n",
               option);
       exit(1);
     }
   }
   /*
-  debug(("type, %s; cycle, %lld; index, %ld; reg_index, %d; fi_bit, %d\n", 
-         config.fi_type, config.fi_cycle, config.fi_index, 
+  debug(("type, %s; cycle, %lld; index, %ld; reg_index, %d; fi_bit, %d\n",
+         config.fi_type, config.fi_cycle, config.fi_index,
          config.fi_reg_index, config.fi_bit));
   */
   fclose(ficonfigFile);
@@ -173,12 +185,12 @@ void initInjections() {
   start_tracing_flag = TRACING_FI_RUN_INIT; //Tell instTraceLib that we are going to inject faults
 }
 
-bool preFunc(long llfi_index, unsigned opcode, unsigned my_reg_index, 
+bool preFunc(long llfi_index, unsigned opcode, unsigned my_reg_index,
              unsigned total_reg_target_num) {
   if (opcodecyclearray[opcode] < 0 &&
           "opcode does not exist, need to update instructions.def")
      return false;
-  
+
    if (! fiFlag) return false;
    if (my_reg_index == 0)
     is_fault_injected_in_curr_dyn_inst = false;
@@ -186,7 +198,7 @@ bool preFunc(long llfi_index, unsigned opcode, unsigned my_reg_index,
   bool inst_selected = false;
   bool reg_selected = false;
   if (config.fi_accordingto_cycle) {
-    if (config.fi_cycle >= curr_cycle && 
+    if (config.fi_cycle >= curr_cycle &&
         config.fi_cycle < curr_cycle + opcodecyclearray[opcode])
       inst_selected = true;
   } else {
@@ -201,7 +213,7 @@ bool preFunc(long llfi_index, unsigned opcode, unsigned my_reg_index,
     // NOTE: if fi_reg_index specified, use it, otherwise, randomly generate
     if (config.fi_reg_index >= 0)
       reg_selected = (my_reg_index == config.fi_reg_index);
-    else 
+    else
       reg_selected = _getDecision(1.0 / (total_reg_target_num - my_reg_index));
 
     if (reg_selected) {
@@ -216,7 +228,7 @@ bool preFunc(long llfi_index, unsigned opcode, unsigned my_reg_index,
   return reg_selected;
 }
 
-void injectFunc(long llfi_index, unsigned size, 
+void injectFunc(long llfi_index, unsigned size,
                 char *buf, unsigned my_reg_index, unsigned reg_pos, char* opcode_str) {
   fprintf(stderr, "MSG: injectFunc() has being called\n");
   if (! fiFlag) return;
@@ -224,7 +236,7 @@ void injectFunc(long llfi_index, unsigned size,
 
   unsigned fi_bit, fi_bytepos, fi_bitpos;
   unsigned char oldbuf;
-  
+
   //======== Add opcode_str QINING @MAR 11th========
   unsigned fi_num_bits;
   fi_num_bits = config.fi_num_bits;
@@ -232,8 +244,8 @@ void injectFunc(long llfi_index, unsigned size,
   //================================================
   //======== Add opcode_str QINING @MAR 11th========
   int runs =0;
-  /*BEHROOZ: We give value to fi_cycle_to_print because we want to make sure that the 
-    fi_cycle that is printed in the for loop has the correct value when it 
+  /*BEHROOZ: We give value to fi_cycle_to_print because we want to make sure that the
+    fi_cycle that is printed in the for loop has the correct value when it
     comes to cases where we want to both inject in more than one bit and also
     inject in more than one location.*/
   long long fi_cycle_to_print = config.fi_cycle;
@@ -254,22 +266,29 @@ void injectFunc(long llfi_index, unsigned size,
 	  assert (fi_bit < size && "fi_bit larger than the target size");
 	  fi_bytepos = fi_bit / 8;
 	  fi_bitpos = fi_bit % 8;
-	  
+
 	  memcpy(&oldbuf, &buf[fi_bytepos], 1);
-	
+
 	  //======== Add opcode_str QINING @MAR 11th========
-	  fprintf(injectedfaultsFile, 
+    // For ML applications emit the layer name and number in which fault is injected.
+    if (config.fi_ml_layer_num > 0)
+      fprintf(injectedfaultsFile,
           "FI stat: fi_type=%s, fi_max_multiple=%d, fi_index=%ld, fi_cycle=%lld, fi_reg_index=%u, "
-          "fi_reg_pos=%u, fi_reg_width=%u, fi_bit=%u, opcode=%s\n", config.fi_type, config.fi_max_multiple,
-          llfi_index, fi_cycle_to_print, my_reg_index, reg_pos, size, fi_bit, opcode_str);
-	  /*BEHROOZ: The below line is substituted with the above one as there was an 
+          "fi_reg_pos=%u, fi_reg_width=%u, fi_bit=%u, opcode=%s, ml_layer_name=%s, ml_layer_num=%d\n", config.fi_type, config.fi_max_multiple,
+          llfi_index, fi_cycle_to_print, my_reg_index, reg_pos, size, fi_bit, opcode_str, config.fi_ml_layer_name, config.fi_ml_layer_num);
+    else
+      fprintf(injectedfaultsFile,
+            "FI stat: fi_type=%s, fi_max_multiple=%d, fi_index=%ld, fi_cycle=%lld, fi_reg_index=%u, "
+            "fi_reg_pos=%u, fi_reg_width=%u, fi_bit=%u, opcode=%s\n", config.fi_type, config.fi_max_multiple,
+            llfi_index, fi_cycle_to_print, my_reg_index, reg_pos, size, fi_bit, opcode_str);
+	  /*BEHROOZ: The below line is substituted with the above one as there was an
            issue when we wanted to both inject in multiple bits and multiple
            locations.
            llfi_index, config.fi_cycle, my_reg_index, reg_pos, size, fi_bit, opcode_str);*/
 	  //===============================================================
- 	  fflush(injectedfaultsFile); 
+ 	  fflush(injectedfaultsFile);
 	  //===============================================================
-	  
+
 	  //======== Add second corrupted regs QINING @MAR 27th===========
 	  //update the fi_cycle to the fi_second_cycle,
 	  // so later procedures can still use fi_cycle to print stat info
@@ -290,7 +309,7 @@ void injectFunc(long llfi_index, unsigned size,
                         next_cycle = config.fi_next_cycles[index];
 	                config.fi_cycle = next_cycle;
 	  	        config.fi_next_cycles[index] = -1;
-                   }                   
+                   }
               }
           }
 	  //==============================================================
@@ -300,7 +319,7 @@ void injectFunc(long llfi_index, unsigned size,
   /*
   debug(("FI stat: fi_type=%s, fi_index=%ld, fi_cycle=%lld, fi_reg_index=%u, "
          "fi_bit=%u, size=%u, old=0x%hhx, new=0x%hhx\n", config.fi_type,
-            llfi_index, config.fi_cycle, my_reg_index, fi_bit, 
+            llfi_index, config.fi_cycle, my_reg_index, fi_bit,
             size,  oldbuf, buf[fi_bytepos]));
 */
 }
@@ -314,5 +333,5 @@ void turnOnInjections() {
 }
 
 void postInjections() {
-	fclose(injectedfaultsFile); 
+	fclose(injectedfaultsFile);
 }

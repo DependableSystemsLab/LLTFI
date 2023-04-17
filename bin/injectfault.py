@@ -30,6 +30,7 @@ runOverride = False
 optionlist = []
 defaultTimeout = 500
 fi_max_multiple_default = 100
+fi_ml_stats = []
 
 # basedir is assigned in parseArgs(args)
 basedir = ""
@@ -252,14 +253,26 @@ def dirSnapshot():
 
 ################################################################################
 def readCycles():
-  global totalcycles
+  global totalcycles, fi_ml_stats
   profinput= open("llfi.stat.prof.txt","r")
+
   while 1:
     line = profinput.readline()
+    if not line:
+      break
     if line.strip():
-      if line[0] == 't':
-        label, totalcycles = line.split("=")
-        break
+      # skip comments
+      if line.startswith("#"):
+        continue
+      label, value = line.split("=")
+
+      # parse the line
+      if label == 'total_cycle':
+        totalcycles = int(value)
+      elif label == 'ml_layer':
+        layerNum, layerName, cycleStart, cycleEnd = value.split(",")
+        fi_ml_stats.append([int(layerNum), layerName, int(cycleStart), int(cycleEnd)])
+
   profinput.close()
 
 ################################################################################
@@ -451,7 +464,7 @@ def main(args):
       ##==============================================================
       ##BEHROOZ: Add max number of target locations
       if 'fi_max_multiple' in run["run"]:
-        fi_max_multiple=run["run"]["fi_max_multiple"]        
+        fi_max_multiple=run["run"]["fi_max_multiple"]
         checkValues("fi_max_multiple", fi_max_multiple)
         if ('fi_max_multiple' in locals()) and 'window_len' in locals():
           print(("\nERROR: window_len and fi_max_multiple cannot be specified"
@@ -562,8 +575,17 @@ def main(args):
           fi_cycle = random.randint(1, int(totalcycles))
           ##fi_cycle = random.randint(0, int(totalcycles) - 1)
 
-        ficonfig_File = open("llfi.config.runtime.txt", 'w')        
-        
+        ficonfig_File = open("llfi.config.runtime.txt", 'w')
+
+        global fi_ml_stats
+        if 'fi_cycle' in locals() and len(fi_ml_stats)  > 0:
+
+          # Find to which Ml layer this fi_cycle belongs to.
+          for i in range(0, len(fi_ml_stats)):
+            if fi_cycle >= fi_ml_stats[i][2] and fi_cycle <= fi_ml_stats[i][3]:
+              ficonfig_File.write("ml_layer_name="+fi_ml_stats[i][1]+'\n')
+              ficonfig_File.write("ml_layer_number="+str(fi_ml_stats[i][0])+'\n')
+
         if 'fi_cycle' in locals():
           ficonfig_File.write("fi_cycle="+str(fi_cycle)+'\n')
         elif 'fi_index' in locals():
@@ -581,7 +603,7 @@ def main(args):
         ##==============================================================
         ##======== Add second corrupted regs QINING @MAR 27th===========
         if 'window_len' in locals():
-          ##BEHROOZ: I changed the below line to the current one to fix the fi_cycle          
+          ##BEHROOZ: I changed the below line to the current one to fix the fi_cycle
           fi_second_cycle = min(fi_cycle + random.randint(1, int(window_len)), int(totalcycles))
           #fi_second_cycle = min(fi_cycle + random.randint(1, int(window_len)), int(totalcycles) - 1)
           ficonfig_File.write("fi_second_cycle="+str(fi_second_cycle)+'\n')
@@ -599,7 +621,7 @@ def main(args):
               print(("\nERROR: In the yaml file, the window_len_multiple_startindex cannot be bigger than window_len_multiple_endindex!"))
               exit(1)
           #The line below has been substituted with the one below it. This way the maximum number injection is not selected randomly and is
-          #equal to the value specified by the user   
+          #equal to the value specified by the user
           ##selected_num_of_injection = random.randint(1, int(fi_max_multiple))
           ficonfig_File.write("fi_max_multiple="+str(fi_max_multiple)+'\n')
           selected_num_of_injection = fi_max_multiple

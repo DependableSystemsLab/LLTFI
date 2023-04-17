@@ -13,7 +13,7 @@ add_library(llfi-rt SHARED
     FaultInjectionLib.c
     FaultInjectorManager.cpp
     InstTraceLib.c
-    ProfilingLib.c
+    ProfilingLib.cpp
     Utils.c
     #_FIDLSoftwareFaultInjectors.cpp
     #_SoftwareFaultInjector.cpp is included in this file

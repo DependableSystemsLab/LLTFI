@@ -16,6 +16,7 @@ List of options:
 --verbose:                  Show verbose information
 --help(-h):                 Show help information
 --use-ml-specific-rt        Use ML-Specific FI runtime, that statically-links with the ML application to speedup the FI.
+--enable-ML-FI-stats        Enable FI statistics for ML applications.
 
 Prerequisite:
 You need to have 'input.yaml' under the same directory as <source IR file>, which contains appropriate options for LLFI
@@ -66,6 +67,7 @@ options = {
   "IRonly": False,
   "genDotGraph": False,
   "useMLSpecificRT": False,
+  "enableMLFIStats" : False,
 }
 
 
@@ -108,6 +110,8 @@ def parseArgs(args):
         options["IRonly"] = True
       elif arg == "--use-ml-specific-rt":
         options["useMLSpecificRT"] = True
+      elif arg == "--enable-ML-FI-stats":
+        options["enableMLFIStats"] = True
       elif arg == "--help" or arg == "-h":
         usage()
       else:
@@ -345,6 +349,8 @@ def compileProg():
     execlist.extend(execlist2)
     if options["readable"]:
       execlist.append("-S")
+    if options["enableMLFIStats"]:
+      execlist.append("-mlfistats")
     retcode = execCompilation(execlist)
 
   if retcode == 0:

@@ -23,9 +23,15 @@ struct LLTFIConfig {
   // number of faults to inject.
   int fi_max_multiple;
 
+  // For emitting FI stats for a particular layer.
+  int fi_ml_layer_num;
+  char fi_ml_layer_name[100];
+
   LLTFIConfig() {
     strncpy(fi_type, "bitflip", 10);
     fi_max_multiple = 0;
+    fi_ml_layer_num = -1;
+    strncpy(fi_ml_layer_name, "", 100);
   }
 };
 
@@ -85,6 +91,17 @@ void parseLLTFIConfigFile() {
       LLTFI_config.fi_cycle.push_back(atoll(value));
     }
 
+    // Parse FI stats for ML applications
+    else if (strcmp(option, "ml_layer_name") == 0) {
+      strncpy(LLTFI_config.fi_ml_layer_name, value, 100);
+      if (LLTFI_config.fi_ml_layer_name[strlen(LLTFI_config.fi_ml_layer_name) - 1] == '\n')
+        LLTFI_config.fi_ml_layer_name[strlen(LLTFI_config.fi_ml_layer_name) - 1] = '\0';
+    }
+
+    else if (strcmp(option, "ml_layer_number") == 0) {
+        LLTFI_config.fi_ml_layer_num = atoll(value);
+    }
+
     else {
       fprintf(stderr,
               "ERROR: Unknown option %s for LLFI runtime fault injection\n",
@@ -97,6 +114,8 @@ void parseLLTFIConfigFile() {
   assert(LLTFI_config.fi_type != NULL && "No fault injector selected.");
   assert(LLTFI_config.fi_cycle.size() > 0 && "No fi_cycle selected");
   assert(LLTFI_config.fi_max_multiple > 0 && "invalid fi_max_multiple in config file");
+  assert((LLTFI_config.fi_ml_layer_num > 0 || LLTFI_config.fi_ml_layer_num == -1) &&
+          "ml_layer_number should be grater than 0");
 
   // Sort the fi_cycle vector.
   sort(LLTFI_config.fi_cycle.begin(), LLTFI_config.fi_cycle.end());
@@ -175,13 +194,24 @@ extern "C" {
       assert(false && "Not recognized fi_type");
     }
 
-    fprintf(injectedfaultsFile,
-          "FI stat: fi_type=%s, fi_max_multiple=%d, fi_index=%ld, \
-           fi_cycle=%lld, fi_reg_index=%u, fi_reg_pos=%u, fi_reg_width=%u, \
-           fi_bit=%u, opcode=%s, old=0x%hhx, new=0x%hhx\n",
+    if (LLTFI_config.fi_ml_layer_num > 0)
+      fprintf(injectedfaultsFile,
+          "FI stat: fi_type=%s, fi_max_multiple=%d, fi_index=%ld, "
+          "fi_cycle=%lld, fi_reg_index=%u, fi_reg_pos=%u, fi_reg_width=%u, "
+          "fi_bit=%u, opcode=%s, old=0x%hhx, new=0x%hhx, ml_layer_name=%s, "
+          "ml_layer_number=%d\n",
            LLTFI_config.fi_type, LLTFI_config.fi_max_multiple,
            llfi_index, LLTFI_CurrentCycle, my_reg_index, reg_pos, size,
-           fi_bitpos, opcode_str, oldbuf, buf[fi_bytepos]);
+           fi_bitpos, opcode_str, oldbuf, buf[fi_bytepos],
+           LLTFI_config.fi_ml_layer_name, LLTFI_config.fi_ml_layer_num);
+    else
+      fprintf(injectedfaultsFile,
+            "FI stat: fi_type=%s, fi_max_multiple=%d, fi_index=%ld, "
+            "fi_cycle=%lld, fi_reg_index=%u, fi_reg_pos=%u, fi_reg_width=%u, "
+            "fi_bit=%u, opcode=%s, old=0x%hhx, new=0x%hhx\n",
+            LLTFI_config.fi_type, LLTFI_config.fi_max_multiple,
+            llfi_index, LLTFI_CurrentCycle, my_reg_index, reg_pos, size,
+            fi_bitpos, opcode_str, oldbuf, buf[fi_bytepos]);
 
     fflush(injectedfaultsFile);
   }

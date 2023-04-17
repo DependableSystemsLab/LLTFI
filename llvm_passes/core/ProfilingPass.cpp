@@ -37,6 +37,55 @@ namespace llfi {
 char LegacyProfilingPass::ID=0;
 extern cl::opt< std::string > llfilogfile;
 
+// Flag to enable/disable output of FI statistics for ML applications in the
+// llfi.stat.fi.injectedfaults.txt file.
+// Enabling this option will cause LLTFI to output the layer type and number in
+// which the fault is injected. This option is disabled by default.
+static cl::opt< bool > mlfistats("mlfistats",
+  cl::desc("Flag to disable or enable the FI statistics of ML applications. \
+            Default value: false."), cl::init(false));
+
+// Find all the call to OMInstrumentPoint function and insert a call to
+// lltfiMLLayer function before each call to OMInstrumentPoint.
+// lltfiMLLayer function used for announcing the ML layer type during profiling
+// runtime.
+void insertCallForMLFIStats(Module &M) {
+
+  // Find main_graph function in this module.
+  Function *main_graph = M.getFunction("main_graph");
+
+  // Iterate over all instructions of the main_graph function.
+  for (Function::iterator bb = main_graph->begin(); bb != main_graph->end(); bb++) {
+    for (BasicBlock::iterator inst = bb->begin(); inst != bb->end(); inst++) {
+      // If the instruction is a call instruction, check if it is a call to
+      // the OMInstrumentPoint function.
+      if (isa<CallInst>(inst)) {
+        CallInst *call_inst = dyn_cast<CallInst>(inst);
+        if (call_inst->getCalledFunction()->getName() == "OMInstrumentPoint") {
+
+          // Clone the instruction and reassign the operands.
+          Instruction* duplicatedInst = inst->clone();
+          for(unsigned int i = 0; i < duplicatedInst->getNumOperands(); i++){
+              duplicatedInst->setOperand(i, inst->getOperand(i));
+          }
+
+          auto Fn = inst->getFunction()->getParent()->getOrInsertFunction(
+                    "lltfiMLLayer", Type::getVoidTy(inst->getContext()),
+                    Type::getInt64Ty(inst->getContext()),
+                    Type::getInt64Ty(inst->getContext()));
+
+          // Change name of the duplicate call instruction.
+          CallInst *duplicateCall = dyn_cast<CallInst>(duplicatedInst);
+          duplicateCall->setCalledFunction(Fn);
+
+          // Insert the duplicate instruction
+          duplicatedInst->insertBefore(inst->getNextNode());
+        }
+      }
+    }
+  }
+}
+
 bool LegacyProfilingPass::runOnModule(Module &M) {
 	LLVMContext &context = M.getContext();
 
@@ -47,13 +96,13 @@ bool LegacyProfilingPass::runOnModule(Module &M) {
   std::error_code err;
   raw_fd_ostream logFile(llfilogfile.c_str(), err, sys::fs::OF_Append);
 
-  for (std::map<Instruction*, std::list< int >* >::const_iterator 
-       inst_reg_it = fi_inst_regs_map->begin(); 
+  for (std::map<Instruction*, std::list< int >* >::const_iterator
+       inst_reg_it = fi_inst_regs_map->begin();
        inst_reg_it != fi_inst_regs_map->end(); ++inst_reg_it) {
     Instruction *fi_inst = inst_reg_it->first;
     std::list<int > *fi_regs = inst_reg_it->second;
 
-    /*BEHROOZ: This section makes sure that we do not instrument the intrinsic functions*/ 
+    /*BEHROOZ: This section makes sure that we do not instrument the intrinsic functions*/
     if(isa<CallInst>(fi_inst)){
       bool continue_flag=false;
       for (std::list<int>::iterator reg_pos_it_mem = fi_regs->begin();
@@ -97,6 +146,9 @@ bool LegacyProfilingPass::runOnModule(Module &M) {
   }
 
   logFile.close();
+
+  if (mlfistats)
+    insertCallForMLFIStats(M);
 
   addEndProfilingFuncCall(M);
   return true;

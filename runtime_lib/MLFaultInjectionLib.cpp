@@ -198,7 +198,7 @@ extern "C" {
       fprintf(injectedfaultsFile,
           "FI stat: fi_type=%s, fi_max_multiple=%d, fi_index=%ld, "
           "fi_cycle=%lld, fi_reg_index=%u, fi_reg_pos=%u, fi_reg_width=%u, "
-          "fi_bit=%u, opcode=%s, old=0x%hhx, new=0x%hhx, ml_layer_name=%s, "
+          "fi_bit=%u, opcode=%s, old=0x%llx, new=0x%llx, ml_layer_name=%s, "
           "ml_layer_number=%d\n",
            LLTFI_config.fi_type, LLTFI_config.fi_max_multiple,
            llfi_index, LLTFI_CurrentCycle, my_reg_index, reg_pos, size,
@@ -208,7 +208,7 @@ extern "C" {
       fprintf(injectedfaultsFile,
             "FI stat: fi_type=%s, fi_max_multiple=%d, fi_index=%ld, "
             "fi_cycle=%lld, fi_reg_index=%u, fi_reg_pos=%u, fi_reg_width=%u, "
-            "fi_bit=%u, opcode=%s, old=0x%hhx, new=0x%hhx\n",
+            "fi_bit=%u, opcode=%s, old=0x%llx, new=0x%llx\n",
             LLTFI_config.fi_type, LLTFI_config.fi_max_multiple,
             llfi_index, LLTFI_CurrentCycle, my_reg_index, reg_pos, size,
             fi_bitpos, opcode_str, oldbuf, buf[fi_bytepos]);

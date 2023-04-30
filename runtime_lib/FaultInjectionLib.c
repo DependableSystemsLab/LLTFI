@@ -318,7 +318,7 @@ void injectFunc(long llfi_index, unsigned size,
   //==================================================
   /*
   debug(("FI stat: fi_type=%s, fi_index=%ld, fi_cycle=%lld, fi_reg_index=%u, "
-         "fi_bit=%u, size=%u, old=0x%hhx, new=0x%hhx\n", config.fi_type,
+         "fi_bit=%u, size=%u, old=0x%llx, new=0x%llx\n", config.fi_type,
             llfi_index, config.fi_cycle, my_reg_index, fi_bit,
             size,  oldbuf, buf[fi_bytepos]));
 */

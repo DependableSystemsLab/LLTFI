@@ -16,6 +16,7 @@ installer/pyyaml/*
 installer/pyyamlsrc/*
 installer/fontconfig/*
 build/
+sample_programs/
 
 # All the .ll and .bc files
 *.ll

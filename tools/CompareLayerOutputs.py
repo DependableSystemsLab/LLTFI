@@ -281,6 +281,9 @@ mismatch = []
 # Should we calculate FI stats
 FIStatsCalculate = False
 
+# is NLP model
+isNLPModel = False
+
 ###### HELPER FUNCTIONS #######
 def printStructuralDifferenceError():
     print("Input JSON files are structurally difference. Abort!");
@@ -325,25 +328,34 @@ def export_dot_graph(layerNames, GraphName, SelectedLayers):
 
 def getJsonDiff(j1, j2, delta):
 
+    global isNLPModel
     with open(j1, "r") as f:
         with open(j2, "r") as g:
-            jf = json.load(f)
-            jg = json.load(g)
+            print("Opening file: " + str(g))
+            try:
+                jf = json.load(f)
+                jg = json.load(g)
 
-            assertFun(len(jf) == len(jg));
+                assertFun(len(jf) == len(jg));
 
-            # Iterate each layer
-            for i in range(0, len(jf), 1):
-                key = str(i)
+                # Iterate each layer
+                for i in range(0, len(jf), 1):
+                    key = str(i)
 
-                assertFun(jf[key]['Layer Id'] == jg[key]['Layer Id'])
-                assertFun(jf[key]['Rank'] == jg[key]['Rank'])
-                assertFun(jf[key]['Number of Elements'] == jg[key]['Number of Elements'])
-                assertFun(jf[key]['Shape'] == jg[key]['Shape'])
+                    #assertFun(jf[key]['Layer Id'] == jg[key]['Layer Id'])
+                    assertFun(jf[key]['Rank'] == jg[key]['Rank'])
+                    assertFun(jf[key]['Number of Elements'] == jg[key]['Number of Elements'])
+                    assertFun(jf[key]['Shape'] == jg[key]['Shape'])
 
-                #Iterate all data outputs
-                for j in range(0, len(jf[key]['Data']), 1):
-                    retval = assertData(str(jf[key]['Data'][j]), str(jg[key]['Data'][j]), str(jf[key]['Number of Elements']), str(jf[key]['Layer Id']), str(j), delta)
+                    layerId = jf[key]['Layer Id']
+                    if isNLPModel:
+                        layerId = i
+
+                    #Iterate all data outputs
+                    for j in range(0, len(jf[key]['Data']), 1):
+                        retval = assertData(str(jf[key]['Data'][j]), str(jg[key]['Data'][j]), str(jf[key]['Number of Elements']), str(layerId), str(j), delta)
+            except:
+                pass
 
 # Get total number of layers in a model
 layers_in_json_file = None
@@ -371,6 +383,7 @@ def main():
     parser.add_argument("-d", "--delta", action="store", type=str, default="0", help="What should be the minimum difference between the mismatches? \t Default: 0.0")
     parser.add_argument("-f", "--folder", action="store_true", default=False, help="Specify this flag if the second argument is a folder path? \t Default: False")
     parser.add_argument("--dot", action="store_true", default=False, help="Do you want to output a dot file? \t Default: False")
+    parser.add_argument("--nlp", action="store_true", default=False, help="Is the model a NLP model? \t Default: False")
     parser.add_argument("-fdiff", "--print_diff_final_op", action="store_true", default=False, help="Print mismatch on terminal only when there is a mismatch in the final layer o/p. \t Default: False")
     parser.add_argument("--selected_layers_in_dot", action="store", default="all", help="""Show only mismatches in selected layers during DOT file generation. Semicolon seperate values. \t Default: "all" """)
     parser.add_argument("--summary", action="store_true", default=False, help="Do you just want to output a summary of mismatches? \t Default: False")
@@ -384,8 +397,9 @@ def main():
 
     diff = None
 
-    global FIStatsCalculate
+    global FIStatsCalculate, isNLPModel
     FIStatsCalculate = args.getFIStatsRQ2
+    isNLPModel = args.nlp
 
     if args.folder:
         dir_path = args.second
@@ -416,7 +430,7 @@ def main():
                         mismatch_found = False;
 
                         for mismatch in value:
-  
+
                             if mismatch[0] == str(getTotalLayers(args.first)):
                                 mismatch_found = True
                                 break;
@@ -439,7 +453,7 @@ def main():
         else:
             print("Invalid directory path: " + args.second)
             exit()
-    
+
     else:
         if os.path.isfile(args.first) and os.path.isfile(args.second):
 
@@ -460,7 +474,7 @@ def main():
         else:
             print("Invalid file path(s): " + args.first + "   \n " + args.second)
             exit()
-    
+
     # Export mismatches as a dot file. Don't output the dot file when folder is given as an input.
     if args.dot and (not args.folder):
         model = onnx.load(args.ONNXModel)

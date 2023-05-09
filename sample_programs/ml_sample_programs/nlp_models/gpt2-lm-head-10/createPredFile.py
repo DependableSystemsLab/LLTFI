@@ -10,12 +10,17 @@ ROOT = os.getcwd()
 LLFI_OUT = os.path.join(ROOT, 'llfi')
 PROG_OUT = os.path.join(LLFI_OUT, 'prog_output')
 
-input = []
-input.append("This chair is white and the table is")
-input.append("It is bright and")
-input.append("I am a doctor and I work at a")
-input.append("I like playing with my")
-input.append("A rose by any other name would smell as")
+inputs = []
+inputs.append("This chair is white and the table is")
+inputs.append("It is bright and")
+inputs.append("I am a doctor and I work at a")
+inputs.append("I like playing with my")
+inputs.append("A rose by any other name would smell as")
+inputs.append("US-led coalition air strikes on a jail run by the Islamic State group in eastern Syria killed")
+inputs.append("A magazine supplement with an image of Adolf Hitler and the title 'The Unreadable Book' is pictured in")
+inputs.append("Winter isn't done with us yet. Ottawa can expect another 10 to 15 centimetres of")
+inputs.append("Refined mansion tax proposal being fed into debate on abolishing 50p tax rate for those earning more than")
+inputs.append("Ghazala Khan, the mother of a fallen U.S. soldier of Muslim faith, is responding to Donald Trump’s")
 
 tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
 
@@ -44,13 +49,13 @@ def main(inpSample):
         output_np = output_np.reshape(1,1,-1,50257) # Shape (1,1,len,50257)
         list_output_np.append(output_np)
 
-    tokens = np.array(tokenizer.encode(input[inpSample]))
+    tokens = np.array(tokenizer.encode(inputs[inpSample]))
 
     # Script to convert numpy output to text
     listPreds = []
     for elemIndex in range(len(list_output_np)):
         input_to_model = tf.convert_to_tensor(
-                        [[tokenizer.encode(input[inpSample], add_special_tokens=True)]]) # Shape [1, 1, len]
+                        [[tokenizer.encode(inputs[inpSample], add_special_tokens=True)]]) # Shape [1, 1, len]
         prev = input_to_model # [1, 1, len] Set prev as input in the first step
         prev = prev[0] # [1, len]
         output = prev

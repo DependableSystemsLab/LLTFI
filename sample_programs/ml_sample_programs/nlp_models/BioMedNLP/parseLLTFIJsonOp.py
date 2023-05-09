@@ -12,9 +12,9 @@ inputs = ["Main symptom of common flu is [MASK].",
 "He is having sickness and vomiting, thus, he might be having [MASK].",
 "Since you are having post-traumatic disorder, you should consult a [MASK].",
 "Paracetamol is used to treat a [MASK].",
+"The hereditary [MASK] protein, HFE, specifically regulates transferrin-mediated iron uptake in HeLa cells.",
+"Pelizaeus-Merzbacher disease is caused by overexpression of [MASK] gene transcripts.",
 "[MASK] is a tumor suppressor gene.",
-"Chest pain is a symptom of [MASK]",
-"He is having chest pain and vomiting, thus he might be having [MASK]",
 "[MASK] is a symptom of diabetes."]
 
 def main(inpSample):

@@ -194,7 +194,7 @@ extern "C" {
       int8_t val = buf[fi_bytepos];
       int shift = fi_bitpos % 8;
 
-      val ^= 1U << (7 - shift);
+      val ^= 0x1 << shift;
 
       buf[fi_bytepos] = val;
     }

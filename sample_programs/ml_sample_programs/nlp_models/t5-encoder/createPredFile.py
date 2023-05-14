@@ -7,19 +7,27 @@ from onnxt5.api import get_encoder_decoder_tokenizer
 import numpy as np
 import glob
 import os
-import json
+import json, pdb
 
 ROOT = os.getcwd()
 LLFI_OUT = os.path.join(ROOT, 'llfi')
 PROG_OUT = os.path.join(LLFI_OUT, 'prog_output')
 
+# WMT19 Dataset from huggingface
 prompts = []
-prompts.append('translate English to German: I was a victim of accidents')
-prompts.append('translate English to French: Today is a bright, sunny day')
-prompts.append('translate English to German: Vancouver is a beautiful city')
-prompts.append('translate English to French: She sings beautifully')
-prompts.append('translate English to German: The cake is very tasty')
+prompts.append('translate English to German: I declare resumed the session of the European Parliament adjourned on Friday, 15 December 2000.')
+prompts.append('translate English to German: Statements by the President')
+prompts.append('translate English to French: Statements by the President')
+prompts.append('translate English to French: I declare resumed the session of the European Parliament adjourned on Friday, 15 December 2000.')
+prompts.append('translate English to German: Ladies and gentlemen, on Saturday, as you know, an earthquake struck Central America once again, with tragic consequences. This is an area which has already been seriously affected on a number of occasions since the beginning of the twentieth century.')
+prompts.append('translate English to French: Ladies and gentlemen, on Saturday, as you know, an earthquake struck Central America once again, with tragic consequences. This is an area which has already been seriously affected on a number of occasions since the beginning of the twentieth century.')
+prompts.append('''translate English to German: (The House rose and observed a minute's silence)''')
+prompts.append('''translate English to French: (The House rose and observed a minute's silence)''')
+prompts.append('translate English to German: I should like, on behalf of the European Parliament, to express our sympathy to the parents and families of the victims.')
+prompts.append('translate English to French: I should like, on behalf of the European Parliament, to express our sympathy to the parents and families of the victims.')
 
+def lltfi_sort(elem):                                                           
+    return int(elem.split('layeroutput')[-1].split('-')[-1].split('.txt')[0])
 
 class GenerativeT5_custom_encoder(torch.nn.Module):
     """ Code Ref: https://github.com/abelriboulot/onnxt5
@@ -84,7 +92,7 @@ def main():
     # Get LLTFI outputs in listResArr
     listResArr = []
     list_of_files = sorted( filter( lambda x: os.path.isfile(os.path.join(PROG_OUT, x)),
-                            os.listdir(PROG_OUT) ) )
+                            os.listdir(PROG_OUT) ), key=lltfi_sort )
 
     for i in range(len(list_of_files)):
         list_of_files[i] = os.path.join(PROG_OUT, list_of_files[i])

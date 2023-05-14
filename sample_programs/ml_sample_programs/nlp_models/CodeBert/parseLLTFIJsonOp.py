@@ -17,6 +17,9 @@ inputs = ["if (x is not None) <mask> (x>1)",
 """public String getString ( String defaultValue ) { if ( value instanceof String || value instanceof Number ) { return value . toString ( ) ; } if ( value == null ) { return null ; } if ( value instanceof JSONArray ) { return ( ( JSONArray ) value ) . toJSONString ( ) ; } if ( value instanceof JSONObject ) { return ( ( JSONObject ) value ) . <mask> ( ) ; } if ( value == null ) { return defaultValue ; } throw createException ( "Expected string:" ) ; }""",
 """ public Double getDouble ( Double defaultValue ) { if ( value instanceof Number ) { return ( ( Number ) value ) . doubleValue ( ) ; } if ( value instanceof String ) { String s = ( String ) value ; return Double . <mask> ( s ) ; } if ( value == null ) { return defaultValue ; } throw createException ( "Expected number:" ) ; }"""]
 
+def lltfi_sort(elem):                                                           
+    return int(elem.split('layeroutput')[-1].split('-')[-1].split('.txt')[0])
+
 def main(inpSample):
 
     global inputs
@@ -43,7 +46,7 @@ def main(inpSample):
     # Read LLTFI output from llfi/prog_output and add it to 'listResArr'
     txtfiles = []
 
-    for file in glob.glob(os.path.join(PROG_OUT, "*.txt")):
+    for file in sorted(glob.glob(os.path.join(PROG_OUT, "*.txt")), key=lltfi_sort):
         txtfiles.append(file)
 
     listResArr = []

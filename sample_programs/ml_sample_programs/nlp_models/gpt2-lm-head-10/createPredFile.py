@@ -24,11 +24,14 @@ inputs.append("Ghazala Khan, the mother of a fallen U.S. soldier of Muslim faith
 
 tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
 
+def lltfi_sort(elem):                                                           
+    return int(elem.split('layeroutput')[-1].split('-')[-1].split('.txt')[0])
+
 def main(inpSample):
     # Get LLTFI outputs in listResArr
     listResArr = []
     list_of_files = sorted( filter( lambda x: os.path.isfile(os.path.join(PROG_OUT, x)),
-                            os.listdir(PROG_OUT) ) )
+                            os.listdir(PROG_OUT) ), key=lltfi_sort )
 
     for i in range(len(list_of_files)):
         list_of_files[i] = os.path.join(PROG_OUT, list_of_files[i])

@@ -25,6 +25,9 @@ MAX_QUERY_LENGTH = 64
 DOC_STRIDE = 128
 VOCAB_FILE = os.path.join(BERT_BASE_DIR, 'vocab.txt')
 
+def lltfi_sort(elem):                                                           
+    return int(elem.split('layeroutput')[-1].split('-')[-1].split('.txt')[0])
+
 def append_feature(eval_features, eval_writer, feature):
     eval_features.append(feature)
     eval_writer.process_feature(feature)
@@ -50,7 +53,7 @@ def main(inpSample):
     # Read LLTFI output from llfi/prog_output and add it to 'listResArr'
     txtfiles = []
 
-    for file in glob.glob(os.path.join(PROG_OUT, "*.txt")):
+    for file in sorted(glob.glob(os.path.join(PROG_OUT, "*.txt")), key=lltfi_sort):
         txtfiles.append(file)
 
     listResArr = []

@@ -53,6 +53,9 @@ ROOT = os.getcwd()
 LLFI_OUT = os.path.join(ROOT, 'llfi')
 PROG_OUT = os.path.join(LLFI_OUT, 'prog_output')
 
+def lltfi_sort(elem):                                                           
+    return int(elem.split('layeroutput')[-1].split('-')[-1].split('.txt')[0])
+
 
 # Ref: https://github.com/abelriboulot/onnxt5
 ### Helper class to get decoder output
@@ -147,7 +150,7 @@ def main(inpSample):
     # Convert lltfi output to text
     listResArr = []
     list_of_files = sorted( filter( lambda x: os.path.isfile(os.path.join(PROG_OUT, x)),
-                                os.listdir(PROG_OUT) ) )
+                                os.listdir(PROG_OUT) ), key=lltfi_sort)
 
     for i in range(len(list_of_files)):
             list_of_files[i] = os.path.join(PROG_OUT, list_of_files[i])

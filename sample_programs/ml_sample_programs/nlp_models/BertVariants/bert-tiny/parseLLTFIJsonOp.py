@@ -17,6 +17,9 @@ inputs = ["Main symptom of common flu is [MASK].",
 "[MASK] is a tumor suppressor gene.",
 "[MASK] is a symptom of diabetes."]
 
+def lltfi_sort(elem):                                                           
+    return int(elem.split('layeroutput')[-1].split('-')[-1].split('.txt')[0])
+
 def main(inpSample):
 
     global inputs
@@ -25,8 +28,6 @@ def main(inpSample):
     model_name = "prajjwal1/bert-tiny"
     model = BertForMaskedLM.from_pretrained(model_name)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-
-    pdb.set_trace()
 
     sequence = (inputs[inpSample])
     inputs = tokenizer(sequence, return_tensors="pt")
@@ -45,7 +46,7 @@ def main(inpSample):
     # Read LLTFI output from llfi/prog_output and add it to 'listResArr'
     txtfiles = []
 
-    for file in glob.glob(os.path.join(PROG_OUT, "*.txt")):
+    for file in sorted(glob.glob(os.path.join(PROG_OUT, "*.txt")), key=lltfi_sort):
         txtfiles.append(file)
 
     listResArr = []

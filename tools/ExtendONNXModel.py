@@ -19,7 +19,7 @@ def extend_model_output(model, intermediate_outputs):
     global layers
     # onnx-mlir doesn't care about manually specified output types & shapes.
     DUMMY_TENSOR_TYPE = onnx.TensorProto.FLOAT
-    
+
     original_op = model.graph.output[0].name
 
     # Remove all outputs from the model
@@ -30,7 +30,7 @@ def extend_model_output(model, intermediate_outputs):
     layer_output = []
     for output_name in intermediate_outputs:
         i = i + 1 # Current layer
-        if all_layers:
+        if all_layers and ('Constant' not in output_name) and ('Gather' not in output_name):
             output_value_info = onnx.helper.make_tensor_value_info(output_name, DUMMY_TENSOR_TYPE, None)
             model.graph.output.extend([output_value_info])
             layer_output.append(i)
@@ -47,7 +47,7 @@ def extend_model_output(model, intermediate_outputs):
         output_value_info = onnx.helper.make_tensor_value_info(original_op, DUMMY_TENSOR_TYPE, None)
         model.graph.output.extend([output_value_info])
         layer_output.append(len(intermediate_outputs) - 1)
-        
+
     return model, layer_output
 
 def print_summary(model):
@@ -68,7 +68,7 @@ def main():
     if args.summary:
         print_summary(model)
         exit()
- 
+
     output_names = [o.name for o in model.graph.output]
     output_names = list(OrderedDict.fromkeys(output_names))
     output_names = sum([[n for n in node.output if n != ''] for node in model.graph.node], [])

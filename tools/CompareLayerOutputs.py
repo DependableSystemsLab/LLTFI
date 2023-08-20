@@ -13,6 +13,7 @@ from math import floor, log10
 import onnx
 from collections import OrderedDict
 import pygraphviz as pyg
+from collections import Counter
 
 ###### GLOBALS #########
 
@@ -284,6 +285,9 @@ FIStatsCalculate = False
 # is NLP model
 isNLPModel = False
 
+# ONNX model
+onnxModel = None
+
 ###### HELPER FUNCTIONS #######
 def printStructuralDifferenceError():
     print("Input JSON files are structurally difference. Abort!");
@@ -295,12 +299,12 @@ def assertFun(a):
     else:
         pass
 
-def assertData(d1, d2, elements, layer, index, delta):
+def assertData(d1, d2, elements, layer, index, delta, op_layer_name = ""):
     if abs(float(d1) - float(d2)) <= float(delta):
         return False
     else:
         #print("Mismatch found at layer:" + layer + " index: " + index + " one value= " + d1 + " second value= " + d2)
-        mismatch.append([layer, index, elements, float(d1), float(d2)])
+        mismatch.append([op_layer_name, layer, index, elements, float(d1), float(d2)])
 
         global FIStatsCalculate
         if FIStatsCalculate:
@@ -342,18 +346,29 @@ def getJsonDiff(j1, j2, delta):
                 for i in range(0, len(jf), 1):
                     key = str(i)
 
+                    #if not (jf[key]['Rank'] == jg[key]['Rank'] and jf[key]['Number of Elements'] == jg[key]['Number of Elements'] and jf[key]['Shape'] == jg[key]['Shape']):
+                        #set_trace()
+
+                    if jf[key]['Rank'] == 0:
+                      continue
+
                     #assertFun(jf[key]['Layer Id'] == jg[key]['Layer Id'])
                     assertFun(jf[key]['Rank'] == jg[key]['Rank'])
                     assertFun(jf[key]['Number of Elements'] == jg[key]['Number of Elements'])
                     assertFun(jf[key]['Shape'] == jg[key]['Shape'])
 
                     layerId = jf[key]['Layer Id']
+                    op_name = ""
                     if isNLPModel:
                         layerId = i
+                        global onnxModel
+                        import onnx
+                        m = onnx.load(onnxModel)
+                        op_name = m.graph.output[i].name
 
                     #Iterate all data outputs
                     for j in range(0, len(jf[key]['Data']), 1):
-                        retval = assertData(str(jf[key]['Data'][j]), str(jg[key]['Data'][j]), str(jf[key]['Number of Elements']), str(layerId), str(j), delta)
+                        retval = assertData(str(jf[key]['Data'][j]), str(jg[key]['Data'][j]), str(jf[key]['Number of Elements']), str(layerId), str(j), delta, op_name)
             except:
                 pass
 
@@ -394,6 +409,9 @@ def main():
 
     global LLTFIObject
     LLTFIObject.argParser(args)
+
+    global onnxModel
+    onnxModel = args.ONNXModel
 
     diff = None
 
@@ -466,6 +484,9 @@ def main():
                 # Just print a summary of mismatches
                 if args.summary:
                     print("Found " + str(len(mismatch)) + " mismatche(s)")
+                    layers = [ln[0] for ln in mismatch]
+                    print(Counter(layers))
+                    print(layers)
                 else:
                     print(json.dumps(mismatch))
 

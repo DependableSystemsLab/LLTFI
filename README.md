@@ -3,6 +3,8 @@
 
 This README file describes the structure of this project, our fault injection (FI) tool, benchmarks, instructions to build the tool, and, finally, instructions to reproduce the experiments reported in our paper.
 
+For those accessing these artifacts via Zenodo, the artifacts are also available on Github: https://github.com/DependableSystemsLab/LLTFI/tree/ISSRE23_AE.
+
 ## Artifacts Description
 ### LLTFI - Our FI tool
 

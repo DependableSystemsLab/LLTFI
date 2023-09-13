@@ -1,18 +1,18 @@
 LLTFI
 =====
-LLTFI (Low Level Tensor Fault Injector) is a unified SWiFI (Software-implemented fault injection) tool that supports fault injection of both C/C++ programs and ML applications written using high-level frameworks such as TensorFlow and PyTorch.
+LLTFI (Low-Level Tensor Fault Injector) is a unified SWiFI (Software-implemented fault injection) tool that supports fault injection of both C/C++ programs and ML applications written using high-level frameworks such as TensorFlow and PyTorch.
 
 As machine learning (ML) has become more prevalent across many critical domains, so has the need to understand ML system resilience. While there are many ML fault injectors at the application level, there has been little work enabling fault injection of ML applications at a lower level. **LLTFI** is a tool that allows users to run fault injection experiments on C/C++, TensorFlow and PyTorch applications at a lower level (at the LLVM IR level). Please refer to the following [paper](https://blogs.ubc.ca/dependablesystemslab/2021/08/31/wip-lltfi-low-level-tensor-fault-injector/) for more information about LLTFI.
 
-LLTFI is built on top of [LLFI](https://github.com/DependableSystemsLab/LLFI) and is fully backwards compatible with it. 
+LLTFI is built on top of [LLFI](https://github.com/DependableSystemsLab/LLFI) and is fully backward compatible with it. 
 
 ### LLFI ###
-**LLFI** is an LLVM based fault injection tool, that injects faults into the LLVM IR of the application source code.  The faults can be injected into specific program points, and the effect can be easily tracked back to the source code.  LLFI is typically used to map fault characteristics back to source code, and hence understand source level or program characteristics for various kinds of fault outcomes. Detailed documentation about LLFI can be found at: https://github.com/DependableSystemsLab/LLFI/wiki. Because LLTFI is designed to be backwards compatible with LLFI, the basic setup instructions for LLTFI are similar to those of LLFI. But, there are additional steps and dependencies for running ML programs. 
+**LLFI** is an LLVM-based fault injection tool, that injects faults into the LLVM IR of the application source code.  The faults can be injected into specific program points, and the effect can be easily tracked back to the source code.  LLFI is typically used to map fault characteristics back to source code and hence understand source level or program characteristics for various kinds of fault outcomes. Detailed documentation about LLFI can be found at: https://github.com/DependableSystemsLab/LLFI/wiki. Because LLTFI is designed to be backward compatible with LLFI, the basic setup instructions for LLTFI are similar to those of LLFI. However, there are additional steps and dependencies for running ML programs. 
 
 LLTFI Workflow:
 -------------------------
 High-level ML models need to be lowered to intermediate representation (IR) for fault injection. LLTFI provides a single script that converts ML models into LLVM IR, using several publicly available tools and performs fault injection.
-LLTFI first lowers ML models to **MLIR** (Multi-Level Intermediate Representation) using ONNX-MLIR before converting to LLVM IR. Reasons for choosing MLIR being MLIR's ability to better preserve the semantics of ML models, its integration with LLVM, testability and easier extensibility. 
+LLTFI first lowers ML models to **MLIR** (Multi-Level Intermediate Representation) using ONNX-MLIR before converting to LLVM IR. The reasons for choosing MLIR are MLIR's ability to better preserve the semantics of ML models, its integration with LLVM, testability and easier extensibility. 
 
 #### Workflow Diagram of LLTFI: ####
 
@@ -180,9 +180,9 @@ Steps to build:
 
 
 ### Running tests: ###
-Running all regression tests after installation is highly recommended. Note that you may encounter some error messages during the fault injection stage. This is normal. Once all tests have completed and they all passed, LLFI is correctly installed.
+Running all regression tests after installation is highly recommended. Note that you may encounter some error messages during the fault injection stage. This is normal. Once all tests have been completed and they all passed, LLFI is correctly installed.
 
-For complete test of whole of LLFI, please use LLFI test suite and refer to wiki page: [Test suite for regression test](https://github.com/DependableSystemsLab/LLFI/wiki/Test-Suite-for-Regression-Test) for details.
+For complete test of whole of LLFI, please use LLFI test suite and refer to the wiki page: [Test suite for regression test](https://github.com/DependableSystemsLab/LLFI/wiki/Test-Suite-for-Regression-Test) for details.
 
 <!--
 VirtualBox Image
@@ -207,7 +207,7 @@ To run it, open VirtualBox, select `File->Import Appliance...` and navigate to t
 
 ### Running Sample Programs ###
 
-You can use test programs in the directory `sample_programs/` or `test_suite/PROGRAMS/` to test LLFI. Programs in the `sample_programs` directory already contains a valid `input.yaml` file.
+You can use test programs in the directory `sample_programs/` or `test_suite/PROGRAMS/` to test LLFI. Programs in the `sample_programs` directory already contain a valid `input.yaml` file.
 
 Example program: `factorial`:
   1. Copy the `sample_programs/factorial/` directory to your project directory. 
@@ -217,7 +217,7 @@ Example program: `factorial`:
 
 <!--
 ####GUI
-If you have used `./setup` to install LLFI, you need to set new environment variables for tcsh shell before running the GUI for the first time. Open `~/.tcshrc` using your favourite text editor and add `setenv llfibuild <LLFI_BUILD_ROOT>/` and `setenv zgrviewer <LLFI_BUILD_ROOT>/tools/zgrviewer/` to it. [OPTIONAL] Create an environment variable "COMPARE" with the path of the SDC check script.
+If you have used `./setup` to install LLFI, you need to set new environment variables for tcsh shell before running the GUI for the first time. Open `~/.tcshrc` using your favorite text editor and add `setenv llfibuild <LLFI_BUILD_ROOT>/` and `setenv zgrviewer <LLFI_BUILD_ROOT>/tools/zgrviewer/` to it. [OPTIONAL] Create an environment variable "COMPARE" with the path of the SDC check script.
 
 Execute `<LLFI_BUILD_ROOT>/bin/llfi-gui` to start the **GUI**. The outputs will be saved in the directory where you have executed the command.
 
@@ -231,8 +231,8 @@ Steps to set up the development environment:
 2: Download NodeJs   
 3: Install libraries: Go to the web-app directory and run "npm install"   
 4: Install Webpack: In the same directory as step 3, run "sudo npm install -g webpack"   
-5: Configurate the LLFI root path for the server:   
-The default bevaiour of the program use environment variable $llfibuild as the path of the llfi build directory  
+5: Configure the LLFI root path for the server:   
+The default behavior of the program use environment variable $llfibuild as the path of the llfi build directory  
 You can set the environment variable llfibuild in your system to point it to the LLFI build directory in your local machine.   
 
 Start the server:   
@@ -252,14 +252,20 @@ in the *llfi* directory.
 | *std_output*          | Piped STDOUT from the tested application       |
 | *llfi_stat_output*    | Fault injection statistics                     |
 | *error_output*        | Failure reports (program crashes, hangs, etc.) |
-| *trace_report_output* | Faults propogation report files and graph      |
+| *trace_report_output* | Faults propagation report files and graph      |
 
+
+Reproducing the experiments in our ISSRE'23 paper
+-------------------------------------------------
+
+Please refer to the following README file for instructions on obtaining benchmarks and reproducing the experiments in our ISSRE'23 paper. [ISSRE'23 AE](https://github.com/DependableSystemsLab/LLTFI/blob/ISSRE23_AE/README.md)
 
 References
 ----------
 * [LLFI Paper](http://blogs.ubc.ca/karthik/2013/02/15/llfi-an-intermediate-code-level-fault-injector-for-soft-computing-applications/)
 * [LLFI Wiki](https://github.com/DependableSystemsLab/LLFI/wiki)
 * Udit Kumar Agarwal, Abraham Chan, Karthik Pattabiraman. LLTFI: Framework agnostic fault injection for machine learning applications (Tools and Artifacts Track). International Symposium on Software Reliability Engineering (ISSRE), 2022. 10 pages.   [LLTFI Paper](https://www.dropbox.com/s/lgr3ed75sy0fq2p/issre22-camera-ready.pdf?dl=0)
+* Udit Kumar Agarwal, Abraham Chan, Karthik Pattabiraman. Resilience Assessment of Large Language Models under Transient Hardware Faults (PER). International Symposium on Software Reliability Engineering (ISSRE), 2023. [Paper](https://www.dropbox.com/scl/fi/mv6yehk0lctcz3l4efy0k/ISSRE23_Udit.pdf?rlkey=dzwbxk7js29pqjwirjj25ik8q&dl=0)
 
 Citations
 ----------

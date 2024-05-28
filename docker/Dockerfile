@@ -54,7 +54,6 @@ RUN pip install tf2onnx
 RUN pip3 install pyyaml===5.4.1
    
 WORKDIR /home/
-RUN mkdir LLTFI
 
 ### LLVM
 RUN git clone https://github.com/llvm/llvm-project.git && \
@@ -84,10 +83,9 @@ RUN make check -j${NPROC}
 RUN make install
 RUN ldconfig
 
-WORKDIR /home/LLTFI/
+WORKDIR /home/
 RUN git clone https://github.com/DependableSystemsLab/LLTFI.git
 
-WORKDIR /home/
 
 ### ONNX_MLIR
 RUN git clone --recursive https://github.com/DependableSystemsLab/onnx-mlir-lltfi.git && \
@@ -104,10 +102,15 @@ RUN git clone --recursive https://github.com/DependableSystemsLab/onnx-mlir-lltf
     cmake --build . -j${NPROC} && \
     ninja install
 
-WORKDIR /home/LLTFI/LLTFI
+WORKDIR /home/LLTFI
 
 ### LLTFI
-RUN ./setup -LLFI_BUILD_ROOT $(pwd)/build -LLVM_SRC_ROOT $(pwd)/../../llvm-project -LLVM_DST_ROOT $(pwd)/../../llvm-project/build && \
+RUN ./setup -LLFI_BUILD_ROOT $(pwd)/build -LLVM_SRC_ROOT $(pwd)/../llvm-project -LLVM_DST_ROOT $(pwd)/../llvm-project/build && \
     export LLFI_BUILD_ROOT=$(pwd)/build && \
-    cd /home/LLTFI/LLTFI/tools && \
+    cd /home/LLTFI/tools && \
     sh json-c-setup.sh
+
+### Setting up the env variables
+ENV LLFI_BUILD_ROOT=/home/LLTFI/build
+ENV ONNX_MLIR_BUILD=/home/onnx-mlir/build
+ENV LD_LIBRARY_PATH=/home/LLTFI/tools/json-c/build

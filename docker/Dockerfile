@@ -61,9 +61,9 @@ RUN git clone https://github.com/llvm/llvm-project.git && \
     mkdir llvm-project/build && cd llvm-project/build && \
     cmake -G Ninja ../llvm \
       -DLLVM_ENABLE_PROJECTS="clang;mlir" \
-      -DLLVM_BUILD_TESTS=ON \
       -DLLVM_TARGETS_TO_BUILD="host" \
       -DLLVM_ENABLE_ASSERTIONS=ON \
+      -DCMAKE_BUILD_TYPE=Release \
       -DLLVM_ENABLE_RTTI=ON && \
     cmake --build . --target clang check-mlir mlir-translate opt llc lli llvm-dis llvm-link -j${NPROC} && \
     ninja install -j${NPROC} && \
@@ -114,3 +114,5 @@ RUN ./setup -LLFI_BUILD_ROOT $(pwd)/build -LLVM_SRC_ROOT $(pwd)/../llvm-project 
 ENV LLFI_BUILD_ROOT=/home/LLTFI/build
 ENV ONNX_MLIR_BUILD=/home/onnx-mlir/build
 ENV LD_LIBRARY_PATH=/home/LLTFI/tools/json-c/build
+
+WORKDIR /home/LLTFI

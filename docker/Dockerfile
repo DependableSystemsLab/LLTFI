@@ -71,6 +71,7 @@ RUN git clone https://github.com/llvm/llvm-project.git && \
 
 RUN apt-get update
 RUN apt-get install unzip
+RUN apt-get install -y wget
 
 ### libprotoc
 RUN curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.17.2/protobuf-all-3.17.2.zip

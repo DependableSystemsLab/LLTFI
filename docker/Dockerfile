@@ -114,5 +114,7 @@ RUN ./setup -LLFI_BUILD_ROOT $(pwd)/build -LLVM_SRC_ROOT $(pwd)/../llvm-project 
 ENV LLFI_BUILD_ROOT=/home/LLTFI/build
 ENV ONNX_MLIR_BUILD=/home/onnx-mlir/build
 ENV LD_LIBRARY_PATH=/home/LLTFI/tools/json-c/build
+ENV ONNX_MLIR_SRC=/home/onnx-mlir
+ENV LLVM_DST_ROOT=/home/llvm-project/build  
 
 WORKDIR /home/LLTFI

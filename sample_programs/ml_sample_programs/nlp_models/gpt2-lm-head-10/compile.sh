@@ -7,7 +7,7 @@ if [ -f "$FILE" ]; then
     echo "$FILE exists."
 else
     echo "$FILE does not exist."
-    wget https://github.com/onnx/models/raw/main/text/machine_comprehension/gpt-2/model/gpt2-lm-head-10.onnx
+    wget https://github.com/onnx/models/raw/main/validated/text/machine_comprehension/gpt-2/model/gpt2-lm-head-10.onnx
 fi
 
 printf "\n[Compile Script]: Convert TF model to LLVM IR\n"

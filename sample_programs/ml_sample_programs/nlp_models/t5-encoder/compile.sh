@@ -5,7 +5,7 @@ if [ -f "$FILE" ]; then
     echo "$FILE exists."
 else
     echo "$FILE does not exist."
-    wget https://github.com/onnx/models/raw/main/text/machine_comprehension/t5/model/t5-encoder-12.onnx
+    wget https://github.com/onnx/models/raw/main/validated/text/machine_comprehension/t5/model/t5-encoder-12.onnx
 fi
 
 DEC_FILE=t5-decoder-with-lm-head-12.onnx
@@ -13,7 +13,7 @@ if [ -f "$DEC_FILE" ]; then
     echo "$DEC_FILE exists."
 else
     echo "$DEC_FILE does not exist."
-    wget https://github.com/onnx/models/raw/main/text/machine_comprehension/t5/model/t5-decoder-with-lm-head-12.onnx
+    wget https://github.com/onnx/models/raw/main/validated/text/machine_comprehension/t5/model/t5-decoder-with-lm-head-12.onnx
 fi
 
 printf "\n[Compile Script]: Convert TF model to LLVM IR\n"

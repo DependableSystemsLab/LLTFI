@@ -4,7 +4,7 @@ if [ -f "$FILE" ]; then
     echo "\n$FILE exists. Skip downloading."
 else
     echo "\n$FILE does not exist. Downloading the model..."
-    wget https://github.com/onnx/models/raw/main/text/machine_comprehension/bert-squad/model/bertsquad-12.onnx
+    wget https://github.com/onnx/models/raw/main/validated/text/machine_comprehension/bert-squad/model/bertsquad-12.onnx
 fi
 
 printf "\n[Compile Script]: Convert TF model to LLVM IR\n"

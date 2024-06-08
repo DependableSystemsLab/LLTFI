@@ -114,8 +114,13 @@ RUN ./setup -LLFI_BUILD_ROOT $(pwd)/build -LLVM_SRC_ROOT $(pwd)/../llvm-project 
 ### Setting up the env variables
 ENV LLFI_BUILD_ROOT=/home/LLTFI/build
 ENV ONNX_MLIR_BUILD=/home/onnx-mlir/build
-ENV LD_LIBRARY_PATH=/home/LLTFI/tools/json-c/build
 ENV ONNX_MLIR_SRC=/home/onnx-mlir
 ENV LLVM_DST_ROOT=/home/llvm-project/build  
+
+### Setting environment variables for custom include and library paths for json-c library
+ENV C_INCLUDE_PATH=/root/local/include:$C_INCLUDE_PATH
+ENV CPLUS_INCLUDE_PATH=/root/local/include:$CPLUS_INCLUDE_PATH
+ENV LIBRARY_PATH=/root/local/lib:$LIBRARY_PATH
+ENV LD_LIBRARY_PATH=/root/local/lib:$LD_LIBRARY_PATH
 
 WORKDIR /home/LLTFI

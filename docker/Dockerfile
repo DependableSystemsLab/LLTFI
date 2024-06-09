@@ -54,7 +54,6 @@ RUN pip install tf2onnx
 RUN pip3 install pyyaml===5.4.1
    
 WORKDIR /home/
-RUN mkdir LLTFI
 
 ### LLVM
 RUN git clone https://github.com/llvm/llvm-project.git && \
@@ -62,9 +61,9 @@ RUN git clone https://github.com/llvm/llvm-project.git && \
     mkdir llvm-project/build && cd llvm-project/build && \
     cmake -G Ninja ../llvm \
       -DLLVM_ENABLE_PROJECTS="clang;mlir" \
-      -DLLVM_BUILD_TESTS=ON \
       -DLLVM_TARGETS_TO_BUILD="host" \
       -DLLVM_ENABLE_ASSERTIONS=ON \
+      -DCMAKE_BUILD_TYPE=Release \
       -DLLVM_ENABLE_RTTI=ON && \
     cmake --build . --target clang check-mlir mlir-translate opt llc lli llvm-dis llvm-link -j${NPROC} && \
     ninja install -j${NPROC} && \
@@ -72,6 +71,7 @@ RUN git clone https://github.com/llvm/llvm-project.git && \
 
 RUN apt-get update
 RUN apt-get install unzip
+RUN apt-get install -y wget
 
 ### libprotoc
 RUN curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.17.2/protobuf-all-3.17.2.zip
@@ -84,10 +84,9 @@ RUN make check -j${NPROC}
 RUN make install
 RUN ldconfig
 
-WORKDIR /home/LLTFI/
+WORKDIR /home/
 RUN git clone https://github.com/DependableSystemsLab/LLTFI.git
 
-WORKDIR /home/
 
 ### ONNX_MLIR
 RUN git clone --recursive https://github.com/DependableSystemsLab/onnx-mlir-lltfi.git && \
@@ -104,10 +103,24 @@ RUN git clone --recursive https://github.com/DependableSystemsLab/onnx-mlir-lltf
     cmake --build . -j${NPROC} && \
     ninja install
 
-WORKDIR /home/LLTFI/LLTFI
+WORKDIR /home/LLTFI
 
 ### LLTFI
-RUN ./setup -LLFI_BUILD_ROOT $(pwd)/build -LLVM_SRC_ROOT $(pwd)/../../llvm-project -LLVM_DST_ROOT $(pwd)/../../llvm-project/build && \
+RUN ./setup -LLFI_BUILD_ROOT $(pwd)/build -LLVM_SRC_ROOT $(pwd)/../llvm-project -LLVM_DST_ROOT $(pwd)/../llvm-project/build && \
     export LLFI_BUILD_ROOT=$(pwd)/build && \
-    cd /home/LLTFI/LLTFI/tools && \
+    cd /home/LLTFI/tools && \
     sh json-c-setup.sh
+
+### Setting up the env variables
+ENV LLFI_BUILD_ROOT=/home/LLTFI/build
+ENV ONNX_MLIR_BUILD=/home/onnx-mlir/build
+ENV ONNX_MLIR_SRC=/home/onnx-mlir
+ENV LLVM_DST_ROOT=/home/llvm-project/build  
+
+### Setting environment variables for custom include and library paths for json-c library
+ENV C_INCLUDE_PATH=/root/local/include:$C_INCLUDE_PATH
+ENV CPLUS_INCLUDE_PATH=/root/local/include:$CPLUS_INCLUDE_PATH
+ENV LIBRARY_PATH=/root/local/lib:$LIBRARY_PATH
+ENV LD_LIBRARY_PATH=/root/local/lib:$LD_LIBRARY_PATH
+
+WORKDIR /home/LLTFI

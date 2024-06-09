@@ -8,7 +8,7 @@ mkdir build
 cd build
 
 echo "Building json-c library"
-cmake -G Ninja ..
+cmake -G Ninja .. -DCMAKE_INSTALL_PREFIX=~/local
 ninja -j10 -k10
 
 echo " \n\n\n Installing json-c library. \n\n"

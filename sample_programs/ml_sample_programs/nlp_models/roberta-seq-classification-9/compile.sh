@@ -4,7 +4,7 @@ if [ -f "$FILE" ]; then
     echo "$FILE exists."
 else
     echo "$FILE does not exist."
-    wget https://github.com/onnx/models/raw/main/text/machine_comprehension/roberta/model/roberta-sequence-classification-9.onnx
+    wget https://github.com/onnx/models/raw/main/validated/text/machine_comprehension/roberta/model/roberta-sequence-classification-9.onnx
 fi
 
 printf "\n[Compile Script]: Convert TF model to LLVM IR\n"

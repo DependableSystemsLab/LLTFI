@@ -4,7 +4,7 @@ if [ -f "$FILE" ]; then
     echo "$FILE exists."
 else
     echo "$FILE does not exist."
-    wget https://github.com/onnx/models/raw/main/vision/classification/shufflenet/model/shufflenet-v2-10.onnx
+    wget https://github.com/onnx/models/raw/main/validated/vision/classification/shufflenet/model/shufflenet-v2-10.onnx
 fi
 
 printf "\n[Compile Script]: Convert TF model to LLVM IR\n"

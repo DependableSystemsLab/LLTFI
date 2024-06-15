@@ -124,3 +124,11 @@ ENV LIBRARY_PATH=/root/local/lib:$LIBRARY_PATH
 ENV LD_LIBRARY_PATH=/root/local/lib:$LD_LIBRARY_PATH
 
 WORKDIR /home/LLTFI
+
+### Install GraphViz package to visualize tracing
+RUN apt-get install graphviz
+RUN apt-get install imagemagick
+
+### Install vim for convenience
+RUN apt-get install vim
+

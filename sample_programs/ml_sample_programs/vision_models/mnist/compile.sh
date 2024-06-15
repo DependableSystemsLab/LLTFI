@@ -1,3 +1,4 @@
+FILE=model.onnx
 if [ -f "$FILE" ]; then
     echo "$FILE exists. Run ./clean.sh to retrain model."
 else

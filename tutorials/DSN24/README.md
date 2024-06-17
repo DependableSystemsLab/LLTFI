@@ -182,7 +182,7 @@ runOption:
    cat llfi/std_output/std_outputfile-run-0-3
    ```
 
-## Part 4: Specifying Specific Neural Network Layers
+## Part 5: Specifying Specific Neural Network Layers
 View the original model, `mnist-cnn.py`, written in TensorFlow for reference.
 In this exercise, we wish to select specific layers in the model for fault injection.
 Previously, `input.yaml` was configured so that many different layers were chosen at random for fault injection.

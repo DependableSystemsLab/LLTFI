@@ -1,4 +1,4 @@
-# ISSRE 2024 Tutorial Activity - Instructions
+# DSN 2024 Tutorial Activity - Instructions
 
 ## Setup
 

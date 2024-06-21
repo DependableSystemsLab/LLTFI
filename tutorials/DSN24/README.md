@@ -33,7 +33,7 @@ For Options #1 and 2, we will distribute the installation files via USB Flash Dr
 3. If you prefer not to use a USB Flash Drive, and if you are using either Linux or Mac OS, you may also pull the Docker image directly from Docker Hub.
    ```
    docker image pull abrahamchan/lltfi-demo
-   docker tag lltfi-demo abrahamchan/lltfi-demo
+   docker tag abrahamchan/lltfi-demo lltfi-demo
    ```
 
 

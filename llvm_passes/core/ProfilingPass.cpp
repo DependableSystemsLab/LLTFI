@@ -29,6 +29,7 @@
 #include "ProfilingPass.h"
 #include "Controller.h"
 #include "Utils.h"
+#include "FakeQuantizationPass.h"
 
 using namespace llvm;
 
@@ -36,13 +37,17 @@ namespace llfi {
 
 char LegacyProfilingPass::ID=0;
 extern cl::opt< std::string > llfilogfile;
+extern llvm::cl::opt<std::string> fakeQuant;
+extern llvm::cl::opt<int> minPercentileThreshold;
+extern llvm::cl::opt<int> maxPercentileThreshold;
+extern llvm::cl::opt<int> bitWidth;
 
 // Flag to enable/disable output of FI statistics for ML applications in the
 // llfi.stat.fi.injectedfaults.txt file.
 // Enabling this option will cause LLTFI to output the layer type and number in
 // which the fault is injected. This option is disabled by default.
 static cl::opt< bool > mlfistats("mlfistats",
-  cl::desc("Flag to disable or enable the FI statistics of ML applications. \
+    cl::desc("Flag to disable or enable the FI statistics of ML applications. \
             Default value: false."), cl::init(false));
 
 // Find all the call to OMInstrumentPoint function and insert a call to
@@ -66,13 +71,13 @@ void insertCallForMLFIStats(Module &M) {
           // Clone the instruction and reassign the operands.
           Instruction* duplicatedInst = inst->clone();
           for(unsigned int i = 0; i < duplicatedInst->getNumOperands(); i++){
-              duplicatedInst->setOperand(i, inst->getOperand(i));
+            duplicatedInst->setOperand(i, inst->getOperand(i));
           }
 
           auto Fn = inst->getFunction()->getParent()->getOrInsertFunction(
-                    "lltfiMLLayer", Type::getVoidTy(inst->getContext()),
-                    Type::getInt64Ty(inst->getContext()),
-                    Type::getInt64Ty(inst->getContext()));
+              "lltfiMLLayer", Type::getVoidTy(inst->getContext()),
+              Type::getInt64Ty(inst->getContext()),
+              Type::getInt64Ty(inst->getContext()));
 
           // Change name of the duplicate call instruction.
           CallInst *duplicateCall = dyn_cast<CallInst>(duplicatedInst);
@@ -87,7 +92,7 @@ void insertCallForMLFIStats(Module &M) {
 }
 
 bool LegacyProfilingPass::runOnModule(Module &M) {
-	LLVMContext &context = M.getContext();
+  LLVMContext &context = M.getContext();
 
   std::map<Instruction*, std::list< int >* > *fi_inst_regs_map;
   Controller *ctrl = Controller::getInstance(M);
@@ -151,6 +156,10 @@ bool LegacyProfilingPass::runOnModule(Module &M) {
     insertCallForMLFIStats(M);
 
   addEndProfilingFuncCall(M);
+
+  if(fakeQuant != "None") {
+    insertFakeQuantInst(M, true);
+  }
   return true;
 }
 

@@ -28,9 +28,11 @@
 #include "Controller.h"
 #include "Utils.h"
 
+#include "FakeQuantizationPass.h"
 namespace llfi {
 
 char FaultInjectionPass::ID=0;
+extern llvm::cl::opt<std::string> fakeQuant;
 
 std::string FaultInjectionPass::getFIFuncNameforType(const Type *type) {
   std::string funcname;
@@ -291,6 +293,10 @@ bool FaultInjectionPass::runOnModule(Module &M) {
   insertInjectionFuncCall(fi_inst_regs_map, M);
 
   finalize(M);
+
+  if(fakeQuant != "None") {
+    insertFakeQuantInst(M, false);
+  }
   return true;
 }
 

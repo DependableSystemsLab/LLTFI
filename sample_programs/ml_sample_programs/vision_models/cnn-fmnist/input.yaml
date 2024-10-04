@@ -10,6 +10,13 @@ compileOption:
     regSelMethod: regloc
     regloc: dstreg
 
+    # Please uncomment this if you need to use the Fake Quantization Feature within LLTFI
+    # fakeQuant: 
+    #   targetLayer: conv
+    #   minPercentileOutlierThreshold : 10
+    #   maxPercentileOutlierThreshold : 90
+    #   bitWidth: 16
+      
     includeInjectionTrace:
         - forward
 

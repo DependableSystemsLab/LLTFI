@@ -25,7 +25,7 @@ You need to have 'input.yaml' under the same directory as <source IR file>, whic
 # Everytime the contents of compileOption is changed in input.yaml
 # this script should be run to create new fi.exe and prof.exe
 
-import sys, os, shutil
+import sys, os, shutil, math
 import yaml
 import subprocess
 
@@ -43,6 +43,8 @@ defaultlinklibs = ['-lpthread']
 prog = os.path.basename(sys.argv[0])
 # basedir is assigned in parseArgs(args)
 basedir = ""
+
+fakeQuant = None
 
 # llfibd = os.path.join(basedir, "llfi")
 # if os.path.exists(llfibd):
@@ -317,6 +319,26 @@ def readCompileOption():
           if (str(cOpt["tracingPropagationOption"]["generateCDFG"]).lower() == "true"):
             options["genDotGraph"] = True
 
+  if 'fakeQuant' in cOpt:
+    targetLayer = cOpt['fakeQuant']['targetLayer']
+    minPercentileOutlierThreshold = cOpt['fakeQuant'].get('minPercentileOutlierThreshold', 0)
+    maxPercentileOutlierThreshold = cOpt['fakeQuant'].get('maxPercentileOutlierThreshold', 100)
+    bitWidth = cOpt['fakeQuant'].get('bitWidth', 8)
+    
+    assert isinstance(targetLayer, str), "TargetLayer must be of type string" 
+    assert targetLayer == "conv" or targetLayer == "matmul" , "TargetLayer can only be 'conv' and 'matmul'" 
+    assert isinstance(minPercentileOutlierThreshold, int), "Minimum Percentile Value should be of type int"
+    assert isinstance(maxPercentileOutlierThreshold, int), "Maximum Percentile Value should be of type int"
+    assert isinstance(bitWidth, int), "BitWidth should be of type int"
+    assert 0 < bitWidth, "BitWidth must be a integer greater than 0"
+    assert math.log2(bitWidth).is_integer(), "BitWidth must be a exponent of power 2"
+    assert 0 <= minPercentileOutlierThreshold and minPercentileOutlierThreshold <= 100, "Minimum Percentile Value for Percentile should be greater than or equal to 0"
+    assert 0 <= maxPercentileOutlierThreshold and maxPercentileOutlierThreshold <= 100, "Maximum Percentile Value for Percentile should be greater than or equal to 0 and less than or equal to 100"
+    assert minPercentileOutlierThreshold <= maxPercentileOutlierThreshold, "Minimum Percentile Value should be less than Maximum Percentile Value"
+    
+    global fakeQuant
+    fakeQuant = [targetLayer, minPercentileOutlierThreshold, maxPercentileOutlierThreshold, bitWidth]
+
 ################################################################################
 def _suffixOfIR():
   if options["readable"]:
@@ -351,6 +373,12 @@ def compileProg():
       execlist.append("-S")
     if options["enableMLFIStats"]:
       execlist.append("-mlfistats")
+    if fakeQuant != None:
+      execlist.append(f'-fakeQuant={fakeQuant[0]}')
+      execlist.append(f'-minPercentileThreshold={fakeQuant[1]}')
+      execlist.append(f'-maxPercentileThreshold={fakeQuant[2]}')
+      execlist.append(f'-bitWidth={fakeQuant[3]}')
+      
     retcode = execCompilation(execlist)
 
   if retcode == 0:
@@ -361,6 +389,10 @@ def compileProg():
     #print(execlist)
     if options["readable"]:
       execlist.append("-S")
+    if fakeQuant != None:
+      print("Executed 2")
+      execlist.append(f'-fakeQuant={fakeQuant[0]}')
+
     retcode = execCompilation(execlist)
 
   if retcode != 0:

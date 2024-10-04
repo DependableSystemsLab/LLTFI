@@ -15,6 +15,8 @@ add_library(llfi-rt SHARED
     InstTraceLib.c
     ProfilingLib.cpp
     Utils.c
+    FakeQuantizationLib.cpp
+    FakeQuantizationLib.h
     #_FIDLSoftwareFaultInjectors.cpp
     #_SoftwareFaultInjector.cpp is included in this file
 )

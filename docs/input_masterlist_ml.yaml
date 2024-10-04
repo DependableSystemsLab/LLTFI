@@ -139,3 +139,25 @@ runOption:
   
 kernelOption:
     - forceRun
+
+# To use Fake Quantization within LLTFI, you need to specify the target layer that would be Quantized 
+# There is a parameter minPercentileOutlierThreshold and maxPercentileOutlierThreshold which eliminates outliers within the tensor input 
+# However, this parameter needs to be mentioned by the user and is not automatically set
+# When set, the values permitted within the input tensor must satisfy this condition 
+# (floating number at minPercentileOutlierThreshold) <= input tensor <= (floating number at maxPercentileOutlierThreshold)
+# Values that dont satisfy this condition are shifted to the (floating number at minPercentileOutlierThreshold) or (floating number at maxPercentileOutlierThreshold),
+# whichever is the nearest
+# One sample code is - 
+
+compileOption:
+    fakeQuant: 
+      targetLayer: conv
+      minPercentileOutlierThreshold : 10
+      maxPercentileOutlierThreshold : 90
+      bitWidth: 8
+      
+
+# Fake Quantization parameters comes within compileOption. In here, you need to mention the targer layer - conv or matmul (currently only supporting these)
+# minPercentileOutlierThreshold and maxPercentileOutlierThreshold are optional parameters. On not mentioning these parameters, they are autoamtically set to 
+# minPercentileOutlierThreshold = 0 and maxPercentileOutlierThreshold = 100
+# bitWidth needs to be mentioned and is the bit width of the Quantized Int numbers which needs to be a exponent of power 2

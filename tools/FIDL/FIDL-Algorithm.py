@@ -82,7 +82,7 @@ def read_input_yaml(filename):
   
   # Check for correct YAML formatting
   try:
-    doc = yaml.load(f)
+    doc = yaml.safe_load(f)
     f.close()
   except:
     print('Error: %s is not formatted in proper YAML format (reminder: use spaces, not tabs)' % (filename), file = sys.stderr)

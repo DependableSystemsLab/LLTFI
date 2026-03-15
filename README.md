@@ -131,7 +131,7 @@ In this method, the developer has more control over the location of the LLVM bui
 			
 			ninja install
 			```
-  10. GraphViz package (for visualizing error propagation)
+  11. GraphViz package (for visualizing error propagation)
 
 
 

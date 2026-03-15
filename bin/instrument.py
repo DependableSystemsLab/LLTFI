@@ -160,7 +160,7 @@ def checkInputYaml():
 
   #Check for input.yaml's correct formmating
   try:
-    doc = yaml.load(f)
+    doc = yaml.safe_load(f)
     f.close()
     verbosePrint(yaml.dump(doc), options["verbose"])
   except:

@@ -60,7 +60,7 @@ def parseMasterYaml():
 	model_list = []
 	try:
 		with open('input.yaml', 'r') as master_yaml_file:
-			master_yaml_dict = yaml.load(master_yaml_file)
+			master_yaml_dict = yaml.safe_load(master_yaml_file)
 	except:
 		print ("ERROR: Unable to find input.yaml or load the input.yaml under basedir directory")
 		print (basedir)

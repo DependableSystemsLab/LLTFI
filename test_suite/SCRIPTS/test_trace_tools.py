@@ -114,7 +114,7 @@ def test_trace_tools(*test_list):
 	testsuite_dir = os.path.join(script_dir, os.pardir)
 	with open(os.path.join(testsuite_dir, "test_suite.yaml")) as f:
 		try:
-			suite = yaml.load(f)
+			suite = yaml.safe_load(f)
 		except:
 			print("ERROR: Unable to load yaml file: test_suite.yaml", file=sys.stderr)
 			return -1

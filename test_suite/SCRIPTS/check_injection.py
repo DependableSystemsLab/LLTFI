@@ -13,7 +13,7 @@ def examineTraceFile(work_dir):
 		print ("FAIL: (ERROR) input.yaml not found! work_dir:", work_dir)
 		return False
 
-	config_dict = yaml.load(inputyaml)
+	config_dict = yaml.safe_load(inputyaml)
 	try:
 		if config_dict['compileOption']['tracingPropagation'] == True:
 			## we should have trace file
@@ -64,7 +64,7 @@ def check_injection(*prog_list):
 	testsuite_dir = os.path.join(script_dir, os.pardir)
 	with open(os.path.join(testsuite_dir, "test_suite.yaml")) as f:
 		try:
-			suite = yaml.load(f)
+			suite = yaml.safe_load(f)
 		except:
 			print("ERROR: Unable to load yaml file: test_suite.yaml", file=sys.stderr)
 			return -1

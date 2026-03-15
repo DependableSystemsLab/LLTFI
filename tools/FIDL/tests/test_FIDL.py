@@ -31,7 +31,7 @@ from distutils.dir_util import copy_tree
 script_path = os.path.realpath(os.path.dirname(__file__))
 prog = os.path.basename(sys.argv[0])
 
-llfiroot = os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))
+llfiroot = os.path.dirname(os.path.dirname(os.path.dirname(script_path)))
 
 test_config_path = os.path.join(script_path, 'test_config.yaml')
 fidl_al_path = os.path.join(script_path, '../FIDL-Algorithm.py')
@@ -208,7 +208,7 @@ def parse_args(args):
 def read_yaml():
   global doc
   f = open(test_config_path)
-  doc = yaml.load(f)
+  doc = yaml.safe_load(f)
   f.close()
 
 def main(args):

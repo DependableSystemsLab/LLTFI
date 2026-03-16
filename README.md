@@ -57,7 +57,7 @@ In this method, the developer has more control over the location of the LLVM bui
   2. 64 bit Linux (Ubuntu 20.04) or OS X
   3. CMake (minimum v3.15)
   4. Python 3 and above
-  5. Python YAML library (PyYAML v5.4.1)
+  5. Python YAML library (PyYAML v5.4.1 or higher, v6.0+ supported)
   6. Ninja >= 1.10.2
   7. libprotoc >= 3.11.0
   8. Clang v15.0 (commit: 9778ec057cf4)
@@ -153,19 +153,17 @@ GUI Dependencies:
       Make sure you build LLVM with CMake and pass build root directory here
   -LLVM_SRC_ROOT <LLVM source root dir>
   -LLFI_BUILD_ROOT <path where you want to build LLFI>
-  -LLVM_GXX_BIN_DIR <llvm-gcc/g++'s parent dir> (optional):
-      You don't need to set it if it is in system path
-  -JAVA_HOME_DIR <java home directory for oracle jdk 7 or higher> (optional):
-    You don't need to set it if your default jdk is oracle jdk 7 or higher and in system path
+  -LLVM_GXX_BIN_DIR <clang's parent directory> (optional):
+      You don't need to set it if clang is already in system path
 
 
   --help(-h): show help information
-  --runTests: Add this option if you want to run all regression tests after building LLFI.
+  --runTests: Add this option if you want to run all regression tests after building LLTFI.
 ```
 
-  Below is the command to build LLTFI(without GUI) if `clang` is already in $PATH:
+  Below is the command to build LLTFI if `clang` is already in $PATH (replace paths with your actual directories):
 ```
-./setup -LLFI_BUILD_ROOT $BUILD/LLFI -LLVM_SRC_ROOT $SRC/llvm-15.0 -LLVM_DST_ROOT $BUILD/llvm-15.0
+./setup -LLFI_BUILD_ROOT /path/to/LLFI-build -LLVM_SRC_ROOT /path/to/llvm-project -LLVM_DST_ROOT /path/to/llvm-project/build
 ```
 
 Details about running the Web GUI for LLTFI can be found [here](web-app/README.MD) 
@@ -180,9 +178,9 @@ Steps to build:
 
 
 ### Running tests: ###
-Running all regression tests after installation is highly recommended. Note that you may encounter some error messages during the fault injection stage. This is normal. Once all tests have been completed and they all passed, LLFI is correctly installed.
+Running all regression tests after installation is highly recommended. Note that you may encounter some error messages during the fault injection stage. This is normal. Once all tests have been completed and they all passed, LLTFI is correctly installed.
 
-For complete test of whole of LLFI, please use LLFI test suite and refer to the wiki page: [Test suite for regression test](https://github.com/DependableSystemsLab/LLFI/wiki/Test-Suite-for-Regression-Test) for details.
+For complete test of whole of LLTFI, please use LLTFI test suite and refer to the wiki page: [Test suite for regression test](https://github.com/DependableSystemsLab/LLTFI/wiki/Test-Suite-for-Regression-Test) for details.
 
 <!--
 VirtualBox Image
@@ -210,9 +208,10 @@ To run it, open VirtualBox, select `File->Import Appliance...` and navigate to t
 You can use test programs in the directory `sample_programs/` or `test_suite/PROGRAMS/` to test LLFI. Programs in the `sample_programs` directory already contain a valid `input.yaml` file.
 
 Example program: `factorial`:
-  1. Copy the `sample_programs/factorial/` directory to your project directory. 
-  2. Set LLFI_BUILD_ROOT environment variable e.g., export LLFI_BUILD_ROOT=/path/to/LLFI/installation
-  3. Call the ./compileAndRun.sh script with the first argument as factorial, and the second argument as the number to compute the factorial of (e.g., 6)
+  1. Copy the `sample_programs/cpp_sample_programs/factorial/` directory to your project directory.
+  2. Set the `LLFI_BUILD_ROOT` environment variable: `export LLFI_BUILD_ROOT=/path/to/LLFI-build`
+  3. Add the LLVM bin directory to your PATH: `export PATH=/path/to/llvm/bin:$PATH`
+  4. Run: `bash compileAndRun.sh factorial 6`
 
 
 <!--
@@ -250,9 +249,10 @@ in the *llfi* directory.
 |     Directory         |                 Contents                       |
 | ----------------------| ---------------------------------------------- |
 | *std_output*          | Piped STDOUT from the tested application       |
-| *llfi_stat_output*    | Fault injection statistics                     |
+| *llfi_stat_output*    | Fault injection statistics and trace files     |
 | *error_output*        | Failure reports (program crashes, hangs, etc.) |
-| *trace_report_output* | Faults propagation report files and graph      |
+| *baseline*            | Golden output and profiling trace              |
+| *prog_output*         | Disk output from faulty runs                   |
 
 
 Reproducing the experiments in our ISSRE'23 paper
@@ -264,6 +264,7 @@ References
 ----------
 * [LLFI Paper](http://blogs.ubc.ca/karthik/2013/02/15/llfi-an-intermediate-code-level-fault-injector-for-soft-computing-applications/)
 * [LLFI Wiki](https://github.com/DependableSystemsLab/LLFI/wiki)
+* [LLTFI Wiki](https://github.com/DependableSystemsLab/LLTFI/wiki)
 * Udit Kumar Agarwal, Abraham Chan, Karthik Pattabiraman. LLTFI: Framework agnostic fault injection for machine learning applications (Tools and Artifacts Track). International Symposium on Software Reliability Engineering (ISSRE), 2022. 10 pages.   [LLTFI Paper](https://www.dropbox.com/s/lgr3ed75sy0fq2p/issre22-camera-ready.pdf?dl=0)
 * Udit Kumar Agarwal, Abraham Chan, Karthik Pattabiraman. Resilience Assessment of Large Language Models under Transient Hardware Faults (PER). International Symposium on Software Reliability Engineering (ISSRE), 2023. [Paper](https://www.dropbox.com/scl/fi/mv6yehk0lctcz3l4efy0k/ISSRE23_Udit.pdf?rlkey=dzwbxk7js29pqjwirjj25ik8q&dl=0)
 

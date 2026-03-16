@@ -219,13 +219,13 @@ def inject_prog(num_threads, *prog_list):
 			return -1
 
 	work_dict = {}
-	for test in suite["SoftwareFaults"]:
+	for test in suite.get("SoftwareFaults", {}):
 		if len(prog_list) == 0 or test in prog_list or "SoftwareFaults" in prog_list:
 			work_dict["./SoftwareFaults/"+test] = suite["SoftwareFaults"][test]
-	for test in suite["HardwareFaults"]:
+	for test in suite.get("HardwareFaults", {}):
 		if len(prog_list) == 0 or test in prog_list or "HardwareFaults" in prog_list:
 			work_dict["./HardwareFaults/"+test] = suite["HardwareFaults"][test]
-	for test in suite["BatchMode"]:
+	for test in suite.get("BatchMode", {}):
 		if len(prog_list) == 0 or test in prog_list or "BatchMode" in prog_list:
 			work_dict["./BatchMode/"+test] = suite["BatchMode"][test]
 	

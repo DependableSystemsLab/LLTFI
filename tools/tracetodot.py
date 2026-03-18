@@ -88,22 +88,22 @@ def executeTraceDiff():
 	log_file =open(log_path ,'w')
 	#Parse the goldenTraceFile path
 	tempgoldenTraceFilePath = goldenTraceFilePath
-	while "(" in tempgoldenTraceFilePath and not "\(" in tempgoldenTraceFilePath:
-		tempgoldenTraceFilePath = tempgoldenTraceFilePath[:tempgoldenTraceFilePath.find("(")]+'\('+ tempgoldenTraceFilePath[tempgoldenTraceFilePath.find("(")+1:]
-	while ")" in tempgoldenTraceFilePath and not "\)" in tempgoldenTraceFilePath:
-		tempgoldenTraceFilePath = tempgoldenTraceFilePath[:tempgoldenTraceFilePath.find(")")]+'\)'+ tempgoldenTraceFilePath[tempgoldenTraceFilePath.find(")")+1:]
+	while "(" in tempgoldenTraceFilePath and not "\\(" in tempgoldenTraceFilePath:
+		tempgoldenTraceFilePath = tempgoldenTraceFilePath[:tempgoldenTraceFilePath.find("(")]+'\\('+ tempgoldenTraceFilePath[tempgoldenTraceFilePath.find("(")+1:]
+	while ")" in tempgoldenTraceFilePath and not "\\)" in tempgoldenTraceFilePath:
+		tempgoldenTraceFilePath = tempgoldenTraceFilePath[:tempgoldenTraceFilePath.find(")")]+'\\)'+ tempgoldenTraceFilePath[tempgoldenTraceFilePath.find(")")+1:]
 	tempScriptdir = scriptdir
 	#Parse the scriptdir path
-	while "(" in tempScriptdir and not "\(" in tempScriptdir:
-		tempScriptdir = tempScriptdir[:tempScriptdir.find("(")]+'\('+ tempScriptdir[tempScriptdir.find("(")+1:]
-	while ")" in tempScriptdir and not "\)" in tempScriptdir:
-		tempScriptdir = tempScriptdir[:tempScriptdir.find(")")]+'\)'+ tempScriptdir[tempScriptdir.find(")")+1:]
+	while "(" in tempScriptdir and not "\\(" in tempScriptdir:
+		tempScriptdir = tempScriptdir[:tempScriptdir.find("(")]+'\\('+ tempScriptdir[tempScriptdir.find("(")+1:]
+	while ")" in tempScriptdir and not "\\)" in tempScriptdir:
+		tempScriptdir = tempScriptdir[:tempScriptdir.find(")")]+'\\)'+ tempScriptdir[tempScriptdir.find(")")+1:]
 	temptraceOutputFolder = traceOutputFolder
 	#Parse the traceOutputFolder path
-	while "(" in temptraceOutputFolder and not "\(" in temptraceOutputFolder:
-		temptraceOutputFolder = temptraceOutputFolder[:temptraceOutputFolder.find("(")]+'\('+ temptraceOutputFolder[temptraceOutputFolder.find("(")+1:]
-	while ")" in temptraceOutputFolder and not "\)" in temptraceOutputFolder:
-		temptraceOutputFolder = temptraceOutputFolder[:temptraceOutputFolder.find(")")]+'\)'+ temptraceOutputFolder[temptraceOutputFolder.find(")")+1:]
+	while "(" in temptraceOutputFolder and not "\\(" in temptraceOutputFolder:
+		temptraceOutputFolder = temptraceOutputFolder[:temptraceOutputFolder.find("(")]+'\\('+ temptraceOutputFolder[temptraceOutputFolder.find("(")+1:]
+	while ")" in temptraceOutputFolder and not "\\)" in temptraceOutputFolder:
+		temptraceOutputFolder = temptraceOutputFolder[:temptraceOutputFolder.find(")")]+'\\)'+ temptraceOutputFolder[temptraceOutputFolder.find(")")+1:]
 	for file in os.listdir(currentpath):
 		if file.endswith(".txt") and file.startswith("llfi.stat.trace."):
 			cmd = tempScriptdir+"/tracediff "+tempgoldenTraceFilePath+" "+file+" > "+temptraceOutputFolder+"/TraceDiffReportFile"+file[file.find("llfi.stat.trace")+len("llfi.stat.trace"):]
@@ -125,28 +125,28 @@ def generateDotFile():
 
 	#Parse the goldenTraceFile path
 	tempgoldenTraceFilePath = goldenTraceFilePath
-	while "(" in tempgoldenTraceFilePath and not "\(" in tempgoldenTraceFilePath:
-		tempgoldenTraceFilePath = tempgoldenTraceFilePath[:tempgoldenTraceFilePath.find("(")]+'\('+ tempgoldenTraceFilePath[tempgoldenTraceFilePath.find("(")+1:]
-	while ")" in tempgoldenTraceFilePath and not "\)" in tempgoldenTraceFilePath:
-		tempgoldenTraceFilePath = tempgoldenTraceFilePath[:tempgoldenTraceFilePath.find(")")]+'\)'+ tempgoldenTraceFilePath[tempgoldenTraceFilePath.find(")")+1:]
+	while "(" in tempgoldenTraceFilePath and not "\\(" in tempgoldenTraceFilePath:
+		tempgoldenTraceFilePath = tempgoldenTraceFilePath[:tempgoldenTraceFilePath.find("(")]+'\\('+ tempgoldenTraceFilePath[tempgoldenTraceFilePath.find("(")+1:]
+	while ")" in tempgoldenTraceFilePath and not "\\)" in tempgoldenTraceFilePath:
+		tempgoldenTraceFilePath = tempgoldenTraceFilePath[:tempgoldenTraceFilePath.find(")")]+'\\)'+ tempgoldenTraceFilePath[tempgoldenTraceFilePath.find(")")+1:]
 	tempScriptdir = scriptdir
 	#Parse the scriptdir path
-	while "(" in tempScriptdir and not "\(" in tempScriptdir:
-		tempScriptdir = tempScriptdir[:tempScriptdir.find("(")]+'\('+ tempScriptdir[tempScriptdir.find("(")+1:]
-	while ")" in tempScriptdir and not "\)" in tempScriptdir:
-		tempScriptdir = tempScriptdir[:tempScriptdir.find(")")]+'\)'+ tempScriptdir[tempScriptdir.find(")")+1:]
+	while "(" in tempScriptdir and not "\\(" in tempScriptdir:
+		tempScriptdir = tempScriptdir[:tempScriptdir.find("(")]+'\\('+ tempScriptdir[tempScriptdir.find("(")+1:]
+	while ")" in tempScriptdir and not "\\)" in tempScriptdir:
+		tempScriptdir = tempScriptdir[:tempScriptdir.find(")")]+'\\)'+ tempScriptdir[tempScriptdir.find(")")+1:]
 	temptraceOutputFolder = traceOutputFolder
 	#Parse the traceOutputFolder path
-	while "(" in temptraceOutputFolder and not "\(" in temptraceOutputFolder:
-		temptraceOutputFolder = temptraceOutputFolder[:temptraceOutputFolder.find("(")]+'\('+ temptraceOutputFolder[temptraceOutputFolder.find("(")+1:]
-	while ")" in temptraceOutputFolder and not "\)" in temptraceOutputFolder:
-		temptraceOutputFolder = temptraceOutputFolder[:temptraceOutputFolder.find(")")]+'\)'+ temptraceOutputFolder[temptraceOutputFolder.find(")")+1:]
+	while "(" in temptraceOutputFolder and not "\\(" in temptraceOutputFolder:
+		temptraceOutputFolder = temptraceOutputFolder[:temptraceOutputFolder.find("(")]+'\\('+ temptraceOutputFolder[temptraceOutputFolder.find("(")+1:]
+	while ")" in temptraceOutputFolder and not "\\)" in temptraceOutputFolder:
+		temptraceOutputFolder = temptraceOutputFolder[:temptraceOutputFolder.find(")")]+'\\)'+ temptraceOutputFolder[temptraceOutputFolder.find(")")+1:]
 	tempgoldenTraceDotFile = goldenTraceDotFile
 	#Parse the traceOutputFolder path
-	while "(" in tempgoldenTraceDotFile and not "\(" in tempgoldenTraceDotFile:
-		tempgoldenTraceDotFile = tempgoldenTraceDotFile[:tempgoldenTraceDotFile.find("(")]+'\('+ tempgoldenTraceDotFile[tempgoldenTraceDotFile.find("(")+1:]
-	while ")" in tempgoldenTraceDotFile and not "\)" in tempgoldenTraceDotFile:
-		tempgoldenTraceDotFile = tempgoldenTraceDotFile[:tempgoldenTraceDotFile.find(")")]+'\)'+ tempgoldenTraceDotFile[tempgoldenTraceDotFile.find(")")+1:]
+	while "(" in tempgoldenTraceDotFile and not "\\(" in tempgoldenTraceDotFile:
+		tempgoldenTraceDotFile = tempgoldenTraceDotFile[:tempgoldenTraceDotFile.find("(")]+'\\('+ tempgoldenTraceDotFile[tempgoldenTraceDotFile.find("(")+1:]
+	while ")" in tempgoldenTraceDotFile and not "\\)" in tempgoldenTraceDotFile:
+		tempgoldenTraceDotFile = tempgoldenTraceDotFile[:tempgoldenTraceDotFile.find(")")]+'\\)'+ tempgoldenTraceDotFile[tempgoldenTraceDotFile.find(")")+1:]
 
 
 	for file in os.listdir(traceOutputFolder):

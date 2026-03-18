@@ -26,7 +26,7 @@ support both TensorFlow and PyTorch.
 **LLTFI** can now inject faults into the LLVM IR, alike lowered C/C++ programs. 
 
 The LLFI tool was originally written for LLVM 3.4. While developing LLTFI, the entire LLFI tool was upgraded to LLVM 15.0 because LLVM 3.4 has no support for MLIR.
-This upgrade also ensured that LLTFI is compatible all of the newest C/C++ features, and LLVM optimization passes
+This upgrade also ensured that LLTFI is compatible with all of the newest C/C++ features, and LLVM optimization passes
 
 
 Auto-Installer
@@ -152,7 +152,7 @@ GUI Dependencies:
   -LLVM_DST_ROOT <LLVM CMake build root dir>:
       Make sure you build LLVM with CMake and pass build root directory here
   -LLVM_SRC_ROOT <LLVM source root dir>
-  -LLFI_BUILD_ROOT <path where you want to build LLFI>
+  -LLFI_BUILD_ROOT <path where you want to build LLTFI>
   -LLVM_GXX_BIN_DIR <clang's parent directory> (optional):
       You don't need to set it if clang is already in system path
 
@@ -180,7 +180,11 @@ Steps to build:
 ### Running tests: ###
 Running all regression tests after installation is highly recommended. Note that you may encounter some error messages during the fault injection stage. This is normal. Once all tests have been completed and they all passed, LLTFI is correctly installed.
 
-For complete test of whole of LLTFI, please use LLTFI test suite and refer to the wiki page: [Test suite for regression test](https://github.com/DependableSystemsLab/LLTFI/wiki/Test-Suite-for-Regression-Test) for details.
+For complete test of whole of LLTFI, please use LLTFI test suite and refer to the wiki page: [Test suite for regression test](https://github.com/DependableSystemsLab/LLTFI/wiki/Test-Suite-for-Regression-Test) for details. Tests must be run from the build directory:
+```
+cd <LLFI_BUILD_ROOT>/test_suite
+python3 SCRIPTS/llfi_test --all
+```
 
 <!--
 VirtualBox Image
@@ -205,7 +209,7 @@ To run it, open VirtualBox, select `File->Import Appliance...` and navigate to t
 
 ### Running Sample Programs ###
 
-You can use test programs in the directory `sample_programs/` or `test_suite/PROGRAMS/` to test LLFI. Programs in the `sample_programs` directory already contain a valid `input.yaml` file.
+You can use test programs in the directory `sample_programs/` or `test_suite/PROGRAMS/` to test LLTFI. Programs in the `sample_programs` directory already contain a valid `input.yaml` file.
 
 Example program: `factorial`:
   1. Copy the `sample_programs/cpp_sample_programs/factorial/` directory to your project directory.

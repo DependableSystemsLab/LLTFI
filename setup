@@ -7,15 +7,13 @@ List of options:
 -LLVM_DST_ROOT <LLVM CMake build root dir>:
     Make sure you build LLVM with CMake and pass build root directory here
 -LLVM_SRC_ROOT <LLVM source root dir>
--LLFI_BUILD_ROOT <path where you want to build LLFI>
--LLVM_GXX_BIN_DIR <llvm-gcc/g++'s parent dir> (optional):
-    You don't need to set it if it is in system path
--JAVA_HOME_DIR <java home directory for oracle jdk 7 or higher> (optional):
-    You don't need to set it if your default jdk is oracle jdk 7 or higher and in system path
+-LLFI_BUILD_ROOT <path where you want to build LLTFI>
+-LLVM_GXX_BIN_DIR <clang's parent directory> (optional):
+    You don't need to set it if clang is already in system path
 
 
 --help(-h): show help information
---runTests: Add this option if you want to run all regression tests after building LLFI.
+--runTests: Add this option if you want to run all regression tests after building LLTFI.
 """
 
 import sys
@@ -116,8 +114,8 @@ def checkEnvironment():
   if optional_configs['LLVM_GXX_BIN_DIR'] != "":
     llvmgcc = os.path.join(optional_configs['LLVM_GXX_BIN_DIR'], llvmgcc)
   if not cmd_exists(llvmgcc):
-    print(("ERROR: Cannot find llvm-gcc. Make sure you have installed "
-                          "it, and make it available to LLFI by either adding it to "
+    print(("ERROR: Cannot find clang. Make sure you have installed "
+                          "it, and make it available to LLTFI by either adding it to "
                           "system path or passing its directory to -LLVM_GXX_BIN_DIR\n"), file=sys.stderr)
     has_error = True
 

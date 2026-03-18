@@ -10,6 +10,8 @@ bool RegLocBasedFIRegSelector::isRegofInstFITarget(Value *reg,
     if(isa<GetElementPtrInst>(inst)){
       if(inst->getOperand(inst->getNumOperands()-1) == reg && isa<Constant>(reg)) return false;
     }
+    // Switch case values must remain constants (LLVM IR constraint); skip them
+    if(isa<SwitchInst>(inst) && isa<Constant>(reg)) return false;
     return reg != inst;
   } else if (firegloc == allreg) {
        // dbgs() << "Choosing all regs" << "\n";

@@ -36,12 +36,32 @@ HardwareFaults:
     random: mcf
     tracing: factorial
     multiplebits: bfs
+    multiple-bit-flips-in-multiple-words: bfs
+    multiple-bit-flips-in-multiple-words-controlled: bfs
 
 
 Traces:
     factorial:
         trace_prof: llfi/baseline/llfi.stat.trace.prof.txt
-        trace_inject: 
+        trace_inject:
+            - llfi/llfi_stat_output/llfi.stat.trace.0-0.txt
+            - llfi/llfi_stat_output/llfi.stat.trace.0-1.txt
+            - llfi/llfi_stat_output/llfi.stat.trace.0-2.txt
+            - llfi/llfi_stat_output/llfi.stat.trace.0-3.txt
+            - llfi/llfi_stat_output/llfi.stat.trace.0-4.txt
+        cdfg_prof: llfi.stat.graph.dot
+    BufferOverflow_API:
+        trace_prof: llfi/baseline/llfi.stat.trace.prof.txt
+        trace_inject:
+            - llfi/llfi_stat_output/llfi.stat.trace.0-0.txt
+            - llfi/llfi_stat_output/llfi.stat.trace.0-1.txt
+            - llfi/llfi_stat_output/llfi.stat.trace.0-2.txt
+            - llfi/llfi_stat_output/llfi.stat.trace.0-3.txt
+            - llfi/llfi_stat_output/llfi.stat.trace.0-4.txt
+        cdfg_prof: llfi.stat.graph.dot
+    BufferOverflowMemmove_Data:
+        trace_prof: llfi/baseline/llfi.stat.trace.prof.txt
+        trace_inject:
             - llfi/llfi_stat_output/llfi.stat.trace.0-0.txt
             - llfi/llfi_stat_output/llfi.stat.trace.0-1.txt
             - llfi/llfi_stat_output/llfi.stat.trace.0-2.txt

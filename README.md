@@ -165,6 +165,10 @@ GUI Dependencies:
 ```
 ./setup -LLFI_BUILD_ROOT /path/to/LLFI-build -LLVM_SRC_ROOT /path/to/llvm-project -LLVM_DST_ROOT /path/to/llvm-project/build
 ```
+  On Ubuntu systems where LLVM is installed via apt, `clang` may only be available as `clang-15` (not `clang`) and will not be found automatically. In that case, pass `-LLVM_GXX_BIN_DIR` explicitly:
+```
+./setup -LLFI_BUILD_ROOT /path/to/LLFI-build -LLVM_SRC_ROOT /path/to/llvm-project -LLVM_DST_ROOT /usr/lib/llvm-15 -LLVM_GXX_BIN_DIR /usr/lib/llvm-15/bin
+```
 
 Details about running the Web GUI for LLTFI can be found [here](web-app/README.MD) 
 

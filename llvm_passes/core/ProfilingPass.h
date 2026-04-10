@@ -35,10 +35,8 @@ namespace llfi {
     llvm::PreservedAnalyses run(llvm::Module &M,
                                 llvm::ModuleAnalysisManager &){
 
-      auto obj = new LegacyProfilingPass();
-      bool isChanged = obj->runOnModule(M);
-
-      delete obj;
+      LegacyProfilingPass obj;
+      bool isChanged = obj.runOnModule(M);
       return (isChanged) ? llvm::PreservedAnalyses::none():
                            llvm::PreservedAnalyses::all();
     }

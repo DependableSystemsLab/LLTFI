@@ -1,3 +1,6 @@
+#ifndef GEN_LLFI_INDEX_PASS_H
+#define GEN_LLFI_INDEX_PASS_H
+
 #include "llvm/IR/InstIterator.h"
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/Module.h"
@@ -32,3 +35,5 @@ namespace llfi{
     static char ID;
   };
 }
+
+#endif // GEN_LLFI_INDEX_PASS_H

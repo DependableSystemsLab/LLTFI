@@ -92,7 +92,7 @@ def checkEnvironment():
 # system
   if sys.platform != "linux" and sys.platform != "linux2" and sys.platform != "darwin":
     print("ERROR: LLFI does not support your platform " + sys.platform + "\n", file=sys.stderr)
-    sys.exit(1)
+    sys.sys.exit(1)
 
 # prerequisites
   has_error = False
@@ -131,14 +131,14 @@ def checkEnvironment():
 
   try:
     import yaml
-  except:
+  except Exception:
     print(("ERROR: You need to install Python Yaml module "
                           "before building LLFI.\n"), file=sys.stderr)
     has_error = True
 
   if has_error:
     print("Please fix the above error(s) before building LLFI.", file=sys.stderr)
-    sys.exit(1)
+    sys.sys.exit(1)
 
 
 

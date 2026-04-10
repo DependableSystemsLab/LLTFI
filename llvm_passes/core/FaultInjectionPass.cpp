@@ -88,7 +88,7 @@ void FaultInjectionPass::insertInjectionFuncCall(
         ci->setTailCall(false);
       }
 
-      Value* fi_reg = NULL;
+      Value* fi_reg = nullptr;
       if(*reg_pos_it == DST_REG_POS)  fi_reg = fi_inst;
       else fi_reg = fi_inst->getOperand(*reg_pos_it);
       //if(isa<Constant>(fi_reg))  continue;
@@ -296,7 +296,7 @@ bool FaultInjectionPass::runOnModule(Module &M) {
 
 void FaultInjectionPass::checkforMainFunc(Module &M) {
   Function* mainfunc = M.getFunction("main");
-  if (mainfunc == NULL) {
+  if (mainfunc == nullptr) {
     errs() << "ERROR: Function main does not exist, " <<
         "which is required by LLFI\n";
     exit(1);

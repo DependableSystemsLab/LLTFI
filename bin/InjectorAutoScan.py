@@ -74,7 +74,7 @@ def runAutoScan(args):
         exit(p.returncode)
     elif os.path.isfile(os.path.join(basedir, filename)) == False:
         print("ERROR: No output file found at: "+os.path.join(basedir, filename)+"!\n")
-        exit(1)
+        sys.exit(1)
     return 0
 
 
@@ -86,6 +86,6 @@ def main(args):
 if __name__ == "__main__":
         if len(sys.argv[1:]) < 1 or sys.argv[1] == '--help' or sys.argv[1] == '-h':
                 usage()
-                sys.exit(0)
+                sys.sys.exit(0)
         r = main(sys.argv[1:])
         sys.exit(r)

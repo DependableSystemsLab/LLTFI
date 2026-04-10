@@ -51,13 +51,13 @@ def phraseMasterYaml():
 	try:
 		with open('input.yaml', 'r') as master_yaml_file:
 			master_yaml_dict = yaml.safe_load(master_yaml_file)
-	except:
+	except Exception:
 		print ("ERROR: Unable to find input.yaml or load the input.yaml under current directory")
 		print (basedir)
 		sys.exit(-1)
 	try:
 		model_list = list(master_yaml_dict['compileOption']['instSelMethod'][0]['customInstselector']['include'])
-	except:
+	except Exception:
 		print ("ERROR: this wrapper script is not applicable on the input.yaml under current directory. Please note this script is only applicable on input.yaml files with multiple software failure models defined.")
 		print (basedir)
 		sys.exit(-1)
@@ -69,7 +69,7 @@ def callInjectfault(model_list, *argv):
 		workdir = os.path.join(basedir, "llfi-"+model)
 		try:
 			os.chdir(workdir)
-		except:
+		except Exception:
 			print ("ERROR: Unable to change to directory:", workdir)
 			sys.exit(-1)
 		faultinjection_exe_name = argv[0]
@@ -103,7 +103,7 @@ def main(*argv):
 if __name__ == "__main__":
 	if len(sys.argv[1:]) < 1 or sys.argv[1] == '--help' or sys.argv[1] == '-h':
 		usage()
-		sys.exit(0)
+		sys.sys.exit(0)
 	else:
 		argv = sys.argv[1:]
 	r = main(*argv)

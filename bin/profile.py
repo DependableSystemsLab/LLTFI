@@ -65,18 +65,14 @@ def checkInputYaml():
   #Check for input.yaml's presence
   yamldir = os.path.dirname(os.path.dirname(profiling_exe))
   try:
-    f = open(os.path.join(yamldir, 'input.yaml'), 'r')
-  except:
+    with open(os.path.join(yamldir, 'input.yaml'), 'r') as f:
+      doc = yaml.safe_load(f)
+  except OSError:
     usage("No input.yaml file in the parent directory of profiling executable")
-    exit(1)
-
-  #Check for input.yaml's correct formmating
-  try:
-    doc = yaml.safe_load(f)
-    f.close()
-  except:
+    sys.exit(1)
+  except Exception:
     usage("input.yaml is not formatted in proper YAML (reminder: use spaces, not tabs)")
-    exit(1)
+    sys.exit(1)
 
 
 ################################################################################
@@ -193,5 +189,5 @@ def main(args):
 if __name__=="__main__":
   if len(sys.argv) == 1:
     usage('Must provide the profiling executable and its options')
-    exit(1)
+    sys.exit(1)
   exit(main(sys.argv[1:]))

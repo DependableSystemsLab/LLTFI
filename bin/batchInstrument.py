@@ -61,13 +61,13 @@ def parseMasterYaml():
 	try:
 		with open('input.yaml', 'r') as master_yaml_file:
 			master_yaml_dict = yaml.safe_load(master_yaml_file)
-	except:
+	except Exception:
 		print ("ERROR: Unable to find input.yaml or load the input.yaml under basedir directory")
 		print (basedir)
 		sys.exit(-1)
 	try:
 		model_list = list(master_yaml_dict['compileOption']['instSelMethod'][0]['customInstselector']['include'])
-	except:
+	except Exception:
 		print ("ERROR: this wrapper script is not applicable on the input.yaml under current directory. Please note this script is only applicable on input.yaml files with multiple software failure models defined.")
 		print (basedir)
 		sys.exit(-1)
@@ -84,7 +84,7 @@ def splitMasterYaml(master_yaml_dict, model_list):
 		try:
 			with open(os.path.join(workdir, 'input.yaml'), 'w') as f:
 				f.write(slave_yaml_text)
-		except:
+		except Exception:
 			print ("ERROR: Unable to write slave input.yaml file for model: ", model)
 			print ("workdir: ", workdir)
 			sys.exit(-1)
@@ -109,7 +109,7 @@ def prepareDirs(model_list):
 					shutil.rmtree(workdir)
 				else:
 					os.remove(workdir)
-			except:
+			except Exception:
 				print ("ERROR: Unable to remove:", workdir, "for model:", model)
 				sys.exit(-1)
 		os.makedirs(workdir)
@@ -120,7 +120,7 @@ def prepareDirs(model_list):
 					shutil.copy(s_path, workdir)
 				else:
 					shutil.copytree(s_path, workdir)
-			except:
+			except Exception:
 				print ("ERROR: Unable to copy:", s_path, "\nto:", workdir)
 				sys.exit(-1)
 	return 0
@@ -157,6 +157,6 @@ def main():
 if __name__ == "__main__":
 	if len(sys.argv[1:]) < 1 or sys.argv[1] == '--help' or sys.argv[1] == '-h':
 		usage()
-		sys.exit(0)
+		sys.sys.exit(0)
 	r = main()
 	sys.exit(r)

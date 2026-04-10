@@ -61,10 +61,14 @@ void injectFaultImpl(const char *fi_type, long llfi_index, unsigned size,
  */
 void _initRandomSeed() {
   unsigned int seed;
-	FILE* urandom = fopen("/dev/urandom", "r");
-	fread(&seed, sizeof(int), 1, urandom);
-	fclose(urandom);
-	srand(seed);
+  FILE* urandom = fopen("/dev/urandom", "r");
+  if (urandom != NULL) {
+    fread(&seed, sizeof(int), 1, urandom);
+    fclose(urandom);
+  } else {
+    seed = (unsigned int)time(NULL);
+  }
+  srand(seed);
 }
 
 // get whether to make decision based on probability

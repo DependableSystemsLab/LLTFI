@@ -109,7 +109,7 @@ def execute_tests():
       ret_val = subprocess.call(execlist, stdout = open(os.devnull, 'wb'), stderr = open(os.devnull, 'wb'))
       if (ret_val != 0):
         print('Error: Instrument failed!')
-        exit(1)
+        sys.exit(1)
       
     # check results
     if is_same_result(dir_path, program_name):
@@ -171,7 +171,7 @@ def run_fidl_algorithm(add):
     retVal = subprocess.call(option)
     if retVal != 0:
       print('Error: %s is not a valid fidl script!' % filename)
-      exit(1)
+      sys.exit(1)
      
   # delete fidl script config(s) folder if removing
   if os.path.exists(fidl_config_dir) and not add:

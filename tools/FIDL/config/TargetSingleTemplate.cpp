@@ -56,7 +56,7 @@ namespace llfi {
         
         CallInst* CI = dyn_cast<CallInst>(inst);
         Function* called_func = CI->getCalledFunction();
-        if (called_func == NULL) {
+        if (called_func == nullptr) {
             return false;
         }
         

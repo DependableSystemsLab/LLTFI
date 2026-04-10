@@ -195,6 +195,7 @@ Individual test categories can be run separately:
 python3 SCRIPTS/llfi_test --all_hardware_faults    # hardware fault injection tests
 python3 SCRIPTS/llfi_test --all_trace_tools_tests  # trace analysis tool tests
 python3 SCRIPTS/llfi_test --all_makefile_generation # Makefile generation tests
+python3 SCRIPTS/llfi_test --all_fidl               # FIDL generator tests
 ```
 
 <!--

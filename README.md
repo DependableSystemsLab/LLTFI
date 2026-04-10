@@ -29,23 +29,6 @@ The LLFI tool was originally written for LLVM 3.4. While developing LLTFI, the e
 This upgrade also ensured that LLTFI is compatible with all of the newest C/C++ features, and LLVM optimization passes
 
 
-Auto-Installer
---------------
-If you wish to build LLTFI and its dependencies via the auto-installer(installer/InstallLLTFI.py), you *do not need* to clone the LLTFI git repository. Simply download the installer script by itself, and it will fetch the latest version of the git repository for you. To run the script, simply copy it into the directory where you would like to build the LLTFI and, from the command line, run `python3 InstallLLTFI.py`.
-  
-Dependencies:
-  1. 64 Bit Machine (preferably with GPU for faster training of ML programs) 
-  2. 64 bit Linux (Ubuntu 20.04) or OS X
-  3. CMake (minimum v3.15)
-  4. Python 3 and above
-  5. Ninja >= 1.10.2
-  6. Internet Connection
-
-Usage:
-  1. Copy the InstallLLTFI.py script to where you want to build the LLTFI. Run "python3 InstallLLTFI.py -h" to see all running options/guidelines
-  2. Run "python3 InstallLLTFI.py"
-
-
 Manual Installation
 -------------------
 

@@ -170,8 +170,6 @@ GUI Dependencies:
 ./setup -LLFI_BUILD_ROOT /path/to/LLFI-build -LLVM_SRC_ROOT /path/to/llvm-project -LLVM_DST_ROOT /usr/lib/llvm-15 -LLVM_GXX_BIN_DIR /usr/lib/llvm-15/bin
 ```
 
-Details about running the Web GUI for LLTFI can be found [here](web-app/README.MD) 
-
 ### Building LLTFI using Docker: ###
 
 `docker/Dockerfile` can be used to build and run LLTFI in a docker container. You can modify the Dockerfile according to your system and project requirements. More details can be found [here](docker/README.md)

@@ -1,17 +1,34 @@
 GOTCHAS:
-	1. For injecting fault n times, use the same IR file (i.e. run the script once, while calling the fault injector with the same IR file n times). 
-		
-	2. The classification of the injection results depends on the comparison of fault-free execution and fault-injected execution.
-		That means non-deterministic programs may not work well in classification.
+	1. For injecting fault n times, use the same IR file (i.e. run the script once,
+	   while calling the fault injector with the same IR file n times).
 
-	3. For different test benches, the method used to classify the results of faulty executions might be different. Please write your own specific classification 		code.
+	2. The classification of the injection results depends on the comparison of
+	   fault-free execution and fault-injected execution. Non-deterministic programs
+	   may not work well in classification.
 
-		
+	3. For different test benches, the method used to classify the results of faulty
+	   executions might be different. Write your own specific classification code
+	   where necessary.
+
+	4. Software fault modes that target memmove/memcpy (e.g. WrongDestination(Data))
+	   do NOT work when the compiler optimises those calls to LLVM intrinsics
+	   (e.g. @llvm.memmove.p0.p0.i64). The intrinsic has no injectable register
+	   arguments at runtime. Use a fault mode targeting a regular C library call
+	   instead (e.g. WrongPointer(Data) targets fread/fwrite).
+
+	5. FIDL-generated selector files (llvm_passes/software_failures/_*_*Selector.cpp)
+	   are not committed to the repository. They are regenerated automatically by
+	   ./setup via tools/FIDL/FIDL-Algorithm.py. If you edit fault mode definitions,
+	   re-run: python3 tools/FIDL/FIDL-Algorithm.py -a default
+
 KNOWN PROBLEMS:
-	1. On 32 bit systems, llvm-gcc 4.2.1 might not be compatible with GCC other than version 4.4.5. 
-		Runing llvm-gcc 4.2.1 on Ubuntu 12.04 with GCC-4.6 has failed on our test computers.
-	3. On Default 64bit installations of Debian "Wheezy", running LLFI will fail on our test computers.
+	1. ML-related tools (compiletoIR.py, SoftwareFailureAutoScan for ML models)
+	   require additional dependencies (TensorFlow, PyTorch, ONNX-MLIR) that are
+	   not part of the base installation. See README.md for installation instructions.
+
+	2. On Ubuntu systems where LLVM is installed via apt, clang is available as
+	   clang-15 (not clang) and will not be found automatically by ./setup. Pass
+	   -LLVM_GXX_BIN_DIR /usr/lib/llvm-15/bin explicitly in that case.
 
 Recommended Environment:
-	Debian 6.0.7 "Squeeze" 64bit Default Installation
-
+	64-bit Linux (Ubuntu 20.04 or later), LLVM 15.0

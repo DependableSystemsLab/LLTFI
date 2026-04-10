@@ -303,3 +303,5 @@ Citations
 ======		
 Read *caveats.txt* for caveats and known problems.
 
+Read *CODING_GUIDELINES.md* for C++, C, and Python coding conventions used in this project.
+

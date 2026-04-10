@@ -76,17 +76,17 @@ def read_input_yaml(filename):
   # Check for Input FIDL's presence
   try:
     f = open(filename, 'r')
-  except:
+  except Exception:
     print('Error: Specified FIDL config file (%s) not found!' % (filename), file = sys.stderr)
-    exit(1)
+    sys.exit(1)
   
   # Check for correct YAML formatting
   try:
     doc = yaml.safe_load(f)
     f.close()
-  except:
+  except Exception:
     print('Error: %s is not formatted in proper YAML format (reminder: use spaces, not tabs)' % (filename), file = sys.stderr)
-    exit(1)
+    sys.exit(1)
     
   return doc
 
@@ -340,13 +340,13 @@ def gen_and_write_selector(options) :
     write_file(filepath, gen_ftrigger_single(options))
   else:
     print('Error: Invalid FIDL config!', file = sys.stderr)
-    exit(1)
+    sys.exit(1)
   
   # modify llvm_pass/CMakeLists.txt
   l = read_file(cmakelists)
   try:
     l.index('  software_failures/%s' % filename) 
-  except:
+  except Exception:
     l.insert(l.index("  #FIDL - DO NOT MODIFY UNTIL '#END'") + 1, '  software_failures/%s' % filename)
     write_file(cmakelists, l)
     
@@ -420,21 +420,21 @@ def gen_runtime_code(options, injectors_dict):
         code.append('static RegisterFaultInjector %s new ChangeValueInjector(%s, %s));' % (insert, value, boolean))
       except NameError:
         print("Error: 'Perturb: %s' injector requires a integer value under 'Action: value:', and a boolean option under 'Action: option:'!" % (injector), file = sys.stderr)
-        exit(1)
+        sys.exit(1)
     elif 'InappropriateCloseInjector' in perturb:
       injector = 'InappropriateCloseInjector'
       try:
         code.append('static RegisterFaultInjector %s new InappropriateCloseInjector(%s));' % (insert, boolean))
       except NameError:
         print("Error: 'Perturb: %s' injector requires a boolean option under 'Action: option:'!" % (injector), file = sys.stderr)
-        exit(1)
+        sys.exit(1)
     elif 'MemoryExhaustionInjector' in perturb:
       injector = 'MemoryExhaustionInjector'
       try:
         code.append('static RegisterFaultInjector %s new MemoryExhaustionInjector(%s));' % (insert, boolean))
       except NameError:
         print("Error: 'Perturb: %s' injector requires a boolean option under 'Action: option:'!" % (injector), file = sys.stderr)
-        exit(1)
+        sys.exit(1)
     elif 'WrongFormatInjector' in perturb:
       injector = 'WrongFormatInjector'
       code.append('static RegisterFaultInjector %s new WrongFormatInjector());' % (insert))
@@ -456,13 +456,13 @@ def gen_runtime_code(options, injectors_dict):
         code.extend(gen_custom_injector(insert, f_class, f_mode, options['custom_injector']))
       else:
         print("Error: Custom_Injector specified in 'Perturb:' but not specified in .yaml file!", file = sys.stderr)
-        exit(1)
+        sys.exit(1)
     else:
       print('Error: Invalid Perturb Injector!', file = sys.stderr)
-      exit(1)
+      sys.exit(1)
   else:
     print("Error: Invalid 'Action:' field in yaml file!", file = sys.stderr)
-    exit(1)
+    sys.exit(1)
     
   options['injector'] = injector
   injectors_dict[name] = {'selectorfilename': selectorfilename, 'code': '\n'.join(code)}
@@ -562,7 +562,7 @@ def del_injector(name, injector_type):
     del injectors[name]
   else:
     print('Error: %s is not a %s injector!' % (name, injector_type), file = sys.stderr)
-    exit(1)
+    sys.exit(1)
   
   write_yaml(all_injectors, all_injectors_yaml)
   

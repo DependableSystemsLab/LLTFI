@@ -207,7 +207,7 @@ if __name__ == '__main__':
 
     if os.path.exists(outputFname):
         print >> sys.stderr,"output file " + outputFname + " exists already, refusing to overwrite it"
-        sys.exit(1)
+        sys.sys.exit(1)
 
 
     # infer output format from suffix

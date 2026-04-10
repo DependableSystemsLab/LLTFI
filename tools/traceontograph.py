@@ -64,4 +64,4 @@ if __name__ == "__main__":
     traceOntoGraph(sys.argv[1], sys.argv[2])
   else:
     print("Error: running option: %(prog)s <trace difference report> <program dot-formatted CDFG>" %{"prog": prog}, file=sys.stderr)
-    exit(1)
+    sys.exit(1)

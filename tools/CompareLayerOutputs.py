@@ -369,7 +369,7 @@ def getJsonDiff(j1, j2, delta):
                     #Iterate all data outputs
                     for j in range(0, len(jf[key]['Data']), 1):
                         retval = assertData(str(jf[key]['Data'][j]), str(jg[key]['Data'][j]), str(jf[key]['Number of Elements']), str(layerId), str(j), delta, op_name)
-            except:
+            except Exception:
                 pass
 
 # Get total number of layers in a model

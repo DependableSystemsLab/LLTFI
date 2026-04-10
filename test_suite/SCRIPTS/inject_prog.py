@@ -62,7 +62,7 @@ def callLLFI(work_dir, target_IR, prog_input):
 
 	try:
 		os.chdir(work_dir)
-	except:
+	except Exception:
 		print ("ERROR: Unable to change directory to:", work_dir)
 		return -1, None
 	with open("llfi.test.log.instrument.txt", 'w', buffering=1) as log:
@@ -88,7 +88,7 @@ def callLLFI(work_dir, target_IR, prog_input):
 			try:
 				server.terminate()
 				print ("MSG: echoServer.exe terminated for profile.\n")
-			except:
+			except Exception:
 				print ("ERROR: Unable to terminate echoServer.exe in profile for:", work_dir)
 		if p.returncode != 0:
 			print ("ERROR: profile failed for:", work_dir, target_IR)
@@ -112,7 +112,7 @@ def callLLFI(work_dir, target_IR, prog_input):
 			try:
 				server.terminate()
 				print ("MSG: echoServer.exe terminated for profile.\n")
-			except:
+			except Exception:
 				print ("ERROR: Unable to terminate echoServer.exe in injectfault for", work_dir)
 			
 	return 0, t
@@ -125,7 +125,7 @@ def callBatchLLFI(work_dir, target_IR, prog_input):
 
 	try:
 		os.chdir(work_dir)
-	except:
+	except Exception:
 		print ("ERROR: Unable to change directory to:", work_dir)
 		return -1, None
 
@@ -161,7 +161,7 @@ def callBatchLLFI(work_dir, target_IR, prog_input):
 			try:
 				server.terminate()
 				print ("MSG: echoServer.exe terminated for profile.\n")
-			except:
+			except Exception:
 				print ("ERROR: Unable to terminate echoServer.exe in profile for:", work_dir)
 		if p.returncode != 0:
 			print ("ERROR: profile failed for:", work_dir, target_IR)
@@ -184,7 +184,7 @@ def callBatchLLFI(work_dir, target_IR, prog_input):
 			try:
 				server.terminate()
 				print ("MSG: echoServer.exe terminated for profile.\n")
-			except:
+			except Exception:
 				print ("ERROR: Unable to terminate echoServer.exe in injectfault for", work_dir)
 			
 	return 0, t
@@ -214,7 +214,7 @@ def inject_prog(num_threads, *prog_list):
 	with open(os.path.join(testsuite_dir, "test_suite.yaml")) as f:
 		try:
 			suite = yaml.safe_load(f)
-		except:
+		except Exception:
 			print("ERROR: Unable to load yaml file: test_suite.yaml", file=sys.stderr)
 			return -1
 

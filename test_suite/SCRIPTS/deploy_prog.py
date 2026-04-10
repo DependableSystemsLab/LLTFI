@@ -15,7 +15,7 @@ def deploy_prog(*prog_list):
 	with open(os.path.join(testsuite_dir, "test_suite.yaml")) as f:
 		try:
 			suite = yaml.safe_load(f)
-		except:
+		except Exception:
 			print("ERROR: Unable to load yaml file: test_suite.yaml", file=sys.stderr)
 			return -1
 
@@ -38,7 +38,7 @@ def deploy_prog(*prog_list):
 			src_path = os.path.join(src_dir, f)
 			try:
 				shutil.copy(src_path, dst_dir)
-			except:
+			except Exception:
 				print ("ERROR: Failed in copying program files:", work_dict[test_path], "for test:", test_path, file=sys.stderr)
 				r += 1
 			else:

@@ -9,7 +9,7 @@ import subprocess
 def examineTraceFile(work_dir):
 	try:
 		inputyaml = open(os.path.join(work_dir, 'input.yaml'), 'r')
-	except:
+	except Exception:
 		print ("FAIL: (ERROR) input.yaml not found! work_dir:", work_dir)
 		return False
 
@@ -25,7 +25,7 @@ def examineTraceFile(work_dir):
 		else:
 			## Tracing option disabled, pass
 			return True
-	except:
+	except Exception:
 		## Tracing option disabled, pass
 		return True
 
@@ -65,7 +65,7 @@ def check_injection(*prog_list):
 	with open(os.path.join(testsuite_dir, "test_suite.yaml")) as f:
 		try:
 			suite = yaml.safe_load(f)
-		except:
+		except Exception:
 			print("ERROR: Unable to load yaml file: test_suite.yaml", file=sys.stderr)
 			return -1
 

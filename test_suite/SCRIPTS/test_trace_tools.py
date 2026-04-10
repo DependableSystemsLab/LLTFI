@@ -31,8 +31,9 @@ def callTraceTools(work_dir, resources):
 		else:
 			report_name = '.'.join(faulty_trace.split('.')[0:-1])+'.report.'+faulty_trace.split('.')[-1]
 			report_file = os.path.join(work_dir, report_name)
-			commands = [tracediff_script, golden_trace_file, faulty_trace_file, '>', report_file]
-			p = subprocess.Popen(' '.join(commands), shell=True)
+			with open(report_file, 'w') as report_out:
+				p = subprocess.Popen([tracediff_script, golden_trace_file, faulty_trace_file],
+				                     stdout=report_out)
 			p.wait()
 			if p.returncode != 0:
 				return ("FAIL: \'tracediff\' quits unnormally!")
@@ -45,10 +46,9 @@ def callTraceTools(work_dir, resources):
 	## call traceunion to generate a union of all reports
 	united_report_name = 'llfi.united.trace.report.txt'
 	united_report_file = os.path.join(work_dir, united_report_name)
-	commands = [traceunion_script]
-	commands.extend(reports_list)
-	commands.extend(['>', united_report_file])
-	p = subprocess.Popen(' '.join(commands), shell=True)
+	commands = [traceunion_script] + reports_list
+	with open(united_report_file, 'w') as united_out:
+		p = subprocess.Popen(commands, stdout=united_out)
 	p.wait()
 	if p.returncode != 0:
 		return ("FAIL: \'traceunion\' quits unnormally!")
@@ -61,11 +61,11 @@ def callTraceTools(work_dir, resources):
 	cdfg_prof_file = os.path.join(work_dir, resources['cdfg_prof'])
 	if os.path.isfile(cdfg_prof_file) == False:
 		return ("FAIL: cdfg_prof_file not found:", resources['cdfg_prof'])
-	commands = [traceontograph_script, united_report_file, cdfg_prof_file, '>']
 	cdfg_faulty_name = 'llfi.faulty.graph.dot'
 	cdfg_faulty_file = os.path.join(work_dir, cdfg_faulty_name)
-	commands.append(cdfg_faulty_file)
-	p = subprocess.Popen(' '.join(commands), shell=True)
+	with open(cdfg_faulty_file, 'w') as cdfg_out:
+		p = subprocess.Popen([traceontograph_script, united_report_file, cdfg_prof_file],
+		                     stdout=cdfg_out)
 	p.wait()
 	if p.returncode != 0:
 		return ("FAIL: \'traceontograph\' quits unnormally!")
@@ -79,7 +79,7 @@ def callTraceTools(work_dir, resources):
 	llfi_stat_dir = os.path.join(work_dir, 'llfi', 'llfi_stat_output')
 	os.chdir(llfi_stat_dir)
 	#print (os.getcwd())
-	p = subprocess.Popen(tracetodot_script, shell=True)
+	p = subprocess.Popen([tracetodot_script])
 	p.wait()
 	os.chdir(current_dir)
 	if p.returncode != 0:
@@ -115,7 +115,7 @@ def test_trace_tools(*test_list):
 	with open(os.path.join(testsuite_dir, "test_suite.yaml")) as f:
 		try:
 			suite = yaml.safe_load(f)
-		except:
+		except Exception:
 			print("ERROR: Unable to load yaml file: test_suite.yaml", file=sys.stderr)
 			return -1
 

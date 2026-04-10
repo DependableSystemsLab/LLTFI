@@ -26,7 +26,7 @@ def traceDiff(argv, output = 0):
     sys.stdout = open(output, "wb")
   if (len(argv) != 3):
     print("ERROR: running option: %(prog)s <golden output> <faulty output>" % {'prog': prog}, file=sys.stderr)
-    exit(1)
+    sys.exit(1)
 
   goldFile = open(argv[1], 'r')
   goldTrace = goldFile.read()

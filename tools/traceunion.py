@@ -8,6 +8,8 @@
 #Example Usage:
 #     ./traceUnion.py file1 file2 file3 ... fileN > finalFile
 
+import sys
+
 from tracetools import *
 
 prog = os.path.basename(sys.argv[0])
@@ -51,5 +53,5 @@ if __name__ == "__main__":
     traceUnion(sys.argv[1:])
   else:
     print("Error: running option: %(prog)s file1 file2 ..." %{"prog": prog}, file=sys.stderr)
-    exit(1)
+    sys.exit(1)
 

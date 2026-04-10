@@ -269,7 +269,7 @@ class NLPModel:
                     all_predictions.append(run_pred)
                     # Store the prediction
                     self.fi_outputs[run_num] = run_pred
-                except:
+                except Exception:
                     set_trace()
                     print("Error parsing run: ", run)
                     continue
@@ -301,7 +301,7 @@ class NLPModel:
                     all_predictions.append(run_pred)
                     # Store the prediction
                     self.fi_outputs[run_num] = run_pred
-                except:
+                except Exception:
                     print("Error parsing run: ", run)
                     continue
 
@@ -333,7 +333,7 @@ class NLPModel:
                     all_predictions.append(run_pred)
                     # Store the prediction
                     self.fi_outputs[run_num] = run_pred
-                except:
+                except Exception:
                     print("Error parsing run: ", run)
                     continue
 
@@ -365,7 +365,7 @@ class NLPModel:
                     all_predictions.append(run_pred)
                     # Store the prediction
                     self.fi_outputs[run_num] = run_pred
-                except:
+                except Exception:
                     print("Error parsing run: ", run)
                     continue
 

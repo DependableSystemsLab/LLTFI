@@ -149,7 +149,7 @@ def compileProg():
     for tmpfile in tmpfiles:
       try:
         os.remove(tmpfile)
-      except:
+      except Exception:
         pass
 
   if retcode != 0:

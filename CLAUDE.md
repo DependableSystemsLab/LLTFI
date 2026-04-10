@@ -38,14 +38,15 @@ cd /home/karthik/Programs/LLTFI-build && make
 From the **build** directory:
 ```bash
 cd /home/karthik/Programs/LLTFI-build/test_suite
-python3 SCRIPTS/llfi_test --all                      # all 18 tests
+python3 SCRIPTS/llfi_test --all                      # all 21 tests
 python3 SCRIPTS/llfi_test --all_hardware_faults      # 8 tests
 python3 SCRIPTS/llfi_test --all_software_faults      # 5 tests
 python3 SCRIPTS/llfi_test --all_trace_tools_tests    # 3 tests
 python3 SCRIPTS/llfi_test --all_makefile_generation  # 2 tests
+python3 SCRIPTS/llfi_test --all_fidl                 # 3 tests (FIDL generator)
 ```
 
-Expected: **18/18 PASS**. Some error messages during fault injection runs are normal.
+Expected: **21/21 PASS**. Some error messages during fault injection runs are normal.
 
 ---
 

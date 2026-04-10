@@ -11,7 +11,7 @@
 #include "llvm/IR/Instructions.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/ADT/Statistic.h"
-#include "llvm/Support/CFG.h"
+#include "llvm/IR/CFG.h"
 #include "llvm/ADT/DepthFirstIterator.h"
 #include "llvm/ADT/GraphTraits.h"
 
@@ -47,9 +47,9 @@ namespace llfi {
     }
     
     static bool isTarget(CallInst* CI, Value* T) {
-        std::string func_name = CI->getCalledFunction()->getName();
+        std::string func_name = CI->getCalledFunction()->getName().str();
 //fidl_6
-            if (*SI >= CI->getNumArgOperands()) {
+            if (*SI >= (int)CI->arg_size()) {
                 continue;
             } else if (T == CI->getArgOperand(*SI)) {
                 return true; 

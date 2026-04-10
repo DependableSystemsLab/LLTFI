@@ -74,7 +74,7 @@ def parseArgs(args):
 			
 		elif arg == "--all_software_faults":
 			options['all_software_faults'] = True
-			
+
 		elif arg == "--all_hardware_faults":
 			options['all_hardware_faults'] = True
 			

@@ -54,7 +54,7 @@ elif sys.platform == "darwin":
   llfilib = os.path.join(script_path, "../llvm_passes/llfi-passes.dylib")
 else:
   print("ERROR: LLFI does not support platform " + sys.platform + ".")
-  exit(1)
+  sys.exit(1)
 
 
 options = {
@@ -142,7 +142,7 @@ def parseArgs(args):
       try:
         os.mkdir(fullpath)
         options["dir"] = fullpath
-      except:
+      except Exception:
         usage("Unable to create a directory named " + options["dir"] +\
               " under " + srcpath)
 
@@ -152,29 +152,25 @@ def checkInputYaml():
   global cOpt
   srcpath = os.path.dirname(options["source"])
   try:
-    f = open(os.path.join(srcpath, 'input.yaml'), 'r')
-  except:
+    with open(os.path.join(srcpath, 'input.yaml'), 'r') as f:
+      doc = yaml.safe_load(f)
+    verbosePrint(yaml.dump(doc), options["verbose"])
+  except OSError:
     print("ERROR: No input.yaml file in the %s directory." % srcpath)
     os.rmdir(options["dir"])
-    exit(1)
-
-  #Check for input.yaml's correct formmating
-  try:
-    doc = yaml.safe_load(f)
-    f.close()
-    verbosePrint(yaml.dump(doc), options["verbose"])
-  except:
+    sys.exit(1)
+  except Exception:
     print("Error: input.yaml is not formatted in proper YAML (reminder: use spaces, not tabs)")
     os.rmdir(options["dir"])
-    exit(1)
+    sys.exit(1)
 
   #Check for compileOption in input.yaml
   try:
     cOpt = doc["compileOption"]
-  except:
+  except KeyError:
     os.rmdir(options["dir"])
     print("ERROR: Please include compileOptions in input.yaml.")
-    exit(1)
+    sys.exit(1)
 
 
 
@@ -192,7 +188,7 @@ def readCompileOption():
   ###Instruction selection method
   if "instSelMethod" not in cOpt:
     print(("\n\nERROR: Please include an 'instSelMethod' key value pair under compileOption in input.yaml.\n"))
-    exit(1)
+    sys.exit(1)
   else:
     compileOptions = []
     validMethods = ["insttype", "funcname", "customInstselector"]
@@ -203,7 +199,7 @@ def readCompileOption():
       methodName = list(method.keys())[0]
       if methodName not in validMethods:
         print ("\n\nERROR: Unknown instruction selection method in input.yaml.\n")
-        exit(1)
+        sys.exit(1)
 
     #Select by instruction type
     if methodName == "insttype" or methodName == "funcname":
@@ -216,7 +212,7 @@ def readCompileOption():
     # TODO: This isn't a very extendible way of doing this.
     if "include" not in method[methodName]:
       print(("\n\nERROR: An 'include' list must be present for the %s method in input.yaml.\n" % (methodName)))
-      exit(1)
+      sys.exit(1)
 
     # Parse all options for current method
     custom_instselector_defined = False
@@ -233,7 +229,7 @@ def readCompileOption():
           if custom_instselector_defined == True:
             print("\nERROR: '\'instrument\' only support one customInstselector included in input.yaml.")
             print("To apply a list of fault models/failure modes, please use \'batchinstrument\'")
-            exit(1)
+            sys.exit(1)
           else:
             custom_instselector_defined = True
         else: # add the ability to give custom options here?
@@ -248,14 +244,14 @@ def readCompileOption():
   ###Register selection method
   if "regSelMethod" not in cOpt:
     print(("\n\nERROR: Please include an 'regSelMethod' key value pair under compileOption in input.yaml.\n"))
-    exit(1)
+    sys.exit(1)
   else:
     #Select by register location
     if cOpt["regSelMethod"] == 'regloc':
       compileOptions.append('-regloc')
       if "regloc" not in cOpt:
         print(("\n\nERROR: An 'regloc' key value pair must be present for the regloc method in input.yaml.\n"))
-        exit(1)
+        sys.exit(1)
       else:
         compileOptions.append('-'+cOpt["regloc"])
 
@@ -264,13 +260,13 @@ def readCompileOption():
       compileOptions.append('-customregselector')
       if "customRegSelector" not in cOpt:
         print(("\n\nERROR: An 'customRegSelector' key value pair must be present for the customregselector method in input.yaml.\n"))
-        exit(1)
+        sys.exit(1)
       else:
           if cOpt["customRegSelector"] == "SoftwareFault" or cOpt["customRegSelector"] == "Automatic":
             ## replace the Automatic tag with the customInstSelector name
             try:
               regselectorname = cOpt["instSelMethod"][0]["customInstselector"]["include"][0]
-            except:
+            except Exception:
               print("\n\nERROR: Cannot extract customRegSelector from instSelMethod. Please check the customInstselector field in input.yaml\n")
             else:
               compileOptions.append('-firegselectorname='+regselectorname)
@@ -282,7 +278,7 @@ def readCompileOption():
 
     else:
       print(("\n\nERROR: Unknown Register selection method in input.yaml.\n"))
-      exit(1)
+      sys.exit(1)
 
   ###Injection Trace selection
   if "includeInjectionTrace" in cOpt:
@@ -293,7 +289,7 @@ def readCompileOption():
         compileOptions.append('-includebackwardtrace')
       else:
         print(("\n\nERROR: Invalid value for trace (forward/backward allowed) in input.yaml.\n"))
-        exit(1)
+        sys.exit(1)
 
   ###Tracing Proppass
   if "tracingPropagation" in cOpt and cOpt["tracingPropagation"] == True:
@@ -420,7 +416,7 @@ def compileProg():
     for tmpfile in tmpfiles:
       try:
         os.remove(tmpfile)
-      except:
+      except Exception:
         pass
     if retcode != 0:
       print("\nERROR: there was an error during linking and generating executables,"\

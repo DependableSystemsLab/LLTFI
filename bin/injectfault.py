@@ -78,20 +78,14 @@ def checkInputYaml():
   #Check for input.yaml's presence
   yamldir = os.path.dirname(os.path.dirname(fi_exe))
   try:
-    f = open(os.path.join(basedir, 'input.yaml'),'r')
-  except:
+    with open(os.path.join(basedir, 'input.yaml'), 'r') as f:
+      doc = yaml.safe_load(f)
+  except OSError:
     usage("No input.yaml file in the parent directory of fault injection executable")
-    exit(1)
-
-  #Check for input.yaml's correct formmating
-  try:
-    doc = yaml.safe_load(f)
-  except:
-    f.close()
+    sys.exit(1)
+  except Exception:
     usage("input.yaml is not formatted in proper YAML (reminder: use spaces, not tabs)")
-    exit(1)
-  finally:
-    f.close()
+    sys.exit(1)
 
   if "kernelOption" in doc:
     for opt in doc["kernelOption"]:
@@ -346,7 +340,7 @@ def checkValues(key, val, var1 = None,var2 = None,var3 = None,var4 = None):
       if user_input.upper() =="Y":
         pass
       else:
-        exit(1)
+        sys.exit(1)
 
   elif key == 'fi_random_seed':
     assert isinstance(val, int)==True, key+" must be an integer in input.yaml"
@@ -368,14 +362,14 @@ def main(args):
   #Set up each config file and its corresponding run_number
   try:
     rOpt = doc["runOption"]
-  except:
+  except Exception:
     print("ERROR: Please include runOption in input.yaml.")
-    exit(1)
+    sys.exit(1)
 
   if not os.path.isfile(fi_exe):
     print("ERROR: The executable "+ fi_exe+" does not exist.")
     print("Please build the executables with create-executables.\n")
-    exit(1)
+    sys.exit(1)
   else:
     print("======Fault Injection======")
     for ii, run in enumerate(rOpt):
@@ -389,7 +383,7 @@ def main(args):
 
       if "numOfRuns" not in run["run"]:
         print("ERROR: Must include a run number per fi config in input.yaml.")
-        exit(1)
+        sys.exit(1)
 
       if "timeOut" in run["run"]:
          timeout = int(run["run"]["timeOut"])
@@ -446,7 +440,7 @@ def main(args):
           try:
             cOpt = doc["compileOption"]
             injectorname = cOpt["instSelMethod"][0]["customInstselector"]["include"][0]
-          except:
+          except Exception:
             print("\n\nERROR: Cannot extract fi_type from instSelMethod. Please check the customInstselector field in input.yaml\n")
           else:
             fi_type = injectorname
@@ -468,7 +462,7 @@ def main(args):
         if ('fi_max_multiple' in locals()) and 'window_len' in locals():
           print(("\nERROR: window_len and fi_max_multiple cannot be specified"
                " at the same time in the input.yaml file. Please choose one."))
-          exit(1)
+          sys.exit(1)
       ##==============================================================
       ##BEHROOZ: Add multiple corrupted regs
       if 'window_len_multiple' in run["run"]:
@@ -478,15 +472,15 @@ def main(args):
           if ('window_len' in run["run"]):
             print(("\nERROR: window_len and window_len_multiple cannot be specified"
                " at the same time in the input.yaml file. Please choose one."))
-            exit(1)
+            sys.exit(1)
           elif ('window_len_multiple_startindex' in run["run"]):
             print(("\nERROR: window_len_multiple_startindex and window_len_multiple cannot be specified"
                " at the same time in the input.yaml file. Please choose one."))
-            exit(1)
+            sys.exit(1)
           elif ('window_len_multiple_endindex' in run["run"]):
             print(("\nERROR: window_len_multiple_endindex and window_len_multiple cannot be specified"
                " at the same time in the input.yaml file. Please choose one."))
-            exit(1)
+            sys.exit(1)
       if 'window_len_multiple_startindex' in run["run"]:
         window_len_multiple_startindex=run["run"]["window_len_multiple_startindex"]
         checkValues("window_len_multiple_startindex", window_len_multiple_startindex)
@@ -494,15 +488,15 @@ def main(args):
           if ('window_len' in run["run"]):
             print(("\nERROR: window_len and window_len_multiple_startindex cannot be specified"
                " at the same time in the input.yaml file. Please choose one."))
-            exit(1)
+            sys.exit(1)
           elif ('window_len_multiple' in run["run"]):
             print(("\nERROR: window_len_multiple_startindex and window_len_multiple cannot be specified"
                " at the same time in the input.yaml file. Please choose one."))
-            exit(1)
+            sys.exit(1)
           elif ('window_len_multiple_endindex' not in run["run"]):
             print(("\nERROR: window_len_multiple_startindex should come with window_len_multiple_endindex."
                " Please specify both."))
-            exit(1)
+            sys.exit(1)
       if 'window_len_multiple_endindex' in run["run"]:
         window_len_multiple_endindex=run["run"]["window_len_multiple_endindex"]
         checkValues("window_len_multiple_endindex", window_len_multiple_endindex)
@@ -510,15 +504,15 @@ def main(args):
           if('window_len' in run["run"]):
             print(("\nERROR: window_len and window_len_multiple_endindex cannot be specified"
                " at the same time in the input.yaml file. Please choose one."))
-            exit(1)
+            sys.exit(1)
           elif('window_len_multiple' in run["run"]):
             print(("\nERROR: window_len_multiple_endindex and window_len_multiple cannot be specified"
                " at the same time in the input.yaml file. Please choose one."))
-            exit(1)
+            sys.exit(1)
           elif('window_len_multiple_startindex' not in run["run"]):
             print(("\nERROR: window_len_multiple_endindex should come with window_len_multiple_startindex."
                " Please specify both."))
-            exit(1)
+            sys.exit(1)
       ##==============================================================
       if "fi_cycle" in run["run"]:
         fi_cycle=run["run"]["fi_cycle"]
@@ -618,7 +612,7 @@ def main(args):
             win_end_index = window_len_multiple_endindex
             if(win_start_index > win_end_index):
               print(("\nERROR: In the yaml file, the window_len_multiple_startindex cannot be bigger than window_len_multiple_endindex!"))
-              exit(1)
+              sys.exit(1)
           #The line below has been substituted with the one below it. This way the maximum number injection is not selected randomly and is
           #equal to the value specified by the user
           ##selected_num_of_injection = random.randint(1, int(fi_max_multiple))
@@ -669,5 +663,5 @@ def main(args):
 if __name__=="__main__":
   if len(sys.argv) == 1:
     usage('Must provide the fault injection executable and its options')
-    exit(1)
+    sys.exit(1)
   main(sys.argv[1:])

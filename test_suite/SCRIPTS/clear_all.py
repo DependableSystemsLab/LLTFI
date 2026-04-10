@@ -28,7 +28,7 @@ def clear_all():
 					os.remove(os.path.join(testsuite_dir, "HardwareFaults", test, f))
 
 	## clear software faults
-	for test in suite["SoftwareFaults"]:
+	for test in suite.get("SoftwareFaults", {}):
 		fs = [f for f in os.listdir(os.path.join(testsuite_dir, "SoftwareFaults", test))]
 		for f in fs:
 			if f != "input.yaml":

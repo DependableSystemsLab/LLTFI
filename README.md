@@ -190,6 +190,16 @@ cd <LLFI_BUILD_ROOT>/test_suite
 python3 SCRIPTS/llfi_test --all
 ```
 
+Individual test categories can be run separately:
+```
+python3 SCRIPTS/llfi_test --all_hardware_faults    # hardware fault injection tests
+python3 SCRIPTS/llfi_test --all_software_faults    # software fault injection tests
+python3 SCRIPTS/llfi_test --all_trace_tools_tests  # trace analysis tool tests
+python3 SCRIPTS/llfi_test --all_makefile_generation # Makefile generation tests
+```
+
+Note: software fault injection support (including default failure modes such as `BufferOverflow`, `MemoryLeak`, `WrongAPI`, etc.) is generated automatically by `./setup` via the FIDL tool. If you add or modify failure modes in `tools/FIDL/config/default_failures.yaml`, re-run `python3 tools/FIDL/FIDL-Algorithm.py -a default` from the source root and rebuild LLTFI.
+
 <!--
 VirtualBox Image
 -----------------

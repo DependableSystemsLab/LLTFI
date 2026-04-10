@@ -28,7 +28,7 @@ def clear_llfi():
 					os.remove(os.path.join(testsuite_dir, "HardwareFaults", test, f))
 
 	## clear software faults
-	for test in suite["SoftwareFaults"]:
+	for test in suite.get("SoftwareFaults", {}):
 		fs = [f for f in os.listdir(os.path.join(testsuite_dir, "SoftwareFaults", test))]
 		for f in fs:
 			if f.startswith("llfi"):
@@ -38,7 +38,7 @@ def clear_llfi():
 				else:
 					os.remove(os.path.join(testsuite_dir, "SoftwareFaults", test, f))
 
-	## clear software faults
+	## clear batch mode faults
 	for test in suite["BatchMode"]:
 		fs = [f for f in os.listdir(os.path.join(testsuite_dir, "BatchMode", test))]
 		for f in fs:

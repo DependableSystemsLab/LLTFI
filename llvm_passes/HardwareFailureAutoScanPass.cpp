@@ -61,6 +61,7 @@ namespace llfi{
                 }
             }
             selector_record_file.close();
+            return false;
         }
 
         void recordString(std::string str){

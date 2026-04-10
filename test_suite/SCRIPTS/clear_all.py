@@ -12,7 +12,7 @@ def clear_all():
 	with open(os.path.join(testsuite_dir, "test_suite.yaml")) as f:
 		try:
 			suite = yaml.safe_load(f)
-		except:
+		except Exception:
 			print("ERROR: Unable to load yaml file: test_suite.yaml", file=sys.stderr)
 			return -1
 

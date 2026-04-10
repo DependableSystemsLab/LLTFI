@@ -2,7 +2,7 @@
 
 """
 
-%(prog)s is a test suite driver script to run all the steps of LLFI regression test. 
+%(prog)s is a test suite driver script to run all the steps of LLFI regression test.
 
 Usage: %(prog)s [OPTIONS]
 
@@ -16,6 +16,7 @@ List of options:
 --all_batchmode: Test all the test cases of BatchMode fault injections.
 --all_trace_tools_tests: Test all the tests for trace analysis tools.
 --all_makefile_generation: Test all the tests for makefile generation script.
+--all_fidl: Test that FIDL-Algorithm.py generates all expected selector files.
 --test_cases [test case names]: Test only specified test case.
 --clean_after_test: Clean all the generate files after testing.
 
@@ -37,6 +38,7 @@ options = {
 	'all_batchmode':False,
 	'all_trace_tools_tests':False,
 	'all_makefile_generation':False,
+	'all_fidl':False,
 	'test_cases':[],
 	'threads':1,
 	'clean_after_test':False,
@@ -97,6 +99,9 @@ def parseArgs(args):
 		elif arg == "--all_makefile_generation":
 			options['all_makefile_generation'] = True
 
+		elif arg == "--all_fidl":
+			options['all_fidl'] = True
+
 		elif arg == "--clean_after_test":
 			options['clean_after_test'] = True
 
@@ -123,6 +128,7 @@ def startTestRoutine():
 	injection_result_list = []
 	trace_result_list = []
 	generate_makefile_result_list = []
+	fidl_result_list = []
 
 	if options['all'] or options['all_batchmode'] or options['all_hardware_faults']\
 	or options['all_software_faults'] or options['all_fault_injections']\
@@ -209,6 +215,12 @@ def startTestRoutine():
 		verbosePrint('Calling: test_trace_tools.test_trace_tools(' + ' '.join(prog_list) + ')')
 		test_trace_tools_returncode, trace_result_list = test_trace_tools.test_trace_tools(*prog_list)
 
+	## run FIDL generation tests
+	if options['all_fidl'] or options['all']:
+		import test_fidl_generation
+		verbosePrint('Calling: test_fidl_generation.test_fidl_generation()')
+		_, fidl_result_list = test_fidl_generation.test_fidl_generation()
+
 	## run MakefileGeneration tests
 	if options['all_makefile_generation'] or options['all'] or options['test_cases'] != []:
 		import test_generate_makefile
@@ -241,6 +253,14 @@ def startTestRoutine():
 	if len(generate_makefile_result_list) > 0:
 		print("==== Test MakefileGeneration Tool Result ====")
 		for record in generate_makefile_result_list:
+			print(record["name"], '\t\t', record["result"])
+			total += 1
+			if record['result'] == 'PASS':
+				passed += 1
+
+	if len(fidl_result_list) > 0:
+		print("==== Test FIDL Generation Result ====")
+		for record in fidl_result_list:
 			print(record["name"], '\t\t', record["result"])
 			total += 1
 			if record['result'] == 'PASS':

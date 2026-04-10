@@ -4,6 +4,7 @@ include(../config/copy_utils.cmake)
 
 project(test_suite)
 
+copydir(SoftwareFaults SoftwareFaults)
 copydir(HardwareFaults HardwareFaults)
 copydir(PROGRAMS PROGRAMS)
 copydir(Traces Traces)

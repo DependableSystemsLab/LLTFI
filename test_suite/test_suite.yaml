@@ -29,6 +29,13 @@ INPUTS:
     bfs: -i graph_input.dat -o output.dat
     sad: '-i frame.bin,reference.bin -o output.dat'
 
+SoftwareFaults:
+    wrong_api: memcpy1
+    wrong_pointer: memcpy1
+    memory_leak: memcpy1
+    wrong_retrieved_format: memcpy1
+    high_frequent_event: memcpy1
+
 HardwareFaults:
     funcname: mcf
     insttype: mcf

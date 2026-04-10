@@ -72,6 +72,7 @@ namespace llfi{
                 }
             }
             selector_record_file.close();
+            return false;
         }
 
         void recordInstSelector(std::string selector_name){

@@ -12,7 +12,7 @@ namespace llfi {
                     return true;
                 }else   return false;
             }else{
-                for(int i = 0; i<CI->getNumArgOperands(); i++){
+                for(int i = 0; i<(int)CI->arg_size(); i++){
                     if(reg == CI->getArgOperand(i)) return true;
                 }
                 return false;
@@ -22,6 +22,7 @@ namespace llfi {
     bool FuncArgRegSelector::isRegofInstFITarget(Value *reg, Instruction *inst, int pos){
     	if(specified_arg == true)
 	    	return isRegofInstFITarget(reg, inst) && pos == this->pos_argument;
+        return false;
     }
 
     bool FuncDestRegSelector::isRegofInstFITarget(Value *reg, Instruction *inst){    

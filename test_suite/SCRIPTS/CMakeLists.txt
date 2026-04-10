@@ -14,5 +14,6 @@ copy(inject_prog.py inject_prog.py)
 copy(test_trace_tools.py test_trace_tools.py)
 copy(llfi_test.py llfi_test)
 copy(test_generate_makefile.py test_generate_makefile.py)
+copy(test_fidl_generation.py test_fidl_generation.py)
 
 genCopy()

@@ -54,7 +54,7 @@ void FaultInjectionPass::insertInjectionFuncCall(
     Instruction *fi_inst = inst_reg_it->first;
     
     std::list<int> *fi_reg_pos_list = inst_reg_it->second;
-    /*BEHROOZ: This section makes sure that we do not instrument the intrinsic functions*/
+    // Skip intrinsic functions to avoid invalid instrumentation
     if(isa<CallInst>(fi_inst)){
       bool continue_flag=false;
       for (std::list<int>::iterator reg_pos_it_mem = fi_reg_pos_list->begin();
@@ -69,7 +69,7 @@ void FaultInjectionPass::insertInjectionFuncCall(
       if(continue_flag)
         continue;
     }
-    /*BEHROOZ: This is to make sure we do not instrument landingpad instructions.*/
+    // Skip landingpad instructions which cannot be instrumented
     std::string current_opcode = fi_inst->getOpcodeName();
     if(current_opcode.find("landingpad") != std::string::npos){
       continue;
@@ -113,12 +113,8 @@ void FaultInjectionPass::insertInjectionFuncCall(
       paramtypes[2] = i32type; // opcode
       paramtypes[3] = i32type; // current fi reg index
       paramtypes[4] = i32type; // total fi reg number
-      //======== Add reg_pos QINING @DEC 23rd ==========
       paramtypes[5] = i32type;
-      //================================================
-      //======== Add opcode_str QINING @MAR 11th========
       paramtypes[6] = PointerType::get(Type::getInt8Ty(context), 0);
-      //================================================
 
       //LLVM 3.3 Upgrade
       ArrayRef<Type*> paramtypes_array_ref(paramtypes);
@@ -140,10 +136,7 @@ void FaultInjectionPass::insertInjectionFuncCall(
       args[2] = ConstantInt::get(i32type, fi_inst->getOpcode()); // opcode in i32
       args[3] = ConstantInt::get(i32type, reg_index); // reg_index not reg_pos
       args[4] = ConstantInt::get(i32type, total_reg_num); // total_reg_num
-      //======== Add reg_pos QINING @DEC 23rd ==========
       args[5] = ConstantInt::get(i32type, *reg_pos_it+1); // dstreg->0, operand0->1, operand1->2 ...
-      //================================================
-      //======== Add opcode_str QINING @MAR 11th========
       std::string opcode_str = fi_inst->getOpcodeName();
       GlobalVariable* opcode_str_gv = findOrCreateGlobalNameString(M, opcode_str);
       std::vector<Constant*> indices_for_gep(2);
@@ -155,7 +148,6 @@ void FaultInjectionPass::insertInjectionFuncCall(
       Constant *gep_expr = ConstantExpr::getGetElementPtr(
           ty, opc_str, indices_for_gep_array_ref, true);
       args[6] = gep_expr; // opcode in string
-      //================================================
 
       // LLVM 3.3 Upgrade
       ArrayRef<Value*> args_array_ref(args);
@@ -249,12 +241,8 @@ void FaultInjectionPass::createInjectionFuncforType(
                     PointerType::get(Type::getInt8Ty(context), 0),
                     "tmploc_cast", fi2exit_branch); //pointer to target memory
   fi_args[3] = args[3]; //reg_index not reg_pos!
-  //======== Add reg_pos QINING @DEC 23rd ==========
   fi_args[4] = args[5]; // dstreg->0, operand0->1, operand1->2 ...
-  //================================================
-  //======== Add opcode_str QINING @MAR 11th========
   fi_args[5] = args[6]; //opcode in string
-  //================================================
   ArrayRef<Value*> fi_args_array_ref(fi_args);
 	
   CallInst::Create(injectfunc, fi_args_array_ref, "",
@@ -353,9 +341,7 @@ FunctionCallee FaultInjectionPass::getLLFILibFIFunc(Module &M) {
   fi_func_param_types[2] = PointerType::get(Type::getInt8Ty(context), 0); //inst
   fi_func_param_types[3] = Type::getInt32Ty(context); // my reg index
   fi_func_param_types[4] = Type::getInt32Ty(context); // reg_pos
-  //======== Add opcode_str QINING @MAR 11th========
   fi_func_param_types[5] = PointerType::get(Type::getInt8Ty(context), 0);
-  //================================================
 
   // LLVM 3.3 Upgrade
   ArrayRef<Type*> fi_func_param_types_array_ref(fi_func_param_types);

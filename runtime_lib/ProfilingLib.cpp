@@ -31,7 +31,7 @@ struct layerProfCycle {
 
 static std::vector<layerProfCycle> layerProfileInfo;
 static int64_t globalLayerNo = 0;
-static layerProfCycle *currentLayer = NULL;
+static layerProfCycle *currentLayer = nullptr;
 
 
 // Export these functions in C dilect.
@@ -56,7 +56,7 @@ void lltfiMLLayer(int64_t layerName, int64_t start) {
 
     layerProfileInfo.push_back(*currentLayer);
     delete currentLayer;
-    currentLayer = NULL;
+    currentLayer = nullptr;
   }
 }
 
@@ -65,7 +65,7 @@ void doProfiling(int opcode) {
          "dynamic instruction number too large to be handled by llfi");
   opcodecount[opcode]++;
   globalCycle++;
-  if (currentLayer != NULL)
+  if (currentLayer != nullptr)
     currentLayer->registerCycle(globalCycle);
 }
 
@@ -73,7 +73,7 @@ void endProfiling() {
   FILE *profileFile;
   char profilefilename[80] = "llfi.stat.prof.txt";
   profileFile = fopen(profilefilename, "w");
-  if (profileFile == NULL) {
+  if (profileFile == nullptr) {
     fprintf(stderr, "ERROR: Unable to open profiling result file %s\n",
             profilefilename);
     exit(1);

@@ -92,7 +92,7 @@ cl::opt < std::string > llfilogfile("llfilogfile",
       cl::desc("Name of compilation passes logging file"));
 
 
-Controller *Controller::ctrl = NULL;
+Controller *Controller::ctrl = nullptr;
 
 void Controller::getOpcodeListofFIInsts(std::set<unsigned> *fi_opcode_set) {
   NameOpcodeMap fullnameopcodemap;
@@ -191,7 +191,7 @@ void Controller::processInstSelArgs() {
 }
 
 void Controller::processRegSelArgs() {
-  firegselector = NULL;
+  firegselector = nullptr;
   if (firegselmethod == regloc) {
     firegselector = new RegLocBasedFIRegSelector(fireglocation);
   } else {
@@ -244,7 +244,7 @@ void Controller::init(Module &M) {
 
 Controller::~Controller() {
   delete ctrl;
-  ctrl = NULL;
+  ctrl = nullptr;
 }
 
 void Controller::dump() const {
@@ -261,7 +261,7 @@ void Controller::dump() const {
 }
 
 Controller *Controller::getInstance(Module &M) {
-  if (ctrl == NULL)
+  if (ctrl == nullptr)
     ctrl = new Controller(M);
   return ctrl;
 }

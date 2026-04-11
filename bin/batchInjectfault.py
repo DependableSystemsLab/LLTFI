@@ -103,7 +103,7 @@ def main(*argv):
 if __name__ == "__main__":
 	if len(sys.argv[1:]) < 1 or sys.argv[1] == '--help' or sys.argv[1] == '-h':
 		usage()
-		sys.sys.exit(0)
+		sys.exit(0)
 	else:
 		argv = sys.argv[1:]
 	r = main(*argv)

@@ -106,7 +106,8 @@ def execute_tests():
       
       # instrument
       execlist = [instrument_path, '--readable', '-lpthread', program_name + ir_ext]
-      ret_val = subprocess.call(execlist, stdout = open(os.devnull, 'wb'), stderr = open(os.devnull, 'wb'))
+      with open(os.devnull, 'wb') as devnull:
+        ret_val = subprocess.call(execlist, stdout=devnull, stderr=devnull)
       if (ret_val != 0):
         print('Error: Instrument failed!')
         sys.exit(1)
@@ -140,9 +141,8 @@ def extract_names(test):
   return (filename, name)
   
 def dump_yaml(path, yaml_object):
-  f = open(path, 'w')
-  f.write(yaml.dump(yaml_object))
-  f.close()
+  with open(path, 'w') as f:
+    f.write(yaml.dump(yaml_object))
 
 def run_fidl_algorithm(add):
   global doc
@@ -207,9 +207,8 @@ def parse_args(args):
 
 def read_yaml():
   global doc
-  f = open(test_config_path)
-  doc = yaml.safe_load(f)
-  f.close()
+  with open(test_config_path) as f:
+    doc = yaml.safe_load(f)
 
 def main(args):
   print('This script is DEPRECATED! See -h')

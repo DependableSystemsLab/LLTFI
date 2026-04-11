@@ -487,8 +487,8 @@ class faultReport:
 
 def parseFaultReportsfromFile(target):
   reports = []
-  reportFile = open(target, 'r')
-  fileLines = reportFile.readlines()
+  with open(target, 'r') as reportFile:
+    fileLines = reportFile.readlines()
 
   #Remove blank lines from list
   i = 0

@@ -8,12 +8,11 @@ import subprocess
 
 def examineTraceFile(work_dir):
 	try:
-		inputyaml = open(os.path.join(work_dir, 'input.yaml'), 'r')
-	except Exception:
+		with open(os.path.join(work_dir, 'input.yaml'), 'r') as inputyaml:
+			config_dict = yaml.safe_load(inputyaml)
+	except OSError:
 		print ("FAIL: (ERROR) input.yaml not found! work_dir:", work_dir)
 		return False
-
-	config_dict = yaml.safe_load(inputyaml)
 	try:
 		if config_dict['compileOption']['tracingPropagation'] == True:
 			## we should have trace file

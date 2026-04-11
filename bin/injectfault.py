@@ -18,12 +18,15 @@ Prerequisite:
 # This script injects faults the program and produces output
 # This script should be run after the profiling step
 
-import sys, os, subprocess
-import yaml
-import time
+import os
 import random
 import shutil
+import subprocess
+import sys
+import time
 from subprocess import TimeoutExpired
+
+import yaml
 
 runOverride = False
 optionlist = []
@@ -140,7 +143,6 @@ def execute( execlist, timeout):
   #get state of directory
   dirSnapshot()
   p = subprocess.Popen(execlist, stdout = subprocess.PIPE)
-  outputFile = open(outputfile, "wb")
   program_timed_out = False
   start_time = 0
   elapsetime = 0
@@ -161,19 +163,16 @@ def execute( execlist, timeout):
   else:
     print("\t program finish", p.returncode)
     print("\t time taken", elapsetime,"\n")
-  outputFile = open(outputfile, "wb")
+  with open(outputfile, "wb") as outputFile:
+    if program_timed_out:
+      outputFile.write(
+      bytes("\n\n ### Process killed by LLFI for timing out ###\n","UTF-8"))
 
-  if program_timed_out:
-    outputFile.write(
-    bytes("\n\n ### Process killed by LLFI for timing out ###\n","UTF-8"))
+    outputFile.write(p_stdout)
 
-  outputFile.write(p_stdout)
-
-  if program_timed_out:
-    outputFile.write(
-    bytes("\n\n ### Process killed by LLFI for timing out ###\n","UTF-8"))
-
-  outputFile.close()
+    if program_timed_out:
+      outputFile.write(
+      bytes("\n\n ### Process killed by LLFI for timing out ###\n","UTF-8"))
   replenishInput() #for cases where program deletes input or alters them each run
 
   # Keep a dict of all return codes received.
@@ -247,26 +246,23 @@ def dirSnapshot():
 ################################################################################
 def readCycles():
   global totalcycles, fi_ml_stats
-  profinput= open("llfi.stat.prof.txt","r")
+  with open("llfi.stat.prof.txt", "r") as profinput:
+    while 1:
+      line = profinput.readline()
+      if not line:
+        break
+      if line.strip():
+        # skip comments
+        if line.startswith("#"):
+          continue
+        label, value = line.split("=")
 
-  while 1:
-    line = profinput.readline()
-    if not line:
-      break
-    if line.strip():
-      # skip comments
-      if line.startswith("#"):
-        continue
-      label, value = line.split("=")
-
-      # parse the line
-      if label == 'total_cycle':
-        totalcycles = int(value)
-      elif label == 'ml_layer':
-        layerNum, layerName, cycleStart, cycleEnd = value.split(",")
-        fi_ml_stats.append([int(layerNum), layerName, int(cycleStart), int(cycleEnd)])
-
-  profinput.close()
+        # parse the line
+        if label == 'total_cycle':
+          totalcycles = int(value)
+        elif label == 'ml_layer':
+          layerNum, layerName, cycleStart, cycleEnd = value.split(",")
+          fi_ml_stats.append([int(layerNum), layerName, int(cycleStart), int(cycleEnd)])
 
 ################################################################################
 def checkValues(key, val, var1 = None,var2 = None,var3 = None,var4 = None):
@@ -280,26 +276,19 @@ def checkValues(key, val, var1 = None,var2 = None,var3 = None,var4 = None):
   elif key == 'fi_type':
     pass
 
-  ##======== Add number of corrupted bits QINING @MAR 13th========
   elif key == 'fi_num_bits':
     assert isinstance(val, int)==True, key+" must be an integer in input.yaml"
     assert int(val) >=1, key+" must be greater than or equal to 1 in input.yaml"
-  ##==============================================================
 
-  ##======== Add second corrupted regs QINING @MAR 27th===========
   elif key == "window_len":
     assert isinstance(val, int)==True, key+" must be an integer in input.yaml"
     assert int(val) >=0, key+" must be greater than or equal to zero in input.yaml"
-  ##==================================================================
 
-  ##BEHROOZ: Add max number of target locations
   elif key == "fi_max_multiple":
     assert isinstance(val, int)==True, key+" must be an integer in input.yaml"
     assert int(val) >0, key+" must be greater than zero in input.yaml"
     assert int(val) <=int(fi_max_multiple_default), key+" must be smaller than or equal to "+str(fi_max_multiple_default)+ " in input.yaml"
-  ##==============================================================
 
-  ##BEHROOZ: Add multiple corrupted regs
   elif key == "window_len_multiple":
     assert isinstance(val, int)==True, key+" must be an integer in input.yaml"
     assert int(val) >0, key+" must be greater than zero in input.yaml"
@@ -310,13 +299,9 @@ def checkValues(key, val, var1 = None,var2 = None,var3 = None,var4 = None):
     assert isinstance(val, int)==True, key+" must be an integer in input.yaml"
     assert int(val) >0, key+" must be greater than zero in input.yaml"
 
-  ##==============================================================
-
   elif key == 'fi_cycle':
     assert isinstance(val, int)==True, key+" must be an integer in input.yaml"
-    ##BEHROOZ: I changed the below line to the current one to fix the fi_cycle
     assert int(val) > 0, key+" must be greater than 0 in input.yaml"
-    #assert int(val) >= 0, key+" must be greater than or equal to 0 in input.yaml"
     assert int(val) <= int(totalcycles), key +" must be less than or equal to "+totalcycles.strip()+" in input.yaml"
 
   elif key == 'fi_index':
@@ -410,22 +395,14 @@ def main(args):
         del fi_reg_index
       if 'fi_bit' in locals():
         del fi_bit
-      ##======== Add number of corrupted bits QINING @MAR 13th========
       if 'fi_num_bits' in locals():
         del fi_num_bits
-      ##==============================================================
-      ##======== Add second corrupted regs QINING @MAR 27th===========
       if 'window_len' in locals():
         del window_len
-      ##==============================================================
       if 'fi_random_seed' in locals():
         del fi_random_seed
-      ##==============================================================
-      ##BEHROOZ: Add max number of target locations
       if 'fi_max_multiple' in locals():
         del fi_max_multiple
-      ##==============================================================
-      ##BEHROOZ: Add multiple corrupted regs
       if 'window_len_multiple' in locals():
         del window_len_multiple
       if 'window_len_multiple_startindex' in locals():
@@ -445,17 +422,12 @@ def main(args):
           else:
             fi_type = injectorname
         checkValues("fi_type",fi_type)
-      ##======== Add number of corrupted bits QINING @MAR 13th========
       if "fi_num_bits" in run["run"]:
         fi_num_bits=run["run"]["fi_num_bits"]
         checkValues("fi_num_bits", fi_num_bits)
-      ##==============================================================
-      ##======== Add second corrupted regs QINING @MAR 27th===========
       if 'window_len' in run["run"]:
         window_len=run["run"]["window_len"]
         checkValues("window_len", window_len)
-      ##==============================================================
-      ##BEHROOZ: Add max number of target locations
       if 'fi_max_multiple' in run["run"]:
         fi_max_multiple=run["run"]["fi_max_multiple"]
         checkValues("fi_max_multiple", fi_max_multiple)
@@ -463,8 +435,6 @@ def main(args):
           print(("\nERROR: window_len and fi_max_multiple cannot be specified"
                " at the same time in the input.yaml file. Please choose one."))
           sys.exit(1)
-      ##==============================================================
-      ##BEHROOZ: Add multiple corrupted regs
       if 'window_len_multiple' in run["run"]:
         window_len_multiple=run["run"]["window_len_multiple"]
         checkValues("window_len_multiple", window_len_multiple)
@@ -534,7 +504,6 @@ def main(args):
         print(("\nINFO: You choose to inject faults based on LLFI index, "
                "this will inject into every runtime instruction whose LLFI "
                "index is %d\n" % fi_index))
-      ##BEHROOZ:
       if ('window_len_multiple' in locals() or 'window_len_multiple_startindex' in locals() or 'window_len_multiple_endindex' in locals()):
         if('fi_max_multiple' not in locals()):
           print(("\nINFO: You choose a window length for multiple bit-flip injection, "
@@ -564,87 +533,67 @@ def main(args):
           random.seed(fi_random_seed)
 
         if need_to_calc_fi_cycle:
-          ##BEHROOZ: I changed the below line to the current one to fix the fi_cycle
           fi_cycle = random.randint(1, int(totalcycles))
-          ##fi_cycle = random.randint(0, int(totalcycles) - 1)
-
-        ficonfig_File = open("llfi.config.runtime.txt", 'w')
 
         global fi_ml_stats
-        if 'fi_cycle' in locals() and len(fi_ml_stats)  > 0:
+        with open("llfi.config.runtime.txt", 'w') as ficonfig_File:
+          if 'fi_cycle' in locals() and len(fi_ml_stats)  > 0:
+            # Find to which ML layer this fi_cycle belongs to.
+            for i in range(0, len(fi_ml_stats)):
+              if fi_cycle >= fi_ml_stats[i][2] and fi_cycle <= fi_ml_stats[i][3]:
+                ficonfig_File.write("ml_layer_name="+fi_ml_stats[i][1]+'\n')
+                ficonfig_File.write("ml_layer_number="+str(fi_ml_stats[i][0])+'\n')
 
-          # Find to which Ml layer this fi_cycle belongs to.
-          for i in range(0, len(fi_ml_stats)):
-            if fi_cycle >= fi_ml_stats[i][2] and fi_cycle <= fi_ml_stats[i][3]:
-              ficonfig_File.write("ml_layer_name="+fi_ml_stats[i][1]+'\n')
-              ficonfig_File.write("ml_layer_number="+str(fi_ml_stats[i][0])+'\n')
+          if 'fi_cycle' in locals():
+            ficonfig_File.write("fi_cycle="+str(fi_cycle)+'\n')
+          elif 'fi_index' in locals():
+            ficonfig_File.write("fi_index="+str(fi_index)+'\n')
 
-        if 'fi_cycle' in locals():
-          ficonfig_File.write("fi_cycle="+str(fi_cycle)+'\n')
-        elif 'fi_index' in locals():
-          ficonfig_File.write("fi_index="+str(fi_index)+'\n')
-
-        if 'fi_type' in locals():
-          ficonfig_File.write("fi_type="+fi_type+'\n')
-        if 'fi_reg_index' in locals():
-          ficonfig_File.write("fi_reg_index="+str(fi_reg_index)+'\n')
-        if 'fi_bit' in locals():
-          ficonfig_File.write("fi_bit="+str(fi_bit)+'\n')
-        ##======== Add number of corrupted bits QINING @MAR 13th========
-        if 'fi_num_bits' in locals():
-          ficonfig_File.write("fi_num_bits="+str(fi_num_bits)+'\n')
-        ##==============================================================
-        ##======== Add second corrupted regs QINING @MAR 27th===========
-        if 'window_len' in locals():
-          ##BEHROOZ: I changed the below line to the current one to fix the fi_cycle
-          fi_second_cycle = min(fi_cycle + random.randint(1, int(window_len)), int(totalcycles))
-          #fi_second_cycle = min(fi_cycle + random.randint(1, int(window_len)), int(totalcycles) - 1)
-          ficonfig_File.write("fi_second_cycle="+str(fi_second_cycle)+'\n')
-        ##==================================================================
-        ##BEHROOZ: Add max number of target locations
-        if ('fi_max_multiple' in locals()):
-          win_start_index = 1
-          win_end_index = 1
-          if('window_len_multiple' in locals()):
-            win_end_index = int(window_len_multiple)
-          elif('window_len_multiple_startindex' in locals() and 'window_len_multiple_endindex' in locals()):
-            win_start_index = window_len_multiple_startindex
-            win_end_index = window_len_multiple_endindex
-            if(win_start_index > win_end_index):
-              print(("\nERROR: In the yaml file, the window_len_multiple_startindex cannot be bigger than window_len_multiple_endindex!"))
-              sys.exit(1)
-          #The line below has been substituted with the one below it. This way the maximum number injection is not selected randomly and is
-          #equal to the value specified by the user
-          ##selected_num_of_injection = random.randint(1, int(fi_max_multiple))
-          ficonfig_File.write("fi_max_multiple="+str(fi_max_multiple)+'\n')
-          selected_num_of_injection = fi_max_multiple
-          ##======The -1 here is because we have already selected the first location by choosing the fi-cycle
-          ##===== and here we are looking for the remaining cycles.=================
-          fi_next_cycle = fi_cycle
-          for index_multiple in range(1, int(selected_num_of_injection)):
-            fi_next_cycle = min(fi_next_cycle + random.randint(win_start_index, win_end_index), int(totalcycles))
-            ficonfig_File.write("fi_next_cycle="+str(fi_next_cycle)+'\n')
-            if fi_next_cycle == int(totalcycles):
-              break
-        ##==================================================================
-        ficonfig_File.close()
+          if 'fi_type' in locals():
+            ficonfig_File.write("fi_type="+fi_type+'\n')
+          if 'fi_reg_index' in locals():
+            ficonfig_File.write("fi_reg_index="+str(fi_reg_index)+'\n')
+          if 'fi_bit' in locals():
+            ficonfig_File.write("fi_bit="+str(fi_bit)+'\n')
+          if 'fi_num_bits' in locals():
+            ficonfig_File.write("fi_num_bits="+str(fi_num_bits)+'\n')
+          if 'window_len' in locals():
+            fi_second_cycle = min(fi_cycle + random.randint(1, int(window_len)), int(totalcycles))
+            ficonfig_File.write("fi_second_cycle="+str(fi_second_cycle)+'\n')
+          if ('fi_max_multiple' in locals()):
+            win_start_index = 1
+            win_end_index = 1
+            if('window_len_multiple' in locals()):
+              win_end_index = int(window_len_multiple)
+            elif('window_len_multiple_startindex' in locals() and 'window_len_multiple_endindex' in locals()):
+              win_start_index = window_len_multiple_startindex
+              win_end_index = window_len_multiple_endindex
+              if(win_start_index > win_end_index):
+                print(("\nERROR: In the yaml file, the window_len_multiple_startindex cannot be bigger than window_len_multiple_endindex!"))
+                sys.exit(1)
+            ficonfig_File.write("fi_max_multiple="+str(fi_max_multiple)+'\n')
+            selected_num_of_injection = fi_max_multiple
+            # The first fi_cycle location is already selected; find remaining cycles.
+            fi_next_cycle = fi_cycle
+            for index_multiple in range(1, int(selected_num_of_injection)):
+              fi_next_cycle = min(fi_next_cycle + random.randint(win_start_index, win_end_index), int(totalcycles))
+              ficonfig_File.write("fi_next_cycle="+str(fi_next_cycle)+'\n')
+              if fi_next_cycle == int(totalcycles):
+                break
 
         # print run index before executing. Comma removes newline for prettier
         # formatting
         execlist.extend(optionlist)
         ret = execute(execlist, timeout)
         if ret == "timed-out":
-          error_File = open(errorfile, 'w')
-          error_File.write("Program hang\n")
-          error_File.close()
+          with open(errorfile, 'w') as error_File:
+            error_File.write("Program hang\n")
         elif int(ret) < 0:
-          error_File = open(errorfile, 'w')
-          error_File.write("Program crashed, terminated by the system, return code " + ret + '\n')
-          error_File.close()
+          with open(errorfile, 'w') as error_File:
+            error_File.write("Program crashed, terminated by the system, return code " + ret + '\n')
         elif int(ret) > 0:
-          error_File = open(errorfile, 'w')
-          error_File.write("Program crashed, terminated by itself, return code " + ret + '\n')
-          error_File.close()
+          with open(errorfile, 'w') as error_File:
+            error_File.write("Program crashed, terminated by itself, return code " + ret + '\n')
 
         # Print updates, print the number of injections finished
         print_progressbar(index+1, run_number)

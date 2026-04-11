@@ -28,7 +28,9 @@ For more information, see:
 https://github.com/DependableSystemsLab/LLFI/wiki/Using-FIDL-to-create-a-Custom-Software-Fault-Injector-and-a-Custom-Instruction-Selector
 """
 
-import sys, os, subprocess
+import os
+import subprocess
+import sys
 import time
 import yaml
 
@@ -68,27 +70,20 @@ def write_file(file_name, lines):
       f.write('%s\n' % line)
 
 def write_yaml(obj, path):
-  f = open(path, 'w')
-  yaml.dump(obj, f)
-  f.close()
+  with open(path, 'w') as f:
+    yaml.dump(obj, f)
 
 def read_input_yaml(filename):
   # Check for Input FIDL's presence
   try:
-    f = open(filename, 'r')
-  except Exception:
+    with open(filename, 'r') as f:
+      return yaml.safe_load(f)
+  except OSError:
     print('Error: Specified FIDL config file (%s) not found!' % (filename), file = sys.stderr)
     sys.exit(1)
-  
-  # Check for correct YAML formatting
-  try:
-    doc = yaml.safe_load(f)
-    f.close()
-  except Exception:
+  except yaml.YAMLError:
     print('Error: %s is not formatted in proper YAML format (reminder: use spaces, not tabs)' % (filename), file = sys.stderr)
     sys.exit(1)
-    
-  return doc
 
 def parse_input(doc):
   options = {}

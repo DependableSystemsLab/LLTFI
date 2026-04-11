@@ -17,7 +17,10 @@ List of options:
 --help(-h):             Show help information
 """
 
-import sys, os, subprocess, tempfile
+import os
+import subprocess
+import sys
+import tempfile
 script_path = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(os.path.join(script_path, '../config'))
 import llvm_paths

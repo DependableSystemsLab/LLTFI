@@ -44,7 +44,7 @@ namespace llfi {
   bool InstTrace::doFinalization(Module &M) {
     //Dont forget to delete the output filename string!
     Function* mainfunc = M.getFunction("main");
-    if (mainfunc == NULL) {
+    if (mainfunc == nullptr) {
       errs() << "ERROR: Function main does not exist, " <<
           "which is required by LLFI\n";
       exit(1);
@@ -120,9 +120,7 @@ namespace llfi {
           continue;
         }
 
-        //======== Find insertion location for alloca QINING @SET 15th============
         Instruction* alloca_insertPoint = inst->getParent()->getParent()->begin()->getFirstNonPHIOrDbgOrLifetime();
-        //========================================================================
 
 
         //Fetch size of instruction value
@@ -165,9 +163,6 @@ namespace llfi {
         std::vector<Type*> parameterVector(5);
         parameterVector[0] = Type::getInt32Ty(context); //ID
         parameterVector[1] = OPCodePtr->getType();
-        //======== opcode_str QINING @SET 15th============
-        //parameterVector[1] = PointerType::get(Type::getInt8Ty(context), 0);     //Ptr to OpCode
-        //================================================
         parameterVector[2] = Type::getInt32Ty(context); //Size of Inst Value
         parameterVector[3] = ptrInst->getType();    //Ptr to Inst Value
         parameterVector[4] = Type::getInt32Ty(context); //Int of max traces
@@ -192,16 +187,6 @@ namespace llfi {
         //Fetch maxtrace number:
         ConstantInt* maxTraceConstInt =
         ConstantInt::get(IntegerType::get(context, 32), maxtrace);
-
-        //======== opcode_str QINING @SET 15th============
-        //string opcode_str = fi_inst->getOpcodeName();
-        //GlobalVariable* opcode_str_gv = findOrCreateGlobalNameString(M, opcode_str);
-        //vector<Constant*> indices_for_gep(2);
-        //indices_for_gep[0] = ConstantInt::get(Type::getInt32Ty(context),0);
-        //indices_for_gep[1] = ConstantInt::get(Type::getInt32Ty(context),0);
-        //ArrayRef<Constant*> gep_expr_ref(indices_for_gep);
-        //Constant* gep_expr_opcode = ConstantExpr::getGetElementPtr(opcode_str_gv, gep_expr_ref);
-        //================================================
 
         //Load All Arguments
         traceArgs.push_back(IDConstInt);

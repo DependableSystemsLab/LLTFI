@@ -18,7 +18,6 @@
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/Support/raw_ostream.h"
-//BEHROOZ:
 #include "llvm/Support/CommandLine.h"
 
 
@@ -92,7 +91,6 @@ bool LegacyProfilingPass::runOnModule(Module &M) {
   std::map<Instruction*, std::list< int >* > *fi_inst_regs_map;
   Controller *ctrl = Controller::getInstance(M);
   ctrl->getFIInstRegsMap(&fi_inst_regs_map);
-  //BEHROOZ:
   std::error_code err;
   raw_fd_ostream logFile(llfilogfile.c_str(), err, sys::fs::OF_Append);
 
@@ -102,7 +100,7 @@ bool LegacyProfilingPass::runOnModule(Module &M) {
     Instruction *fi_inst = inst_reg_it->first;
     std::list<int > *fi_regs = inst_reg_it->second;
 
-    /*BEHROOZ: This section makes sure that we do not instrument the intrinsic functions*/
+    // Skip intrinsic functions to avoid invalid instrumentation
     if(isa<CallInst>(fi_inst)){
       bool continue_flag=false;
       for (std::list<int>::iterator reg_pos_it_mem = fi_regs->begin();
@@ -118,7 +116,7 @@ bool LegacyProfilingPass::runOnModule(Module &M) {
       if(continue_flag)
         continue;
     }
-    /*BEHROOZ: This is to make sure we do not instrument landingpad instructions.*/
+    // Skip landingpad instructions which cannot be instrumented
     std::string current_opcode = fi_inst->getOpcodeName();
     if(current_opcode.find("landingpad") != std::string::npos){
       logFile << "LLFI cannot instrument " << current_opcode << " instruction" << "\n";
@@ -156,7 +154,7 @@ bool LegacyProfilingPass::runOnModule(Module &M) {
 
 void LegacyProfilingPass::addEndProfilingFuncCall(Module &M) {
   Function* mainfunc = M.getFunction("main");
-  if (mainfunc != NULL) {
+  if (mainfunc != nullptr) {
     FunctionCallee endprofilefunc = getLLFILibEndProfilingFunc(M);
 
     // function call

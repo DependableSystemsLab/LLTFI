@@ -78,7 +78,7 @@ void insertCallForMLFIStats(Module &M) {
           duplicateCall->setCalledFunction(Fn);
 
           // Insert the duplicate instruction
-          duplicatedInst->insertBefore(inst->getNextNode());
+          duplicatedInst->insertBefore(inst->getNextNode()->getIterator());
         }
       }
     }
@@ -140,7 +140,7 @@ bool LegacyProfilingPass::runOnModule(Module &M) {
     ArrayRef<Value*> profilingarg_array_ref(profilingarg);
 
     CallInst::Create(profilingfunc, profilingarg_array_ref,
-                     "", insertptr);
+                     "", insertptr->getIterator());
   }
 
   logFile.close();
@@ -166,7 +166,7 @@ void LegacyProfilingPass::addEndProfilingFuncCall(Module &M) {
     for (std::set<Instruction*>::iterator it = exitinsts.begin();
          it != exitinsts.end(); ++it) {
       Instruction *term = *it;
-      CallInst::Create(endprofilefunc, "", term);
+      CallInst::Create(endprofilefunc, "", term->getIterator());
     }
   }
 }

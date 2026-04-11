@@ -154,7 +154,7 @@ void FaultInjectionPass::insertInjectionFuncCall(
 
       Instruction *insertptr = getInsertPtrforRegsofInst(fi_reg, fi_inst);
       Instruction *ficall =
-          CallInst::Create(injectfunc, args_array_ref, "fi", insertptr);
+          CallInst::Create(injectfunc, args_array_ref, "fi", insertptr->getIterator());
       setInjectFaultInst(fi_reg, fi_inst, ficall); // sets the instruction metadata
 
       // redirect the data dependencies
@@ -239,14 +239,14 @@ void FaultInjectionPass::createInjectionFuncforType(
   fi_args[1] = ConstantInt::get(Type::getInt32Ty(context), size); //size
   fi_args[2] = new BitCastInst(tmploc, 
                     PointerType::get(Type::getInt8Ty(context), 0),
-                    "tmploc_cast", fi2exit_branch); //pointer to target memory
+                    "tmploc_cast", fi2exit_branch->getIterator()); //pointer to target memory
   fi_args[3] = args[3]; //reg_index not reg_pos!
   fi_args[4] = args[5]; // dstreg->0, operand0->1, operand1->2 ...
   fi_args[5] = args[6]; //opcode in string
   ArrayRef<Value*> fi_args_array_ref(fi_args);
 	
   CallInst::Create(injectfunc, fi_args_array_ref, "",
-                   fi2exit_branch);
+                   fi2exit_branch->getIterator());
 
   LoadInst *updateval = new LoadInst(fitype, tmploc, "updateval", exitblock);
   ReturnInst::Create(context, updateval, exitblock);
@@ -297,7 +297,7 @@ void FaultInjectionPass::finalize(Module &M) {
 
   // function call for initInjections
   FunctionCallee initfunc = getLLFILibInitInjectionFunc(M);
-  CallInst::Create(initfunc, "", entryblock->getFirstNonPHI());
+  CallInst::Create(initfunc, "", entryblock->getFirstNonPHIIt());
   
   // function call for postInjections
   FunctionCallee postfifunc = getLLFILibPostInjectionFunc(M);
@@ -309,7 +309,7 @@ void FaultInjectionPass::finalize(Module &M) {
   for (std::set<Instruction*>::iterator it = exitinsts.begin();
          it != exitinsts.end(); ++it) {
     Instruction *term = *it;
-    CallInst::Create(postfifunc, "", term);
+    CallInst::Create(postfifunc, "", term->getIterator());
   }
 	
   createInjectionFunctions(M);

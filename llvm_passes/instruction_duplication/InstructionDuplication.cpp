@@ -212,7 +212,7 @@ namespace llfi{
             addMetadata(duplicatedInst, "Duplicated_Instruction");
 
             // Insert the duplicate instruction
-            duplicatedInst->insertBefore(inst->getNextNode());
+            duplicatedInst->insertBefore(inst->getNextNode()->getIterator());
 
             IRBuilder<> IRB(inst->getParent());
             IRB.SetInsertPoint(duplicatedInst->getNextNode());

@@ -64,7 +64,7 @@ namespace llfi {
     for (std::set<Instruction*>::iterator it = exitinsts.begin();
          it != exitinsts.end(); ++it) {
       Instruction *term = *it;
-      CallInst::Create(postracingfunc, "", term);
+      CallInst::Create(postracingfunc, "", term->getIterator());
     }
 
     return true;
@@ -120,7 +120,7 @@ namespace llfi {
           continue;
         }
 
-        Instruction* alloca_insertPoint = inst->getParent()->getParent()->begin()->getFirstNonPHIOrDbgOrLifetime();
+        BasicBlock::iterator alloca_insertPoint = inst->getParent()->getParent()->begin()->getFirstNonPHIOrDbgOrLifetime();
 
 
         //Fetch size of instruction value
@@ -133,7 +133,7 @@ namespace llfi {
           ptrInst = new AllocaInst(inst->getType(), 0, "llfi_trace",
                                    alloca_insertPoint);
           //Insert an instruction to Store the instruction Value!
-          new StoreInst(inst, ptrInst, insertPoint);
+          new StoreInst(inst, ptrInst, insertPoint->getIterator());
 
           const DataLayout &td = F.getParent()->getDataLayout();
           bitSize = (float)td.getTypeSizeInBits(inst->getType());
@@ -142,7 +142,7 @@ namespace llfi {
           ptrInst = new AllocaInst(Type::getInt32Ty(context), 0, "llfi_trace",
                                    alloca_insertPoint);
           new StoreInst(ConstantInt::get(IntegerType::get(context, 32), 0),
-                        ptrInst, insertPoint);
+                        ptrInst, insertPoint->getIterator());
           bitSize = 32;
         }
         int byteSize = (int)ceil(bitSize / 8.0);
@@ -157,7 +157,7 @@ namespace llfi {
 
         AllocaInst *OPCodePtr = new AllocaInst(
             OPCodeName->getType(), 0, "llfi_trace", alloca_insertPoint);
-        new StoreInst(OPCodeName, OPCodePtr, insertPoint);
+        new StoreInst(OPCodeName, OPCodePtr, insertPoint->getIterator());
 
         //Create the decleration of the printInstTracer Function
         std::vector<Type*> parameterVector(5);
@@ -199,7 +199,7 @@ namespace llfi {
         ArrayRef<Value*> traceArgs_array_ref(traceArgs);
 
         //Create the Function
-        CallInst::Create(traceFunc, traceArgs_array_ref, "", insertPoint);
+        CallInst::Create(traceFunc, traceArgs_array_ref, "", insertPoint->getIterator());
       }
     }//Function Iteration
 

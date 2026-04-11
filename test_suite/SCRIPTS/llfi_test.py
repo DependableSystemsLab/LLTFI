@@ -17,7 +17,7 @@ List of options:
 --all_trace_tools_tests: Test all the tests for trace analysis tools.
 --all_makefile_generation: Test all the tests for makefile generation script.
 --all_fidl: Test that FIDL-Algorithm.py generates all expected selector files.
---all_ml: Test ML/ONNX tools (CompareLayerOutputs, ExtendONNXModel, outputONNXGraph) and SoftwareFailureAutoScan. Tests that require optional dependencies (onnx, pygraphviz, pydot) are reported as SKIP when those packages are absent.
+--all_ml: Test ML/ONNX tools (CompareLayerOutputs, ExtendONNXModel, outputONNXGraph), SoftwareFailureAutoScan, TensorFlow/PyTorch ONNX pipelines, ONNX-to-LLVM-IR compilation, and ML fault injection. Tests that require optional dependencies (onnx, pygraphviz, pydot, tensorflow, tf2onnx, torch, onnx-mlir) are reported as SKIP when those packages are absent.
 --test_cases [test case names]: Test only specified test case.
 --clean_after_test: Clean all the generate files after testing.
 

@@ -141,7 +141,7 @@ GUI Dependencies:
 
 
   --help(-h): show help information
-  --runTests: Add this option if you want to run all regression tests after building LLTFI.
+  --runTests: Add this option if you want to run all standard regression tests after building LLTFI (equivalent to --all). Note: ML/ONNX tests require additional dependencies and must be run separately with: python3 SCRIPTS/llfi_test --all_ml
 ```
 
   Below is the command to build LLTFI if `clang` is already in $PATH (replace paths with your actual directories):

@@ -290,7 +290,7 @@ onnxModel = None
 ###### HELPER FUNCTIONS #######
 def printStructuralDifferenceError():
     print("Input JSON files are structurally difference. Abort!");
-    exit()
+    sys.exit(1)
 
 def assertFun(a):
     if not a:
@@ -469,7 +469,7 @@ def main():
 
         else:
             print("Invalid directory path: " + args.second)
-            exit()
+            sys.exit(1)
 
     else:
         if os.path.isfile(args.first) and os.path.isfile(args.second):
@@ -493,7 +493,7 @@ def main():
                 print("No mismatch found.")
         else:
             print("Invalid file path(s): " + args.first + "   \n " + args.second)
-            exit()
+            sys.exit(1)
 
     # Export mismatches as a dot file. Don't output the dot file when folder is given as an input.
     if args.dot and (not args.folder):

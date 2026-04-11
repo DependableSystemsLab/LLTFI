@@ -162,7 +162,7 @@ bool llfiDotGraph::runOnFunction(Function &F) {
     bBlockGraph block = blocks.at(i);
     block.writeToStream(outfs);
     if (block.exitInst->getOpcode() == Instruction::Br) {
-      BranchInst* exitInst = (BranchInst*)block.exitInst;
+      BranchInst* exitInst = dyn_cast<BranchInst>(block.exitInst);
       for (unsigned int s = 0; s < exitInst->getNumSuccessors(); s++) {
         BasicBlock* succ = exitInst->getSuccessor(s);
         for (unsigned int d = 0; d < blocks.size(); d++) {

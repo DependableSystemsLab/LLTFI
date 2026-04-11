@@ -150,7 +150,7 @@ namespace llfi {
         //Insert instructions to allocate stack memory for opcode name
         const char* opcodeNamePt = inst->getOpcodeName();
         const std::string str(inst->getOpcodeName());
-        ArrayRef<uint8_t> opcode_name_array_ref((uint8_t*)opcodeNamePt, str.size() + 1);
+        ArrayRef<uint8_t> opcode_name_array_ref(reinterpret_cast<const uint8_t*>(opcodeNamePt), str.size() + 1);
         //llvm::Value* OPCodeName = llvm::ConstantArray::get(context, opcode_name_array_ref);
         llvm::Value* OPCodeName = llvm::ConstantDataArray::get(context, opcode_name_array_ref);
         /********************************/

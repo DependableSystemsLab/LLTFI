@@ -1,3 +1,6 @@
+#ifndef SOFTWARE_FAULT_REG_SELECTORS_H
+#define SOFTWARE_FAULT_REG_SELECTORS_H
+
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/Constants.h"
@@ -36,4 +39,5 @@ namespace llfi {
 
 }
 
- 
+#endif // SOFTWARE_FAULT_REG_SELECTORS_H
+

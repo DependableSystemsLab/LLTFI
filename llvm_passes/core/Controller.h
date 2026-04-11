@@ -1,5 +1,5 @@
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef CONTROLLER_H
+#define CONTROLLER_H
 #define LLVM_ON_UNIX 1
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/Module.h"

@@ -121,7 +121,7 @@ Instruction *getInsertPtrforRegsofInst(Value *reg, Instruction *inst) {
 Instruction* changeInsertPtrIfInjectFaultInst(Instruction *inst) {
   MDNode *mdnode = inst->getMetadata("llfi_injectfault");
   if (mdnode) {
-    if (((MDString *)mdnode->getOperand(0).get())->getString() == "after") {
+    if (dyn_cast<MDString>(mdnode->getOperand(0).get())->getString() == "after") {
       return inst->getNextNonDebugInstruction();
     } else {
       return inst;

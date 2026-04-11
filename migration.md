@@ -5,8 +5,8 @@ current LLVM release (17–20). Tasks are split between those that require a
 human and those that Claude Code can handle autonomously once the build
 environment is ready.
 
-Current LLVM version: **15.0** (apt install, `/usr/lib/llvm-15`)  
-Target LLVM version: **17 or later** (LLVM 20 is current as of early 2025)
+Migrated from: **LLVM 15.0** (`/usr/lib/llvm-15`)  
+Current LLVM version: **LLVM 20.1** (`/usr/lib/llvm-20`)
 
 ---
 
@@ -23,7 +23,7 @@ incomplete pass migration.
 
 ## Human tasks (cannot be delegated to Claude Code)
 
-### H-1 — Install LLVM 17+ and update the build configuration
+### H-1 — Install LLVM 17+ and update the build configuration ✅ DONE
 **Estimated time: 2–4 hours**
 
 This is the only hard prerequisite. Claude Code cannot change what is installed
@@ -92,7 +92,7 @@ behavioural changes in the new LLVM rather than API compilation errors.
 
 ## Claude Code tasks (can be done autonomously once LLVM 17+ is installed)
 
-### C-1 — Replace deprecated instruction-construction API (9 sites)
+### C-1 — Replace deprecated instruction-construction API (9 sites) ✅ DONE
 **Estimated time: 1 day**
 
 LLVM 16/17 removed the `InsertBefore` Instruction-pointer parameter from
@@ -120,7 +120,7 @@ Note: `CallInst::Create(func, args, "", insertPoint)` with a raw `Instruction *`
 as the last argument may also need updating to use a `BasicBlock::iterator`;
 check each call site after the build reveals errors.
 
-### C-2 — Fix iterator return-type changes
+### C-2 — Fix iterator return-type changes ✅ DONE
 **Estimated time: 2–3 hours**
 
 Two methods changed their return type from `Instruction *` to
@@ -133,7 +133,7 @@ Two methods changed their return type from `Instruction *` to
 At each call site, either dereference the iterator (`&*iter`) or update the
 surrounding code to work with iterators directly.
 
-### C-3 — Migrate InstructionDuplication to the new pass manager
+### C-3 — Migrate InstructionDuplication to the new pass manager ⚠️ PENDING
 **Estimated time: 2–3 days**
 
 `InstructionDuplication.cpp` is the only remaining pass still using the legacy
@@ -167,7 +167,7 @@ Changes required:
    to use `-load-pass-plugin` and `--passes=InstructionDuplicationPass` instead
    of `-load` / `--InstructionDuplicationPass` / `--enable-new-pm=0`.
 
-### C-4 — Fix `Module::getGlobalList().push_back()` in `Utils.cpp`
+### C-4 — Fix `Module::getGlobalList().push_back()` in `Utils.cpp` ✅ DONE
 **Estimated time: 30 minutes**
 
 `getGlobalList()` was removed in LLVM 17. The one call site in
@@ -186,7 +186,7 @@ nameStr = new GlobalVariable(M, name_c->getType(), true,
     GlobalVariable::InternalLinkage, name_c, gv_nameStr.c_str());
 ```
 
-### C-5 — Fix `SoftwareFailureAutoScan.py` legacy PM flags
+### C-5 — Fix `SoftwareFailureAutoScan.py` legacy PM flags ✅ DONE
 **Estimated time: 30 minutes**
 
 `bin/SoftwareFailureAutoScan.py:92` still uses `-load` and `-enable-new-pm=0`,
@@ -203,7 +203,7 @@ execlist = [optbin, "-load-pass-plugin", llfipasses,
             "--passes=genllfiindexpass,SoftwareFailureAutoScanPass"]
 ```
 
-### C-6 — Iterative build-fix loop
+### C-6 — Iterative build-fix loop ✅ DONE
 **Estimated time: 1 week (wall clock; most of this is Claude Code running builds)**
 
 After applying C-1 through C-5, run `make` and address any remaining compiler
@@ -234,20 +234,20 @@ H-4  Final test sign-off
 
 ## Effort summary
 
-| Task | Owner | Estimated time |
-|------|-------|---------------|
-| H-1: Install LLVM 17+ and update build config | Human | 2–4 hours |
-| H-2: Review IRBuilder insertion-point correctness | Human | 2–3 hours |
-| H-3: Validate InstructionDuplication on onnx-mlir | Human | 2–4 hours |
-| H-4: Final test sign-off | Human | 2–3 hours |
-| **Total human time** | | **~1.5–2 days** |
-| C-1: Deprecated instruction-construction API | Claude Code | 1 day |
-| C-2: Iterator return-type fixes | Claude Code | 2–3 hours |
-| C-3: InstructionDuplication new PM migration | Claude Code | 2–3 days |
-| C-4: `getGlobalList` fix | Claude Code | 30 minutes |
-| C-5: `SoftwareFailureAutoScan.py` flags | Claude Code | 30 minutes |
-| C-6: Iterative build-fix loop | Claude Code | 1 week (wall clock) |
-| **Total Claude Code time** | | **~1–2 weeks (wall clock)** |
+| Task | Owner | Status | Estimated time |
+|------|-------|--------|---------------|
+| H-1: Install LLVM 20 and update build config | Human | ✅ Done | 2–4 hours |
+| H-2: Review IRBuilder insertion-point correctness | Human | Pending | 2–3 hours |
+| H-3: Validate InstructionDuplication on onnx-mlir | Human | Pending | 2–4 hours |
+| H-4: Final test sign-off | Human | Pending | 2–3 hours |
+| **Total human time remaining** | | | **~6–10 hours** |
+| C-1: Deprecated instruction-construction API | Claude Code | ✅ Done | — |
+| C-2: Iterator return-type fixes | Claude Code | ✅ Done | — |
+| C-3: InstructionDuplication new PM migration | Claude Code | ⚠️ Pending | 2–3 days |
+| C-4: `getGlobalList` fix | Claude Code | ✅ Done | — |
+| C-5: `SoftwareFailureAutoScan.py` flags | Claude Code | ✅ Done | — |
+| C-6: Iterative build-fix loop | Claude Code | ✅ Done | — |
+| **Total Claude Code time remaining** | | | **2–3 days (C-3 only)** |
 
 Without Claude Code, a human developer would need approximately **2–3 weeks**
 of active work. With Claude Code handling the mechanical fixes and the

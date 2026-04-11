@@ -232,13 +232,16 @@ def startTestRoutine():
 		import test_ml_tools
 		import test_software_failure_autoscan
 		import test_ml_models
+		import test_instruction_duplication
 		verbosePrint('Calling: test_ml_tools.test_ml_tools()')
 		_, ml_tools_list = test_ml_tools.test_ml_tools()
 		verbosePrint('Calling: test_software_failure_autoscan.test_software_failure_autoscan()')
 		_, autoscan_list = test_software_failure_autoscan.test_software_failure_autoscan()
 		verbosePrint('Calling: test_ml_models.test_ml_models()')
 		_, ml_models_list = test_ml_models.test_ml_models()
-		ml_result_list = ml_tools_list + autoscan_list + ml_models_list
+		verbosePrint('Calling: test_instruction_duplication.test_instruction_duplication()')
+		_, sid_list = test_instruction_duplication.test_instruction_duplication()
+		ml_result_list = ml_tools_list + autoscan_list + ml_models_list + sid_list
 
 	## run MakefileGeneration tests
 	if options['all_makefile_generation'] or options['all'] or options['test_cases'] != []:

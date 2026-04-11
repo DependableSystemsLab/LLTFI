@@ -93,7 +93,7 @@ namespace SID {
     }
 
     // Add Metadata to LLVM instructions; Only for debugging purposes!
-    void addMetadata(Instruction *ins, char *st = nullptr){
+    void addMetadata(Instruction *ins, const char *st = nullptr){
          LLVMContext& C = ins->getContext();
          MDNode* N = MDNode::get(C, MDString::get(C, (!st) ? "t" : st));
 

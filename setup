@@ -13,7 +13,7 @@ List of options:
 
 
 --help(-h): show help information
---runTests: Add this option if you want to run all regression tests after building LLTFI.
+--runTests: Add this option if you want to run all standard regression tests after building LLTFI (equivalent to --all). Note: ML/ONNX tests require additional dependencies and must be run separately with: python3 SCRIPTS/llfi_test --all_ml
 """
 
 import sys
@@ -209,7 +209,7 @@ def build():
 
 
 def runTests():
-  print("Running all regression tests:\n")
+  print("Running all standard regression tests (use --all_ml separately for ML/ONNX tests):\n")
   LLFI_BUILD_DIR = os.path.realpath(required_configs['LLFI_BUILD_ROOT'])
   subprocess.call(["python3", LLFI_BUILD_DIR + "/test_suite/SCRIPTS/llfi_test", "--all", "--threads", "2", "--verbose"])
 

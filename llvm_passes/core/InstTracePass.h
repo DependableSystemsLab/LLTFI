@@ -1,3 +1,6 @@
+#ifndef INST_TRACE_PASS_H
+#define INST_TRACE_PASS_H
+
 #include "llvm/IR/PassManager.h"
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
@@ -47,4 +50,6 @@ namespace llfi {
     static bool isRequired() { return true; }
   };
 }//namespace llfi
+
+#endif // INST_TRACE_PASS_H
 

@@ -189,4 +189,4 @@ if __name__=="__main__":
   if len(sys.argv) == 1:
     usage('Must provide the profiling executable and its options')
     sys.exit(1)
-  exit(main(sys.argv[1:]))
+  sys.exit(main(sys.argv[1:]))

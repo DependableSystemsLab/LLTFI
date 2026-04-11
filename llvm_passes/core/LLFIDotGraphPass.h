@@ -1,3 +1,6 @@
+#ifndef LLFI_DOT_GRAPH_PASS_H
+#define LLFI_DOT_GRAPH_PASS_H
+
 #include <iostream>
 #include <fstream>
 #include "llvm/Support/raw_os_ostream.h"
@@ -76,3 +79,5 @@ namespace llfi{
     }
   };
 }
+
+#endif // LLFI_DOT_GRAPH_PASS_H

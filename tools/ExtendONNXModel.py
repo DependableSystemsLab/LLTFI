@@ -67,7 +67,7 @@ def main():
 
     if args.summary:
         print_summary(model)
-        exit()
+        sys.exit(0)
 
     output_names = [o.name for o in model.graph.output]
     output_names = list(OrderedDict.fromkeys(output_names))

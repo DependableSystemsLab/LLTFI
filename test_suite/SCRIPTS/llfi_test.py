@@ -17,6 +17,7 @@ List of options:
 --all_trace_tools_tests: Test all the tests for trace analysis tools.
 --all_makefile_generation: Test all the tests for makefile generation script.
 --all_fidl: Test that FIDL-Algorithm.py generates all expected selector files.
+--all_ml: Test ML/ONNX tools (CompareLayerOutputs, ExtendONNXModel, outputONNXGraph) and SoftwareFailureAutoScan. Tests that require optional dependencies (onnx, pygraphviz, pydot) are reported as SKIP when those packages are absent.
 --test_cases [test case names]: Test only specified test case.
 --clean_after_test: Clean all the generate files after testing.
 
@@ -39,6 +40,7 @@ options = {
 	'all_trace_tools_tests':False,
 	'all_makefile_generation':False,
 	'all_fidl':False,
+	'all_ml':False,
 	'test_cases':[],
 	'threads':1,
 	'clean_after_test':False,
@@ -102,6 +104,9 @@ def parseArgs(args):
 		elif arg == "--all_fidl":
 			options['all_fidl'] = True
 
+		elif arg == "--all_ml":
+			options['all_ml'] = True
+
 		elif arg == "--clean_after_test":
 			options['clean_after_test'] = True
 
@@ -129,6 +134,7 @@ def startTestRoutine():
 	trace_result_list = []
 	generate_makefile_result_list = []
 	fidl_result_list = []
+	ml_result_list = []
 
 	if options['all'] or options['all_batchmode'] or options['all_hardware_faults']\
 	or options['all_software_faults'] or options['all_fault_injections']\
@@ -221,6 +227,19 @@ def startTestRoutine():
 		verbosePrint('Calling: test_fidl_generation.test_fidl_generation()')
 		_, fidl_result_list = test_fidl_generation.test_fidl_generation()
 
+	## run ML/ONNX tools tests (not part of --all; requires optional deps)
+	if options['all_ml']:
+		import test_ml_tools
+		import test_software_failure_autoscan
+		import test_ml_models
+		verbosePrint('Calling: test_ml_tools.test_ml_tools()')
+		_, ml_tools_list = test_ml_tools.test_ml_tools()
+		verbosePrint('Calling: test_software_failure_autoscan.test_software_failure_autoscan()')
+		_, autoscan_list = test_software_failure_autoscan.test_software_failure_autoscan()
+		verbosePrint('Calling: test_ml_models.test_ml_models()')
+		_, ml_models_list = test_ml_models.test_ml_models()
+		ml_result_list = ml_tools_list + autoscan_list + ml_models_list
+
 	## run MakefileGeneration tests
 	if options['all_makefile_generation'] or options['all'] or options['test_cases'] != []:
 		import test_generate_makefile
@@ -262,6 +281,16 @@ def startTestRoutine():
 		print("==== Test FIDL Generation Result ====")
 		for record in fidl_result_list:
 			print(record["name"], '\t\t', record["result"])
+			total += 1
+			if record['result'] == 'PASS':
+				passed += 1
+
+	if len(ml_result_list) > 0:
+		print("==== Test ML/ONNX Tools Result ====")
+		for record in ml_result_list:
+			print(record["name"], '\t\t', record["result"])
+			if record['result'].startswith('SKIP'):
+				continue  # SKIPs are neither pass nor fail
 			total += 1
 			if record['result'] == 'PASS':
 				passed += 1

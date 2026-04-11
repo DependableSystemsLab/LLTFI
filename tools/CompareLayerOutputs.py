@@ -8,7 +8,6 @@ import argparse, os
 import json
 import warnings
 import sys, struct, math
-from pdb import set_trace
 from math import floor, log10
 import onnx
 from collections import OrderedDict
@@ -131,7 +130,7 @@ class LLTFI:
             self.fi_runtime_stats_dir = path
         else:
             print("Invalid Directory path: " + str(path) + "   Aborting!")
-            exit()
+            sys.exit(1)
 
     def argParser(self, argParser):
 

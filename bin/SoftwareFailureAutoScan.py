@@ -96,7 +96,7 @@ def runAutoScan(args):
     p.wait()
     if p.returncode != 0:
         print("ERROR: Software Auto scan pass return code !=0\n")
-        exit(p.returncode)
+        sys.exit(p.returncode)
     elif os.path.isfile(os.path.join(basedir, filename)) == False:
         print("ERROR: No output file found at: "+os.path.join(basedir, filename)+"!\n")
         sys.exit(1)

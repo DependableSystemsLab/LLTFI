@@ -54,7 +54,7 @@ python3 tools/FIDL/FIDL-Algorithm.py -a default
 From the build directory:
 
 ```bash
-# All tests
+# All core tests (must pass before any PR)
 ./test_suite/SCRIPTS/llfi_test --all
 
 # Specific subsets
@@ -67,7 +67,25 @@ From the build directory:
 ./test_suite/SCRIPTS/llfi_test --test_cases <TestName>
 ```
 
-All tests must pass before submitting a pull request.
+### ML/ONNX tests
+
+```bash
+./test_suite/SCRIPTS/llfi_test --all_ml
+```
+
+These are not part of `--all` because they require optional dependencies.
+Tests with missing deps report **SKIP**, not FAIL, and don't affect the pass/fail count.
+
+| Group | Requirements |
+|-------|-------------|
+| `SoftwareFailureAutoScan` | LLTFI build only |
+| ML tool unit tests | `pip install onnx pygraphviz pydot` |
+| TensorFlow → ONNX | `pip install tensorflow tf2onnx onnx` |
+| PyTorch → ONNX | `pip install torch onnx` |
+| ONNX → LLVM IR | onnx-mlir binary (`ONNX_MLIR_BUILD` env var) |
+| Fault injection (ML) | LLTFI build + `model.ll` from `sample_programs/.../mnist/compile.sh` |
+
+All core tests (`--all`) must pass before submitting a pull request. ML tests (`--all_ml`) should pass for any change that touches ML-related code.
 
 ## Pull Request Checklist
 

@@ -93,7 +93,7 @@ namespace SID {
     }
 
     // Add Metadata to LLVM instructions; Only for debugging purposes!
-    void addMetadata(Instruction *ins, char *st = NULL){
+    void addMetadata(Instruction *ins, char *st = nullptr){
          LLVMContext& C = ins->getContext();
          MDNode* N = MDNode::get(C, MDString::get(C, (!st) ? "t" : st));
 
@@ -207,7 +207,7 @@ namespace llfi{
 
             // Copy metadata
             MDNode *mdnode = inst->getMetadata("llfi_index");
-            inst->setMetadata("llfi_index", NULL);
+            inst->setMetadata("llfi_index", nullptr);
             duplicatedInst->setMetadata("llfi_index", mdnode);
             addMetadata(duplicatedInst, "Duplicated_Instruction");
 
@@ -258,7 +258,7 @@ namespace llfi{
 
                     // Copy metadata
                     MDNode *mdnode = inst->getMetadata("llfi_index");
-                    inst->setMetadata("llfi_index", NULL);
+                    inst->setMetadata("llfi_index", nullptr);
                     duplicatedInst->setMetadata("llfi_index", mdnode);
                     addMetadata(duplicatedInst, "Duplicated_Instruction_In_Chain");
 
@@ -302,7 +302,7 @@ namespace llfi{
         bool isArithmeticInstruction(Instruction* inst)
         {
             // Don't do instruction duplication in FCmp.
-            if (inst != NULL && (inst->getOpcode() == Instruction::FAdd ||
+            if (inst != nullptr && (inst->getOpcode() == Instruction::FAdd ||
                         inst->getOpcode() == Instruction::FSub ||
                         inst->getOpcode() == Instruction::FMul ||
                         inst->getOpcode() == Instruction::FDiv))

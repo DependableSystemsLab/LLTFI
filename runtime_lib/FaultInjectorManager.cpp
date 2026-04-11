@@ -1,4 +1,4 @@
-#include <iostream>
+#include <cstdio>
 #include <cstdlib>
 #include "FaultInjector.h"
 #include "FaultInjectorManager.h"
@@ -15,7 +15,7 @@ void FaultInjectorManager::addFaultInjector(const std::string &name,
     type_injector.insert(
         std::pair<const std::string, FaultInjector*>(name, fi));
   } else {
-    std::cerr << "ERROR: Duplicated fault injector: " << name << std::endl;
+    fprintf(stderr, "ERROR: Duplicated fault injector: %s\n", name.c_str());
     exit(1);
   }
 }
@@ -24,7 +24,7 @@ FaultInjector *FaultInjectorManager::getFaultInjector(const std::string &name) {
   if (type_injector.find(name) != type_injector.end()) {
     return type_injector[name];
   } else {
-    std::cerr << "ERROR: unknown fault injector: " << name << std::endl;
+    fprintf(stderr, "ERROR: unknown fault injector: %s\n", name.c_str());
     exit(1);
   }
 }

@@ -23,18 +23,16 @@ def traceDiff(argv, output = 0):
 
   # TODO: rewrite the command line argument of the script
   if output != 0:
-    sys.stdout = open(output, "wb")
+    sys.stdout = open(output, "wb")  # intentional stdout redirect
   if (len(argv) != 3):
     print("ERROR: running option: %(prog)s <golden output> <faulty output>" % {'prog': prog}, file=sys.stderr)
     sys.exit(1)
 
-  goldFile = open(argv[1], 'r')
-  goldTrace = goldFile.read()
-  goldFile.close()
+  with open(argv[1], 'r') as goldFile:
+    goldTrace = goldFile.read()
 
-  faultyFile = open(argv[2], 'r')
-  faultyTrace = faultyFile.read()
-  faultyFile.close()
+  with open(argv[2], 'r') as faultyFile:
+    faultyTrace = faultyFile.read()
 
   goldTraceLines = goldTrace.split("\n")
   faultyTraceLines =  faultyTrace.split("\n")

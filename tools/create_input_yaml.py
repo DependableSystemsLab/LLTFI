@@ -93,8 +93,8 @@ def main():
     else:
         content = content.replace("layerNo=4", "layerNo="+str(args.layer))
 
-    f = open('input.yaml', 'w')
-    f.write(content)
+    with open('input.yaml', 'w') as f:
+      f.write(content)
 
 if __name__ == '__main__':
     main()

@@ -21,8 +21,8 @@ class BitCorruptionInjector: public SoftwareFaultInjector {
 	}
 	
 	static BitCorruptionInjector* getBitCorruptionInjector(){
-		static BitCorruptionInjector* injector_ptr = NULL;
-		if(injector_ptr == NULL){
+		static BitCorruptionInjector* injector_ptr = nullptr;
+		if(injector_ptr == nullptr){
 			injector_ptr = new BitCorruptionInjector();
 			return injector_ptr;
 		}else	return injector_ptr;
@@ -109,15 +109,15 @@ class StalePointerInjector: public SoftwareFaultInjector {
 class MemoryExhaustionInjector: public SoftwareFaultInjector {
 	public:
 	virtual void injectFault(long llfi_index, unsigned size, unsigned fi_bit,char *buf){
-		void* p = NULL;
-		void* left_space = NULL;
+		void* p = nullptr;
+		void* left_space = nullptr;
 		do{
 			p = malloc(MEM_EXHAUSTION_UNIT);
-			if(p == NULL)	p = malloc(MEM_EXHAUSTION_UNIT>>4);
-			if(p == NULL)	p = malloc(MEM_EXHAUSTION_UNIT>>8);
-			if(p == NULL)	p = malloc(MEM_EXHAUSTION_UNIT>>12);
-			if(p != NULL)	left_space = p;
-		}while(p != NULL);
+			if(p == nullptr)	p = malloc(MEM_EXHAUSTION_UNIT>>4);
+			if(p == nullptr)	p = malloc(MEM_EXHAUSTION_UNIT>>8);
+			if(p == nullptr)	p = malloc(MEM_EXHAUSTION_UNIT>>12);
+			if(p != nullptr)	left_space = p;
+		}while(p != nullptr);
 		if(non_left_space){
 			void** newbuf = (void**) buf;
 			*newbuf = p;
@@ -160,7 +160,7 @@ class PthreadDeadLockInjector: public SoftwareFaultInjector {
 		pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 		pthread_mutex_lock(&mutex1);
 		pthread_t thread1 = pthread_t(*buf);
-		pthread_join(thread1, NULL);
+		pthread_join(thread1, nullptr);
 		pthread_mutex_lock(&mutex1);
 		return;
 	}
@@ -180,7 +180,7 @@ class PthreadRaceConditionInjector: public SoftwareFaultInjector {
   public:
   virtual void injectFault(long llfi_index, unsigned size, unsigned fi_bit,char *buf) {
     pthread_mutex_t *fake_mutex = (pthread_mutex_t*) malloc(sizeof(pthread_mutex_t));
-    pthread_mutex_init(fake_mutex, NULL);
+    pthread_mutex_init(fake_mutex, nullptr);
     pthread_mutex_t **newbuf = (pthread_mutex_t**) buf;
     *newbuf = fake_mutex;
     return;

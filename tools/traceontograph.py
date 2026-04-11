@@ -26,9 +26,8 @@ def traceOntoGraph(traceFile, graphFile, output=0):
 
   faultReports = parseFaultReportsfromFile(traceFile)
 
-  graphF = open(graphFile, 'r')
-  graphLines = graphF.readlines()
-  graphF.close()
+  with open(graphFile, 'r') as graphF:
+    graphLines = graphF.readlines()
 
   for rep in faultReports:
     affectedInsts = rep.getAffectedSet()

@@ -44,7 +44,7 @@ struct LLTFIConfig {
 static LLTFIConfig LLTFI_config;
 static llu LLTFI_CurrentCycle = 0;
 static int LLTFI_FICycleIndex = 0;
-FILE *injectedfaultsFile = NULL;
+FILE *injectedfaultsFile = nullptr;
 bool LLTFI_doFI = true;
 
 // Function to parse the runtime configuration file and
@@ -55,27 +55,27 @@ void parseLLTFIConfigFile() {
   const unsigned CONFIG_LINE_LENGTH = 1024;
   char line[CONFIG_LINE_LENGTH];
   char option[OPTION_LENGTH];
-  char *value = NULL;
+  char *value = nullptr;
   int fi_next_cycles_index = 0;
 
   // Open the runtime configuration file.
   strncpy(ficonfigfilename, "llfi.config.runtime.txt", 80);
   FILE *ficonfigFile;
   ficonfigFile = fopen(ficonfigfilename, "r");
-  if (ficonfigFile == NULL) {
+  if (ficonfigFile == nullptr) {
     fprintf(stderr, "ERROR: Unable to open llfi config file %s\n",
             ficonfigfilename);
     exit(1);
   }
 
   // Iterate through all the options in the runtime config file.
-  while (fgets(line, CONFIG_LINE_LENGTH, ficonfigFile) != NULL) {
+  while (fgets(line, CONFIG_LINE_LENGTH, ficonfigFile) != nullptr) {
     if (line[0] == '#')
       continue;
 
     value = strtok(line, "=");
     strncpy(option, value, OPTION_LENGTH);
-    value = strtok(NULL, "=");
+    value = strtok(nullptr, "=");
 
     //debug(("option, %s, value, %s;", option, value));
 
@@ -117,7 +117,7 @@ void parseLLTFIConfigFile() {
   }
 
   // Sanity checks
-  assert(LLTFI_config.fi_type != NULL && "No fault injector selected.");
+  assert(LLTFI_config.fi_type != nullptr && "No fault injector selected.");
   assert(LLTFI_config.fi_cycle.size() > 0 && "No fi_cycle selected");
   assert(LLTFI_config.fi_max_multiple > 0 && "invalid fi_max_multiple in config file");
   assert((LLTFI_config.fi_ml_layer_num > 0 || LLTFI_config.fi_ml_layer_num == -1) &&
@@ -140,7 +140,7 @@ extern "C" {
     char injectedfaultsfilename[80];
     strncpy(injectedfaultsfilename, "llfi.stat.fi.injectedfaults.txt", 80);
     injectedfaultsFile = fopen(injectedfaultsfilename, "a");
-    if (injectedfaultsFile == NULL) {
+    if (injectedfaultsFile == nullptr) {
       fprintf(stderr, "ERROR: Unable to open injected faults stat file %s\n",
               injectedfaultsfilename);
       exit(1);

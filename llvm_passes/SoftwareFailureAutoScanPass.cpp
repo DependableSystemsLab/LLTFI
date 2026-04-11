@@ -77,8 +77,8 @@ namespace llfi{
 
         void recordInstSelector(std::string selector_name){
             if(selector_record_file.is_open() == false){
-                std::cerr<<"ERROR: can not open file to record applicable selectors: ";
-                std::cerr<<outputpath<<"\n";
+                errs() << "ERROR: can not open file to record applicable selectors: "
+                       << outputpath << "\n";
                 selector_record_file.close();
                 return;
             }

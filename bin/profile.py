@@ -114,9 +114,8 @@ def execute(execlist):
   moveOutput()
   print("\t program finish", p.returncode)
   print("\t time taken", elapsetime,"\n")
-  outputFile = open(outputfile, "wb")
-  outputFile.write(p_stdout)
-  outputFile.close()
+  with open(outputfile, "wb") as outputFile:
+    outputFile.write(p_stdout)
   replenishInput() #for cases where program deletes input or alters them each run
   #inputFile.close()
   return p.returncode

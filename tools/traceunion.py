@@ -19,7 +19,7 @@ def traceUnion(argv, output=0):
   oldSTDOut = sys.stdout
 
   if output != 0:
-    sys.stdout = open(output, "wb")
+    sys.stdout = open(output, "wb")  # intentional stdout redirect
 
 
   reps = []

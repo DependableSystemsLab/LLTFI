@@ -136,7 +136,7 @@ private:
     bool injectInAll;
 
     // Add Metadata to LLVM instructions; Only for debugging purposes!
-    void addMetadata(llvm::Instruction *ins, char *st = NULL){
+    void addMetadata(llvm::Instruction *ins, char *st = nullptr){
          LLVMContext& C = ins->getContext();
          MDNode* N = MDNode::get(C, MDString::get(C, (!st) ? "t" : st));
          ins->setMetadata("Debug", N);

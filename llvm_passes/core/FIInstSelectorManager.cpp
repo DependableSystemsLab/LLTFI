@@ -1,4 +1,5 @@
 #include "llvm/IR/Instructions.h"
+#include "llvm/Support/raw_ostream.h"
 
 #include "FIInstSelectorManager.h"
 
@@ -38,7 +39,7 @@ int FIInstSelectorManager::printCompileTimeInfo(std::map<std::string, std::strin
   // print compiletime info returned from inst selector, called by getFIInsts()
   std::ofstream compiletimeinfo_file("llfi.config.compiletime.txt");
   if(compiletimeinfo_file.is_open() == false){
-    std::cerr<<"ERROR: can not open llfi.config.compiletime.txt\n";
+    errs() << "ERROR: can not open llfi.config.compiletime.txt\n";
     compiletimeinfo_file.close();
     return -1;
   }

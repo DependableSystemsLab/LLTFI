@@ -74,9 +74,8 @@ class DotGraph:
         print(self.Graph.string())
 
     def saveGraph(self):
-        file = open('mismatch.dot', 'w')
-        file.write(self.Graph.string())
-        file.close()
+        with open('mismatch.dot', 'w') as file:
+            file.write(self.Graph.string())
 
 
 # Conatins all stuff related to LLTFI FI
@@ -173,7 +172,8 @@ class LLTFI:
             if filename == "":
                 continue
             else:
-                f = open(str(self.fi_runtime_stats_dir + "/" + filename), "r").read()
+                with open(str(self.fi_runtime_stats_dir + "/" + filename), "r") as _f:
+                    f = _f.read()
                 bit = str((f.replace(" ", "").split(",")[-2]).split('=')[1])
                 temp = [bit]
                 temp = temp + [k for k in self.fi_layer_op_mismatches[key]]

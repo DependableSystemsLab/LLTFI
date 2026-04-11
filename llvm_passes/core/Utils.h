@@ -56,9 +56,7 @@ void setInjectFaultInst(Value *reg, Instruction *inst, Instruction *ficall);
 // the next instruction iff injectFault occurs AFTER the targeted instruction
 Instruction* changeInsertPtrIfInjectFaultInst(Instruction *inst);
 
-//======== Add opcode_str QINING @SEP 13th========
 GlobalVariable* findOrCreateGlobalNameString(Module &M, std::string name);
-//================================================
 }
 
 #endif

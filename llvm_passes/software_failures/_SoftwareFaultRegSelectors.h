@@ -10,7 +10,6 @@
 #include <iostream>
 #include <sstream>
 
-using namespace std;
 namespace llfi {
 	class FuncArgRegSelector: public SoftwareFIRegSelector {
 	public:

@@ -18,5 +18,6 @@ copy(test_fidl_generation.py test_fidl_generation.py)
 copy(test_ml_tools.py test_ml_tools.py)
 copy(test_software_failure_autoscan.py test_software_failure_autoscan.py)
 copy(test_ml_models.py test_ml_models.py)
+copy(test_instruction_duplication.py test_instruction_duplication.py)
 
 genCopy()

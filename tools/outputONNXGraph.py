@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import onnx
 import pydot
 import os
-import pdb
+import sys
 
 #----------------------------------------------------------------------
 
@@ -198,7 +198,6 @@ def makeDot(model, addIndex = False):
 
 if __name__ == '__main__':
 
-    import sys
     ARGV = sys.argv[1:]
 
     assert len(ARGV) == 2, "usage: in.onnx output.{dot,pdf,...}"
@@ -206,20 +205,19 @@ if __name__ == '__main__':
     inputFname, outputFname = ARGV
 
     if os.path.exists(outputFname):
-        print >> sys.stderr,"output file " + outputFname + " exists already, refusing to overwrite it"
-        sys.sys.exit(1)
-
+        print("output file " + outputFname + " exists already, refusing to overwrite it",
+              file=sys.stderr)
+        sys.exit(1)
 
     # infer output format from suffix
     outputFormat = outputFname.split('.')[-1].lower()
 
     if inputFname.endswith(".gz"):
         import gzip
-        fin = gzip.GzipFile(inputFname)
+        with gzip.GzipFile(inputFname) as fin:
+            model = onnx.load(fin)
     else:
-        fin = open(inputFname)
-
-    model = onnx.load(inputFname)
+        model = onnx.load(inputFname)
 
     outgraph = makeDot(model)
 

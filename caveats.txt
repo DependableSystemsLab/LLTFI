@@ -26,6 +26,13 @@ KNOWN PROBLEMS:
 	   require additional dependencies (TensorFlow, PyTorch, ONNX-MLIR) that are
 	   not part of the base installation. See README.md for installation instructions.
 
+	2. The --all_ml test flag runs ML/ONNX tests that require optional Python
+	   packages (tensorflow, tf2onnx, torch, onnx, pygraphviz, pydot) and the
+	   onnx-mlir compiler. Tests skip gracefully when dependencies are absent.
+	   The ONNX-to-IR and fault injection tiers additionally require model.ll to
+	   be pre-built by running compile.sh in sample_programs/ml_sample_programs/
+	   vision_models/mnist/.
+
 	2. On Ubuntu systems where LLVM is installed via apt, clang is available as
 	   clang-15 (not clang) and will not be found automatically by ./setup. Pass
 	   -LLVM_GXX_BIN_DIR /usr/lib/llvm-15/bin explicitly in that case.

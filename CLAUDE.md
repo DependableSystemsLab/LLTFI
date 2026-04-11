@@ -44,9 +44,29 @@ python3 SCRIPTS/llfi_test --all_software_faults      # 5 tests
 python3 SCRIPTS/llfi_test --all_trace_tools_tests    # 3 tests
 python3 SCRIPTS/llfi_test --all_makefile_generation  # 2 tests
 python3 SCRIPTS/llfi_test --all_fidl                 # 3 tests (FIDL generator)
+python3 SCRIPTS/llfi_test --all_ml                   # ML/ONNX tools + SoftwareFailureAutoScan
 ```
 
-Expected: **21/21 PASS**. Some error messages during fault injection runs are normal.
+Expected: **21/21 PASS** for `--all`. Some error messages during fault injection runs are normal.
+
+`--all_ml` runs additional tests not included in `--all`:
+
+| Test group | Tests | Requirements |
+|------------|-------|--------------|
+| `SoftwareFailureAutoScan` | 4 | LLTFI build only |
+| `CompareLayerOutputs` | 2 | `pip install onnx pygraphviz` |
+| `ExtendONNXModel` | 1 | `pip install onnx` |
+| `outputONNXGraph` | 1 | `pip install onnx pydot` |
+| TensorFlow → ONNX | 3 | `pip install tensorflow tf2onnx onnx` |
+| PyTorch → ONNX | 2 | `pip install torch onnx` |
+| ONNX → LLVM IR | 2 | `onnx-mlir` + `mlir-translate` on PATH or `$ONNX_MLIR_BUILD` set |
+| Fault injection (ML) | 3 | LLTFI build + `model.ll` in `sample_programs/.../mnist/` (run `compile.sh` first) |
+
+Tests with missing deps are reported as **SKIP** (not FAIL) and excluded from the pass/fail count.
+
+The ONNX→IR and fault injection tests use the pre-built `model.onnx` from
+`sample_programs/ml_sample_programs/vision_models/mnist/`. The fault injection
+test also requires `model.ll` which is produced by that directory's `compile.sh`.
 
 ---
 

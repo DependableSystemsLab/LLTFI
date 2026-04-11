@@ -173,11 +173,28 @@ python3 SCRIPTS/llfi_test --all
 
 Individual test categories can be run separately:
 ```
-python3 SCRIPTS/llfi_test --all_hardware_faults    # hardware fault injection tests
-python3 SCRIPTS/llfi_test --all_trace_tools_tests  # trace analysis tool tests
+python3 SCRIPTS/llfi_test --all_hardware_faults     # hardware fault injection tests
+python3 SCRIPTS/llfi_test --all_trace_tools_tests   # trace analysis tool tests
 python3 SCRIPTS/llfi_test --all_makefile_generation # Makefile generation tests
-python3 SCRIPTS/llfi_test --all_fidl               # FIDL generator tests
+python3 SCRIPTS/llfi_test --all_fidl                # FIDL generator tests
 ```
+
+#### ML/ONNX tests (optional dependencies)
+
+```
+python3 SCRIPTS/llfi_test --all_ml
+```
+
+This runs additional tests for the ML infrastructure. Each group skips gracefully when its dependencies are absent:
+
+| Group | What is tested | Additional requirements |
+|-------|----------------|------------------------|
+| `SoftwareFailureAutoScan` | Scans IR for injectable failure modes | LLTFI build only |
+| ML tool unit tests | `CompareLayerOutputs`, `ExtendONNXModel`, `outputONNXGraph` | `pip install onnx pygraphviz pydot` |
+| TensorFlow pipeline | Train model → ONNX conversion → validation | `pip install tensorflow tf2onnx onnx` |
+| PyTorch pipeline | Model export → ONNX validation | `pip install torch onnx` |
+| ONNX → LLVM IR | `onnx-mlir` + `mlir-translate` compilation | onnx-mlir (set `ONNX_MLIR_BUILD`) |
+| Fault injection (ML) | Full instrument → profile → inject on ML model | LLTFI build + `model.ll` from `sample_programs/.../mnist/compile.sh` |
 
 <!--
 VirtualBox Image

@@ -8,8 +8,7 @@ std::string demangleFuncName(std::string func) {
   // Check for name mangling. C++ functions will always start with _Z
   // Demangled form is processed to remove type information.
   if(func.length() >= 2 && (func[0] == '_' && func[1] == 'Z')) {
-    int stat;
-    char *test = itaniumDemangle(func.c_str(), nullptr, nullptr, &stat);
+    char *test = itaniumDemangle(func);
 
     // Check if the demangeled function name is null or not.
     // Thanks Allesio for bringing this up.
@@ -202,8 +201,7 @@ GlobalVariable* findOrCreateGlobalNameString(Module &M, std::string name)
 	}
 	std::string gv_nameStr = name + str_suffix;
 	Constant* name_c = ConstantDataArray::getString(context, name);
-	nameStr = new GlobalVariable(name_c->getType(), true, GlobalVariable::InternalLinkage, name_c, gv_nameStr.c_str());
-	M.getGlobalList().push_back(nameStr);
+	nameStr = new GlobalVariable(M, name_c->getType(), true, GlobalVariable::InternalLinkage, name_c, gv_nameStr.c_str());
 	return nameStr;
 }
 

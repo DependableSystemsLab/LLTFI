@@ -330,18 +330,29 @@ def compileProg():
   fifile = progbin + "-faultinjection"
   tmpfiles = []
 
-  execlist = [optbin, '-load-pass-plugin', llfilib, '-genllfiindexpass', '-o',
+  # Separate pass names from cl::opt flags in compileOptions.
+  # In LLVM 17+, pass names must go in --passes=, not as -passname arguments.
+  _PASS_NAMES = {'-insttracepass'}
+  extra_passes = [opt.lstrip('-') for opt in compileOptions if opt in _PASS_NAMES]
+  compile_flags = [opt for opt in compileOptions if opt not in _PASS_NAMES]
+
+  # Step 1: assign LLFI indices (+ optional dot graph)
+  index_passes = 'genllfiindexpass'
+  if options["genDotGraph"]:
+    index_passes += ',dotgraphpass'
+  execlist = [optbin, '-load-pass-plugin', llfilib, '--passes=' + index_passes, '-o',
               llfi_indexed_file + _suffixOfIR(), options['source']]
   if options["readable"]:
     execlist.append('-S')
-  if options["genDotGraph"]:
-    execlist.append('-dotgraphpass')
   retcode = execCompilation(execlist)
 
   if retcode == 0:
-    execlist = [optbin, '-load-pass-plugin', llfilib, '-profilingpass']
+    prof_passes = 'profilingpass'
+    if extra_passes:
+      prof_passes += ',' + ','.join(extra_passes)
+    execlist = [optbin, '-load-pass-plugin', llfilib, '--passes=' + prof_passes]
     execlist2 = ['-o', proffile + _suffixOfIR(), llfi_indexed_file + _suffixOfIR()]
-    execlist.extend(compileOptions)
+    execlist.extend(compile_flags)
     execlist.extend(execlist2)
     if options["readable"]:
       execlist.append("-S")
@@ -350,11 +361,10 @@ def compileProg():
     retcode = execCompilation(execlist)
 
   if retcode == 0:
-    execlist = [optbin, '-load-pass-plugin', llfilib, '-faultinjectionpass']
+    execlist = [optbin, '-load-pass-plugin', llfilib, '--passes=faultinjectionpass']
     execlist2 = ['-o', fifile + _suffixOfIR(), llfi_indexed_file + _suffixOfIR()]
-    execlist.extend(compileOptions)
+    execlist.extend(compile_flags)
     execlist.extend(execlist2)
-    #print(execlist)
     if options["readable"]:
       execlist.append("-S")
     retcode = execCompilation(execlist)

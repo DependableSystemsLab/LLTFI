@@ -12,16 +12,16 @@ LLTFI (Low-Level Tensor Fault Injector) is an LLVM-based fault injection framewo
 |----------|------|
 | Source tree | `/home/karthik/Programs/LLTFI` |
 | Build root | `/home/karthik/Programs/LLTFI-build` |
-| LLVM DST root | `/usr/lib/llvm-15` (apt install) |
+| LLVM DST root | `/usr/lib/llvm-20` (apt install) |
 | LLVM SRC root | `/home/karthik/Programs/llvm-project` |
-| LLVM version | 15.0 (commit `9778ec057cf4`) |
+| LLVM version | 20.1 |
 
 To rebuild from source:
 ```bash
 ./setup -LLFI_BUILD_ROOT /home/karthik/Programs/LLTFI-build \
         -LLVM_SRC_ROOT /home/karthik/Programs/llvm-project \
-        -LLVM_DST_ROOT /usr/lib/llvm-15 \
-        -LLVM_GXX_BIN_DIR /usr/lib/llvm-15/bin
+        -LLVM_DST_ROOT /usr/lib/llvm-20 \
+        -LLVM_GXX_BIN_DIR /usr/lib/llvm-20/bin
 ```
 
 The build root must not already exist. Delete it first if rebuilding from scratch.
@@ -112,15 +112,21 @@ The three FIDL templates are:
 
 ---
 
-## LLVM 15 API constraints
+## LLVM 20 API constraints
 
-The codebase targets **LLVM 15**. Key API changes from older LLVM versions to keep in mind:
+The codebase targets **LLVM 20**. Key API changes to keep in mind:
 
 - `#include "llvm/IR/CFG.h"` (not `llvm/Support/CFG.h` — removed in LLVM 15)
 - `CI->arg_size()` (not `CI->getNumArgOperands()` — removed in LLVM 15)
 - `func->getName().str()` returns `StringRef`; call `.str()` before assigning to `std::string`
-- New pass manager is used; legacy pass manager wrappers are kept for compatibility
-- `opt -load-pass-plugin` (not `opt -load` — old syntax removed)
+- `opt -load-pass-plugin` (not `opt -load` — legacy PM removed in LLVM 17)
+- `--passes=passname` (not `-passname` — old opt syntax removed in LLVM 17)
+- `InsertPosition` requires a `BasicBlock::iterator`, not a raw `Instruction*` — call `.getIterator()` on the insertion point
+- `getFirstNonPHIOrDbgOrLifetime()` now returns `BasicBlock::iterator` (not `Instruction*`)
+- `getFirstNonPHI()` → `getFirstNonPHIIt()` (returns iterator)
+- `M.getGlobalList()` is private — use `new GlobalVariable(M, type, ...)` to insert directly
+- `itaniumDemangle(str)` takes a single `string_view` argument (old 4-arg form removed)
+- Most core passes use the **new pass manager** (`PassInfoMixin`, `llvmGetPassPluginInfo`); the `InstructionDuplication` pass still uses the legacy PM (`FunctionPass`, `RegisterPass<>`) and cannot be invoked via `opt` in LLVM 20
 
 ---
 

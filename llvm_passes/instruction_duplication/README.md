@@ -20,6 +20,9 @@ sh compile_shrd_lib.sh
 
 ```
 # Perform instruction duplication
+# Note: InstructionDuplicationPass uses the legacy pass manager and must be
+# invoked via an LLVM version that still supports it (LLVM 16 or earlier), or
+# migrated to the new pass manager for LLVM 17+.
 $LLVM_BUILD_PATH/bin/opt -load ../../../../build/llvm_passes/instruction_duplication/SEDPasses.so \
   --InstructionDuplicationPass -operatorName=all \
   --enableChainDuplication --enable-new-pm=0 -S model.ll -o model_change.ll \

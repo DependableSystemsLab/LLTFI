@@ -12,6 +12,10 @@
 #include "llvm/Pass.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Instructions.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/PassManager.h"
+#include "llvm/Passes/PassBuilder.h"
+#include "llvm/Passes/PassPlugin.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/IR/IRBuilder.h"
@@ -515,4 +519,41 @@ namespace llfi{
     static RegisterPass<InstructionDuplicationPass>
         X("InstructionDuplicationPass", "Automatic Duplication of ML applications",
             false, false);
+
+    // New pass manager wrapper — iterates over all functions just like the
+    // legacy FunctionPass, preserving the existing per-function logic.
+    struct NewInstructionDuplicationPass
+        : llvm::PassInfoMixin<NewInstructionDuplicationPass> {
+
+        llvm::PreservedAnalyses run(llvm::Module &M,
+                                    llvm::ModuleAnalysisManager &) {
+            InstructionDuplicationPass legacy;
+            bool changed = false;
+            for (Function &F : M)
+                changed |= legacy.runOnFunction(F);
+            return changed ? llvm::PreservedAnalyses::none()
+                           : llvm::PreservedAnalyses::all();
+        }
+
+        static bool isRequired() { return true; }
+    };
+}
+
+//-----------------------------------------------------------------------------
+// New PM plugin entry point for SEDPasses.so
+//-----------------------------------------------------------------------------
+extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo
+llvmGetPassPluginInfo() {
+    return {LLVM_PLUGIN_API_VERSION, "SEDPasses", LLVM_VERSION_STRING,
+            [](llvm::PassBuilder &PB) {
+                PB.registerPipelineParsingCallback(
+                    [](llvm::StringRef Name, llvm::ModulePassManager &MPM,
+                       llvm::ArrayRef<llvm::PassBuilder::PipelineElement>) {
+                        if (Name == "InstructionDuplicationPass") {
+                            MPM.addPass(llfi::NewInstructionDuplicationPass());
+                            return true;
+                        }
+                        return false;
+                    });
+            }};
 }

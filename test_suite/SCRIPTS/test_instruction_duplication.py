@@ -4,8 +4,9 @@
 Tests for the Selective Instruction Duplication (SID) pass
 (llvm_passes/instruction_duplication/InstructionDuplication.cpp).
 
-The pass is compiled to SEDPasses.so and invoked via opt with the legacy pass
-manager.  All tests write temporary LLVM IR, run opt, and inspect the output.
+The pass is compiled to SEDPasses.so and invoked via opt with the new pass
+manager (--passes=InstructionDuplicationPass).  All tests write temporary LLVM
+IR, run opt, and inspect the output.
 
 Tests are reported as SKIP when SEDPasses.so has not been built yet.
 
@@ -71,7 +72,8 @@ def _run_pass(opt, sed_so, ir_text, extra_flags=None, tmpdir=None):
     Write ir_text to a temp file, run InstructionDuplicationPass via opt,
     and return (returncode, stdout_text).
 
-    extra_flags is a list of additional opt flags (e.g. ['--enableChainDuplication']).
+    extra_flags is a list of additional cl::opt flags
+    (e.g. ['--enableChainDuplication']).
     """
     ir_path = os.path.join(tmpdir, 'input.ll')
     out_path = os.path.join(tmpdir, 'output.ll')
@@ -80,9 +82,8 @@ def _run_pass(opt, sed_so, ir_text, extra_flags=None, tmpdir=None):
 
     cmd = [
         opt,
-        '-load', sed_so,
-        '--InstructionDuplicationPass',
-        '--enable-new-pm=0',
+        '-load-pass-plugin', sed_so,
+        '--passes=InstructionDuplicationPass',
         '-S', ir_path,
         '-o', out_path,
     ]

@@ -133,7 +133,7 @@ Two methods changed their return type from `Instruction *` to
 At each call site, either dereference the iterator (`&*iter`) or update the
 surrounding code to work with iterators directly.
 
-### C-3 — Migrate InstructionDuplication to the new pass manager ⚠️ PENDING
+### C-3 — Migrate InstructionDuplication to the new pass manager ✅ DONE
 **Estimated time: 2–3 days**
 
 `InstructionDuplication.cpp` is the only remaining pass still using the legacy
@@ -243,11 +243,11 @@ H-4  Final test sign-off
 | **Total human time remaining** | | | **~6–10 hours** |
 | C-1: Deprecated instruction-construction API | Claude Code | ✅ Done | — |
 | C-2: Iterator return-type fixes | Claude Code | ✅ Done | — |
-| C-3: InstructionDuplication new PM migration | Claude Code | ⚠️ Pending | 2–3 days |
+| C-3: InstructionDuplication new PM migration | Claude Code | ✅ Done | — |
 | C-4: `getGlobalList` fix | Claude Code | ✅ Done | — |
 | C-5: `SoftwareFailureAutoScan.py` flags | Claude Code | ✅ Done | — |
 | C-6: Iterative build-fix loop | Claude Code | ✅ Done | — |
-| **Total Claude Code time remaining** | | | **2–3 days (C-3 only)** |
+| **Total Claude Code time remaining** | | | **None — all done** |
 
 Without Claude Code, a human developer would need approximately **2–3 weeks**
 of active work. With Claude Code handling the mechanical fixes and the

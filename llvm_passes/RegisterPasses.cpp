@@ -10,6 +10,29 @@
 using namespace llvm;
 
 namespace llfi {
+  // Forward declarations for auto-scan free functions defined in their
+  // respective .cpp translation units.
+  void runSoftwareFailureAutoScan(llvm::Module &M);
+  void runHardwareFailureAutoScan(llvm::Module &M);
+
+  // New PM wrappers for the auto-scan passes.
+  struct NewSoftwareFailureAutoScanPass
+      : PassInfoMixin<NewSoftwareFailureAutoScanPass> {
+    PreservedAnalyses run(Module &M, ModuleAnalysisManager &) {
+      runSoftwareFailureAutoScan(M);
+      return PreservedAnalyses::all();
+    }
+    static bool isRequired() { return true; }
+  };
+
+  struct NewHardwareFailureAutoScanPass
+      : PassInfoMixin<NewHardwareFailureAutoScanPass> {
+    PreservedAnalyses run(Module &M, ModuleAnalysisManager &) {
+      runHardwareFailureAutoScan(M);
+      return PreservedAnalyses::all();
+    }
+    static bool isRequired() { return true; }
+  };
 
   //-----------------------------------------------------------------------------
   // New PM Registration
@@ -68,6 +91,28 @@ namespace llfi {
                    ArrayRef<PassBuilder::PipelineElement>) {
                   if (Name == "insttracepass") {
                     MPM.addPass(llfi::NewInstTrace());
+                    return true;
+                  }
+                  return false;
+                });
+
+              // For SoftwareFailureAutoScanPass
+              PB.registerPipelineParsingCallback(
+                [](StringRef Name, ModulePassManager &MPM,
+                   ArrayRef<PassBuilder::PipelineElement>) {
+                  if (Name == "SoftwareFailureAutoScanPass") {
+                    MPM.addPass(llfi::NewSoftwareFailureAutoScanPass());
+                    return true;
+                  }
+                  return false;
+                });
+
+              // For HardwareFailureAutoScanPass
+              PB.registerPipelineParsingCallback(
+                [](StringRef Name, ModulePassManager &MPM,
+                   ArrayRef<PassBuilder::PipelineElement>) {
+                  if (Name == "HardwareFailureAutoScanPass") {
+                    MPM.addPass(llfi::NewHardwareFailureAutoScanPass());
                     return true;
                   }
                   return false;

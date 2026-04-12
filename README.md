@@ -21,12 +21,12 @@ LLTFI first lowers ML models to **MLIR** (Multi-Level Intermediate Representatio
 - LLTFI first converts all ML models to the ONNX format. ONNX’s open exchange format allows LLTFI to
 support both TensorFlow and PyTorch. 
 - Then, the ONNX file is converted into MLIR through ONNX-MLIR. 
-- Finally, we convert MLIR into LLVM IR, using the mlir-translate tool in LLVM 15.0. 
+- Finally, we convert MLIR into LLVM IR, using the mlir-translate tool.
 
 **LLTFI** can now inject faults into the LLVM IR, alike lowered C/C++ programs. 
 
-The LLFI tool was originally written for LLVM 3.4. While developing LLTFI, the entire LLFI tool was upgraded to LLVM 15.0 because LLVM 3.4 has no support for MLIR.
-This upgrade also ensured that LLTFI is compatible with all of the newest C/C++ features, and LLVM optimization passes
+The LLFI tool was originally written for LLVM 3.4. While developing LLTFI, the entire LLFI tool was upgraded to support MLIR and has since been further upgraded to LLVM 20.
+This upgrade ensures that LLTFI is compatible with all of the newest C/C++ features and LLVM optimization passes.
 
 
 Manual Installation
@@ -43,18 +43,20 @@ In this method, the developer has more control over the location of the LLVM bui
   5. Python YAML library (PyYAML v5.4.1 or higher, v6.0+ supported)
   6. Ninja >= 1.10.2
   7. libprotoc >= 3.11.0
-  8. Clang v15.0 (commit: 9778ec057cf4)
-  9. LLVM v15.0 (commit: 9778ec057cf4) ([Reference](http://llvm.org/docs/CMake.html)).
-		LLVM 15.0 takes a long time to completely build. Following is a shortcut to checking out the required LLVM commit, and building only the necessary LLVM targets.
+  8. Clang v20.x
+  9. LLVM v20.x ([Reference](http://llvm.org/docs/CMake.html)).
+		The easiest way to install LLVM 20 on Ubuntu is via the LLVM apt repository:
+		```
+		wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh
+		sudo ./llvm.sh 20
+		```
+		If you need to build LLVM from source (e.g., to include MLIR for onnx-mlir):
 		```
 		git clone https://github.com/llvm/llvm-project.git
-		
-		# Check out a specific branch that is known to work with the required version of ONNX MLIR.
-		cd llvm-project && git checkout 9778ec057cf4 && cd ..
-			
-		mkdir llvm-project/build
-		cd llvm-project/build
-		
+		cd llvm-project && git checkout llvmorg-20.1.0 && cd ..
+
+		mkdir llvm-project/build && cd llvm-project/build
+
 		cmake -G Ninja ../llvm \
 			-DLLVM_ENABLE_PROJECTS="clang;mlir" \
 			-DLLVM_BUILD_TESTS=ON \
@@ -63,8 +65,6 @@ In this method, the developer has more control over the location of the LLVM bui
 			-DLLVM_ENABLE_RTTI=ON
 
 		cmake --build . --target clang check-mlir mlir-translate opt llc lli llvm-dis llvm-link -j 2
-
-		ninja install -j 2
 		```
   10. For executing ML programs, following additional dependencies have to be installed:
 		1. TensorFlow framework (v2.0 or greater)
@@ -150,7 +150,7 @@ GUI Dependencies:
 ```
   On Ubuntu systems where LLVM is installed via apt, `clang` may only be available as `clang-15` (not `clang`) and will not be found automatically. In that case, pass `-LLVM_GXX_BIN_DIR` explicitly:
 ```
-./setup -LLFI_BUILD_ROOT /path/to/LLFI-build -LLVM_SRC_ROOT /path/to/llvm-project -LLVM_DST_ROOT /usr/lib/llvm-15 -LLVM_GXX_BIN_DIR /usr/lib/llvm-15/bin
+./setup -LLFI_BUILD_ROOT /path/to/LLFI-build -LLVM_SRC_ROOT /path/to/llvm-project -LLVM_DST_ROOT /usr/lib/llvm-20 -LLVM_GXX_BIN_DIR /usr/lib/llvm-20/bin
 ```
 
 ### Building LLTFI using Docker: ###

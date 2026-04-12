@@ -1,5 +1,3 @@
-#define DEBUG_TYPE "SoftwareFailureAutoScanPass"
-
 #include "FICustomSelectorManager.h"
 #include "Utils.h"
 #include "FIInstSelectorManager.h"
@@ -12,7 +10,12 @@
 #include "llvm/Pass.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Instructions.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/PassManager.h"
+#include "llvm/Passes/PassBuilder.h"
+#include "llvm/Passes/PassPlugin.h"
 #include "llvm/Support/raw_ostream.h"
+#define DEBUG_TYPE "SoftwareFailureAutoScanPass"
 #include "llvm/Support/CommandLine.h"
 
 #include <fstream>
@@ -87,7 +90,14 @@ namespace llfi{
         }
     };
     char SoftwareFailureAutoScanPass::ID = 0;
-    static RegisterPass<SoftwareFailureAutoScanPass> 
-        X("SoftwareFailureAutoScanPass", "Automatic scanner of software failure modes", 
+    static RegisterPass<SoftwareFailureAutoScanPass>
+        X("SoftwareFailureAutoScanPass", "Automatic scanner of software failure modes",
             false, false);
+}
+
+// Free function callable from RegisterPasses.cpp for the new PM wrapper.
+namespace llfi {
+    void runSoftwareFailureAutoScan(llvm::Module &M) {
+        SoftwareFailureAutoScanPass().runOnModule(M);
+    }
 }

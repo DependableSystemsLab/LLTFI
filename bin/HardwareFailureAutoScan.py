@@ -68,7 +68,7 @@ def usage(msg = None):
 
 def runAutoScan(args):
     global filename
-    execlist = [optbin , "-load", llfipasses, "-HardwareFailureAutoScanPass", "-analyze"]
+    execlist = [optbin, "-load-pass-plugin", llfipasses, "--passes=HardwareFailureAutoScanPass", "-disable-output"]
     execlist.extend(args)
     print(' '.join(execlist))
     p = subprocess.Popen(execlist)

@@ -11,8 +11,8 @@ Before writing any code, read:
 
 ```bash
 mkdir build && cd build
-cmake /path/to/LLTFI -DLLVM_GXX_BIN_DIR /usr/lib/llvm-15/bin
-# On Ubuntu with apt-installed LLVM, use -DLLVM_GXX_BIN_DIR /usr/lib/llvm-15/bin
+cmake /path/to/LLTFI -DLLVM_GXX_BIN_DIR /usr/lib/llvm-20/bin
+# On Ubuntu with apt-installed LLVM, use -DLLVM_GXX_BIN_DIR /usr/lib/llvm-20/bin
 ../setup
 ```
 
@@ -20,9 +20,9 @@ cmake /path/to/LLTFI -DLLVM_GXX_BIN_DIR /usr/lib/llvm-15/bin
 
 ### C++ Changes
 
-- Target C++14; compile against LLVM 15 APIs
+- Target C++17; compile against LLVM 20 APIs
 - Use `nullptr`, `#ifndef` include guards, RAII memory management
-- LLVM 15 API: `arg_size()` (not `getNumArgOperands()`), `#include "llvm/IR/CFG.h"` (not `llvm/Support/CFG.h`)
+- LLVM 20 API: `arg_size()` (not `getNumArgOperands()`), `#include "llvm/IR/CFG.h"` (not `llvm/Support/CFG.h`), `InsertPosition` via `.getIterator()` for instruction insertion points, `--passes=name` (not `-name`) for opt invocation
 - `runOnModule` must return `bool`
 
 ### Python Changes

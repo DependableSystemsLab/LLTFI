@@ -6,7 +6,7 @@ These guidelines apply to all hand-written source files in the project. C++ and 
 
 ## C++ Standard
 
-Target **C++14**. LLVM 15 requires it, and it provides range-based for loops, `nullptr`, `auto`, and other improvements used throughout the codebase.
+Target **C++17**. LLVM 20 requires it, and it provides range-based for loops, `nullptr`, `auto`, structured bindings, and other improvements used throughout the codebase.
 
 ---
 

@@ -64,7 +64,7 @@ void insertCallForMLFIStats(Module& M) {
       // If the instruction is a call instruction, check if it is a call to
       // the OMInstrumentPoint function.
       if (isa<CallInst>(inst)) {
-        CallInst* call_inst = dyn_cast<CallInst>(inst);
+        CallInst* call_inst = cast<CallInst>(inst);
         if (call_inst->getCalledFunction() &&
             call_inst->getCalledFunction()->getName() == "OMInstrumentPoint") {
 

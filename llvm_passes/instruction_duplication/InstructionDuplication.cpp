@@ -455,7 +455,7 @@ public:
     }
 
     // Then duplicate the arithmetic instructions.
-    for (auto insVector : arithInst) {
+    for (const auto& insVector : arithInst) {
 
       if (insVector.size() == 1)
         duplicateInstruction(insVector[0]);
@@ -497,8 +497,6 @@ public:
     } else {
       return doArithmeticInstructionDuplication(F);
     }
-
-    return false;
   }
 
   bool runOnFunction(Function& F) override {

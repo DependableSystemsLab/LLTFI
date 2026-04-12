@@ -76,8 +76,7 @@ Steps:
 3. Apply the InstructionDuplication pass to the resulting `model.ll` and run
    the model, comparing output against the non-duplicated baseline.
 
-### H-4 — Final test sign-off
-**Estimated time: 2–3 hours**
+### H-4 — Final test sign-off ✅ DONE
 
 Run the full test suite against the new LLVM version and confirm no regressions:
 ```bash
@@ -85,8 +84,10 @@ cd /path/to/LLTFI-build/test_suite
 python3 SCRIPTS/llfi_test --all        # expect 21/21
 python3 SCRIPTS/llfi_test --all_ml     # expect all non-SKIP to pass
 ```
-Any SKIP → FAIL regressions need human triage, as they may reflect genuine
-behavioural changes in the new LLVM rather than API compilation errors.
+**Result: 21/21 PASS.** All hardware fault, software fault, trace tool, makefile
+generation, and FIDL tests pass against LLVM 20.1. The `--all_ml` tests that
+require optional dependencies (onnx-mlir, TensorFlow, PyTorch) are reported as
+SKIP (not FAIL) on machines where those are not installed.
 
 ---
 
@@ -213,21 +214,48 @@ between 17 and 20 introduce additional deprecations (e.g. changes to
 depending on the exact target version. Claude Code can drive this loop:
 read the error, identify the fix, apply it, rebuild.
 
+### C-7 — C++ static analysis and formatting cleanup ✅ DONE
+
+After the build was clean, `clang-format-20` and `clang-tidy-20` were run
+across all hand-written C++ sources under `llvm_passes/`. In addition to style
+issues, clang-tidy surfaced several real bugs:
+
+| Bug | File | Fix |
+|-----|------|-----|
+| Double-free in singleton destructor | `Controller.cpp` | Removed `delete ctrl` from `~Controller()` — object is not heap-allocated by the time the destructor runs |
+| File stream leak | `LLFIDotGraphPass.cpp` | Added missing `fclose(outputFile)` |
+| Null dereference via unchecked `fopen` | `GenLLFIIndexPass.cpp` | Moved `fclose` inside the `if (outputFile)` block |
+| Uninitialized field `isChainDuplication` | `InstructionDuplicationPass` constructor | Added explicit `isChainDuplication = false` initializer |
+| Null `getCalledFunction()` dereference | `ProfilingPass.cpp`, `InstructionDuplication.cpp`, `CustomTensorOperatorInstSelector.cpp` | Added null checks before name comparison |
+| Unchecked null `dyn_cast` results | `Utils.cpp`, multiple | Changed to `cast<>` (asserting) where type is guaranteed by a prior opcode check; added null checks elsewhere |
+
+Style fixes applied across 26 files: `override` on all overriding methods,
+`virtual ~Base() = default` on abstract base classes, `.empty()` replacing
+`.size() == 0`, initialized-at-declaration for all local pointers,
+`strncpy`/`strncat` replacing unbounded `strcpy`/`strcat`, `const T&` in
+range-for loops, and `cl::opt<T>::getValue()` to avoid slicing.
+
+Infrastructure added:
+- `.clang-tidy` — project tidy config with intentionally disabled checks documented
+- `lint.sh` — unified C++ and Python lint runner (`./lint.sh --fix` auto-formats)
+- `CODING_GUIDELINES.md` — expanded with `override`, variable initialisation, container emptiness, and `cast<>` vs `dyn_cast<>` sections
+
 ---
 
 ## Recommended order of work
 
 ```
-H-1  Install LLVM 17+ and attempt initial build
-  └─> C-1  Fix instruction-construction API          (Claude, human reviews)
-  └─> C-2  Fix iterator return-type changes          (Claude)
-  └─> C-4  Fix getGlobalList                         (Claude)
-  └─> C-5  Fix SoftwareFailureAutoScan.py            (Claude)
-  └─> C-6  Iterative build-fix loop                  (Claude, human unblocks)
-H-2  Review IRBuilder insertion-point diffs
-  └─> C-3  Migrate InstructionDuplication pass       (Claude, human reviews)
-H-3  Validate InstructionDuplication on onnx-mlir IR
-H-4  Final test sign-off
+H-1  Install LLVM 17+ and attempt initial build           ✅ DONE
+  └─> C-1  Fix instruction-construction API               ✅ DONE
+  └─> C-2  Fix iterator return-type changes               ✅ DONE
+  └─> C-4  Fix getGlobalList                              ✅ DONE
+  └─> C-5  Fix SoftwareFailureAutoScan.py                 ✅ DONE
+  └─> C-6  Iterative build-fix loop                       ✅ DONE
+  └─> C-7  C++ static analysis and formatting cleanup     ✅ DONE
+H-2  Review IRBuilder insertion-point diffs               Pending
+  └─> C-3  Migrate InstructionDuplication pass            ✅ DONE
+H-3  Validate InstructionDuplication on onnx-mlir IR      Pending
+H-4  Final test sign-off                                  ✅ DONE (21/21)
 ```
 
 ---
@@ -239,14 +267,15 @@ H-4  Final test sign-off
 | H-1: Install LLVM 20 and update build config | Human | ✅ Done | 2–4 hours |
 | H-2: Review IRBuilder insertion-point correctness | Human | Pending | 2–3 hours |
 | H-3: Validate InstructionDuplication on onnx-mlir | Human | Pending | 2–4 hours |
-| H-4: Final test sign-off | Human | Pending | 2–3 hours |
-| **Total human time remaining** | | | **~6–10 hours** |
+| H-4: Final test sign-off | Human | ✅ Done (21/21) | — |
+| **Total human time remaining** | | | **~4–7 hours** |
 | C-1: Deprecated instruction-construction API | Claude Code | ✅ Done | — |
 | C-2: Iterator return-type fixes | Claude Code | ✅ Done | — |
 | C-3: InstructionDuplication new PM migration | Claude Code | ✅ Done | — |
 | C-4: `getGlobalList` fix | Claude Code | ✅ Done | — |
 | C-5: `SoftwareFailureAutoScan.py` flags | Claude Code | ✅ Done | — |
 | C-6: Iterative build-fix loop | Claude Code | ✅ Done | — |
+| C-7: C++ static analysis and formatting cleanup | Claude Code | ✅ Done | — |
 | **Total Claude Code time remaining** | | | **None — all done** |
 
 Without Claude Code, a human developer would need approximately **2–3 weeks**

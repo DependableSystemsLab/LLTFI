@@ -2,7 +2,6 @@
 
 import os
 import sys
-import shutil
 import yaml
 import subprocess
 import time
@@ -37,7 +36,7 @@ def startEchoServer(work_dir):
 	t.daemon = True # thread dies with the program
 	t.start()
 	count = 0
-	while server.poll() == None:
+	while server.poll() is None:
 		if count > 50:
 			server.terminate()
 			return startEchoServer(work_dir)
@@ -56,10 +55,6 @@ def startEchoServer(work_dir):
 				time.sleep(1)
 
 def callLLFI(work_dir, target_IR, prog_input):
-	global instrument_script
-	global profile_script
-	global injectfault_script
-
 	try:
 		os.chdir(work_dir)
 	except Exception:
@@ -118,11 +113,6 @@ def callLLFI(work_dir, target_IR, prog_input):
 	return 0, t
 
 def callBatchLLFI(work_dir, target_IR, prog_input):
-	global batchinstrument_script
-	global batchprofile_script
-	global batchinjectfault_script
-	global autoscan_script
-
 	try:
 		os.chdir(work_dir)
 	except Exception:

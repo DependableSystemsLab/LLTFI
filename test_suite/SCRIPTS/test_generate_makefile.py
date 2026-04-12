@@ -2,7 +2,6 @@
 
 import os
 import sys
-import shutil
 import yaml
 import subprocess
 
@@ -10,8 +9,6 @@ generate_makefile_script = ''
 llvm_interpreter_bin = ''
 
 def callGenerateMakefile(work_dir, resources):
-	global generate_makefile_script
-
 	execlist = [generate_makefile_script, '--dir', work_dir]
 	execlist.extend(resources['makefile_generation_args'].split(' '))
 	print(' '.join(execlist))
@@ -23,8 +20,6 @@ def callGenerateMakefile(work_dir, resources):
 		return ("PASS")
 
 def callLLVMInterpreter(work_dir, resources):
-	global llvm_interpreter_bin
-
 	cwd = os.getcwd()
 	os.chdir(work_dir)
 	os.system('make clean')

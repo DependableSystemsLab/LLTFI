@@ -25,8 +25,6 @@ import subprocess
 
 prog = os.path.basename(sys.argv[0])
 script_path = os.path.realpath(os.path.dirname(__file__))
-sys.path.append(os.path.join(script_path, '../config'))
-import llvm_paths
 
 instrument_script = os.path.join(script_path, 'instrument')
 # basedir and options are assigned in parseArgs(args)
@@ -35,8 +33,6 @@ options = []
 
 def parseArgs(args):
 	global basedir
-	global options
-	cwd = os.getcwd()
 	for arg in args:
 		option = arg
 		if os.path.isfile(arg):
@@ -55,7 +51,6 @@ def usage(msg = None):
   sys.exit(retval)
 
 def parseMasterYaml():
-	global basedir
 	master_yaml_dict = {}
 	model_list = []
 	try:
@@ -74,7 +69,6 @@ def parseMasterYaml():
 	return master_yaml_dict, model_list
 
 def splitMasterYaml(master_yaml_dict, model_list):
-	global basedir
 	for model in model_list:
 		include_list = [model]
 		slave_yaml_dict = dict(master_yaml_dict)
@@ -99,7 +93,6 @@ def maybeRequired(abs_path):
 	return True
 
 def prepareDirs(model_list):
-	global basedir
 	stuffs_under_basedir = [f for f in os.listdir(basedir) if maybeRequired(os.path.join(basedir, f))]
 	for model in model_list:
 		workdir = os.path.join(basedir, "llfi-"+model)
@@ -127,8 +120,6 @@ def prepareDirs(model_list):
 
 
 def callInstrument(model_list):
-	global basedir
-	global options
 	num_failed = 0
 	for model in model_list:
 		workdir = os.path.join(basedir, "llfi-"+model)

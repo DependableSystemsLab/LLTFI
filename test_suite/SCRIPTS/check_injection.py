@@ -2,9 +2,7 @@
 
 import os
 import sys
-import shutil
 import yaml
-import subprocess
 
 def examineTraceFile(work_dir):
 	try:
@@ -14,7 +12,7 @@ def examineTraceFile(work_dir):
 		print ("FAIL: (ERROR) input.yaml not found! work_dir:", work_dir)
 		return False
 	try:
-		if config_dict['compileOption']['tracingPropagation'] == True:
+		if config_dict['compileOption']['tracingPropagation']:
 			## we should have trace file
 			tracefile = os.path.join(work_dir, 'llfi', 'baseline', 'llfi.stat.trace.prof.txt')
 			if os.path.isfile(tracefile) and os.path.getsize(tracefile):
@@ -31,26 +29,26 @@ def examineTraceFile(work_dir):
 
 def checkLLFIDir(work_dir, target_IR, prog_input):
 	llfi_dir = os.path.join(work_dir, "llfi")
-	if os.path.isdir(llfi_dir) == False:
+	if not os.path.isdir(llfi_dir):
 		return "FAIL: No ./llfi folder found!"
 	stats_dir = os.path.join(llfi_dir, "llfi_stat_output")
-	if os.path.isdir(stats_dir) == False:
+	if not os.path.isdir(stats_dir):
 		return "FAIL: No ./llfi/llfi_stat_output folder found!"
 	baseline_dir = os.path.join(llfi_dir, "baseline")
-	if os.path.isdir(baseline_dir) == False:
+	if not os.path.isdir(baseline_dir):
 		return "FAIL: No ./llfi/baseline folder found!"
 	prog_output_dir = os.path.join(llfi_dir, "prog_output")
-	if os.path.isdir(prog_output_dir) == False:
+	if not os.path.isdir(prog_output_dir):
 		return "FAIL: No ./llfi/prog_output folder found!"
 	std_output_dir = os.path.join(llfi_dir, "std_output")
-	if os.path.isdir(std_output_dir) == False:
+	if not os.path.isdir(std_output_dir):
 		return "FAIL: No ./llfi/std_output folder found!"
 
 	stats = [f for f in os.listdir(stats_dir)]
 	if len(stats) == 0:
 		return "FAIL: No stats file found!"
 
-	if examineTraceFile(work_dir) == False:
+	if not examineTraceFile(work_dir):
 		return "FAIL: Tracing was enabled byt trace file not generated!"
 
 	return "PASS"

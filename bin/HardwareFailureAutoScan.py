@@ -20,8 +20,6 @@ Note: If <filename> is a relative path instead of an absolute path, the base pat
 import os
 import subprocess
 import sys
-from subprocess import call
-import yaml
 
 script_path = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(os.path.join(script_path, '../config'))
@@ -42,11 +40,9 @@ basedir = ""
 
 def parseArgs(args):
    global basedir
-   global options
    global filename
-   
-   cwd = os.getcwd()
-   for i, arg in enumerate(args):
+
+   for arg in args:
        option = arg
        if os.path.isfile(arg):
            basedir = os.path.realpath(os.path.dirname(arg))
@@ -67,7 +63,6 @@ def usage(msg = None):
   sys.exit(retval)
 
 def runAutoScan(args):
-    global filename
     execlist = [optbin, "-load-pass-plugin", llfipasses, "--passes=HardwareFailureAutoScanPass", "-disable-output"]
     execlist.extend(args)
     print(' '.join(execlist))
@@ -76,7 +71,7 @@ def runAutoScan(args):
     if p.returncode != 0:
         print("ERROR: Hardware Auto scan pass return code !=0\n")
         sys.exit(p.returncode)
-    elif os.path.isfile(os.path.join(basedir, filename)) == False:
+    elif not os.path.isfile(os.path.join(basedir, filename)):
         print("ERROR: No output file found at: "+os.path.join(basedir, filename)+"!\n")
         sys.exit(1)
     return 0
@@ -84,7 +79,7 @@ def runAutoScan(args):
 
 def main(args):
     parseArgs(args)
-    r = runAutoScan(options)
+    runAutoScan(options)
     return 0
 
 if __name__ == "__main__":

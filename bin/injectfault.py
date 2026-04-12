@@ -78,8 +78,8 @@ def parseArgs(args):
 def checkInputYaml():
   global doc
   global defaultTimeout
+  global runOverride
   #Check for input.yaml's presence
-  yamldir = os.path.dirname(os.path.dirname(fi_exe))
   try:
     with open(os.path.join(basedir, 'input.yaml'), 'r') as f:
       doc = yaml.safe_load(f)
@@ -137,8 +137,6 @@ def config():
 
 ################################################################################
 def execute( execlist, timeout):
-  global outputfile
-  global return_codes
   print(' '.join(execlist))
   #get state of directory
   dirSnapshot()
@@ -245,7 +243,7 @@ def dirSnapshot():
 
 ################################################################################
 def readCycles():
-  global totalcycles, fi_ml_stats
+  global totalcycles
   with open("llfi.stat.prof.txt", "r") as profinput:
     while 1:
       line = profinput.readline()
@@ -270,54 +268,54 @@ def checkValues(key, val, var1 = None,var2 = None,var3 = None,var4 = None):
   #also checks for fi_bit usage by non-kernel users
   #optional var# are used for fi_bit's case only
   if key =='run_number':
-    assert isinstance(val, int)==True, key+" must be an integer in input.yaml"
+    assert isinstance(val, int),key+" must be an integer in input.yaml"
     assert int(val)>0, key+" must be greater than 0 in input.yaml"
 
   elif key == 'fi_type':
     pass
 
   elif key == 'fi_num_bits':
-    assert isinstance(val, int)==True, key+" must be an integer in input.yaml"
+    assert isinstance(val, int),key+" must be an integer in input.yaml"
     assert int(val) >=1, key+" must be greater than or equal to 1 in input.yaml"
 
   elif key == "window_len":
-    assert isinstance(val, int)==True, key+" must be an integer in input.yaml"
+    assert isinstance(val, int),key+" must be an integer in input.yaml"
     assert int(val) >=0, key+" must be greater than or equal to zero in input.yaml"
 
   elif key == "fi_max_multiple":
-    assert isinstance(val, int)==True, key+" must be an integer in input.yaml"
+    assert isinstance(val, int),key+" must be an integer in input.yaml"
     assert int(val) >0, key+" must be greater than zero in input.yaml"
     assert int(val) <=int(fi_max_multiple_default), key+" must be smaller than or equal to "+str(fi_max_multiple_default)+ " in input.yaml"
 
   elif key == "window_len_multiple":
-    assert isinstance(val, int)==True, key+" must be an integer in input.yaml"
+    assert isinstance(val, int),key+" must be an integer in input.yaml"
     assert int(val) >0, key+" must be greater than zero in input.yaml"
   elif key == "window_len_multiple_startindex":
-    assert isinstance(val, int)==True, key+" must be an integer in input.yaml"
+    assert isinstance(val, int),key+" must be an integer in input.yaml"
     assert int(val) >0, key+" must be greater than zero in input.yaml"
   elif key == "window_len_multiple_endindex":
-    assert isinstance(val, int)==True, key+" must be an integer in input.yaml"
+    assert isinstance(val, int),key+" must be an integer in input.yaml"
     assert int(val) >0, key+" must be greater than zero in input.yaml"
 
   elif key == 'fi_cycle':
-    assert isinstance(val, int)==True, key+" must be an integer in input.yaml"
+    assert isinstance(val, int),key+" must be an integer in input.yaml"
     assert int(val) > 0, key+" must be greater than 0 in input.yaml"
     assert int(val) <= int(totalcycles), key +" must be less than or equal to "+totalcycles.strip()+" in input.yaml"
 
   elif key == 'fi_index':
-    assert isinstance(val, int)==True, key+" must be an integer in input.yaml"
+    assert isinstance(val, int),key+" must be an integer in input.yaml"
     assert int(val) >= 0, key+" must be greater than or equal to 0 in input.yaml"
 
   elif key == 'fi_reg_index':
-    assert isinstance(val, int)==True, key+" must be an integer in input.yaml"
+    assert isinstance(val, int),key+" must be an integer in input.yaml"
     assert int(val) >= 0, key+" must be greater than or equal to 0 in input.yaml"
 
   elif key == 'fi_bit':
-    assert isinstance(val, int)==True, key+" must be an integer in input.yaml"
+    assert isinstance(val, int),key+" must be an integer in input.yaml"
     assert int(val) >= 0, key+" must be greater than or equal to 0 in input.yaml"
     if runOverride:
       pass
-    elif var1 != None and var1 > 1 and (var2 or var3) and var4:
+    elif var1 is not None and var1 > 1 and (var2 or var3) and var4:
       user_input = input("\nWARNING: Injecting into the same cycle(index), bit multiple times "+
                   "is redundant as it would yield the same result."+
                   "\nTo turn off this warning, please see Readme "+
@@ -328,13 +326,12 @@ def checkValues(key, val, var1 = None,var2 = None,var3 = None,var4 = None):
         sys.exit(1)
 
   elif key == 'fi_random_seed':
-    assert isinstance(val, int)==True, key+" must be an integer in input.yaml"
+    assert isinstance(val, int),key+" must be an integer in input.yaml"
     assert int(val) >= 0, key+" must be greater than or equal to 0 in input.yaml"
 
 ################################################################################
 def main(args):
-  global optionlist, outputfile, totalcycles,run_id, return_codes
-  global defaultTimeout
+  global outputfile, run_id, return_codes
 
   parseArgs(args)
   checkInputYaml()
@@ -535,7 +532,6 @@ def main(args):
         if need_to_calc_fi_cycle:
           fi_cycle = random.randint(1, int(totalcycles))
 
-        global fi_ml_stats
         with open("llfi.config.runtime.txt", 'w') as ficonfig_File:
           if 'fi_cycle' in locals() and len(fi_ml_stats)  > 0:
             # Find to which ML layer this fi_cycle belongs to.
@@ -575,7 +571,7 @@ def main(args):
             selected_num_of_injection = fi_max_multiple
             # The first fi_cycle location is already selected; find remaining cycles.
             fi_next_cycle = fi_cycle
-            for index_multiple in range(1, int(selected_num_of_injection)):
+            for _ in range(1, int(selected_num_of_injection)):
               fi_next_cycle = min(fi_next_cycle + random.randint(win_start_index, win_end_index), int(totalcycles))
               ficonfig_File.write("fi_next_cycle="+str(fi_next_cycle)+'\n')
               if fi_next_cycle == int(totalcycles):

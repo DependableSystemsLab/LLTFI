@@ -126,7 +126,7 @@ The codebase targets **LLVM 20**. Key API changes to keep in mind:
 - `getFirstNonPHI()` → `getFirstNonPHIIt()` (returns iterator)
 - `M.getGlobalList()` is private — use `new GlobalVariable(M, type, ...)` to insert directly
 - `itaniumDemangle(str)` takes a single `string_view` argument (old 4-arg form removed)
-- Most core passes use the **new pass manager** (`PassInfoMixin`, `llvmGetPassPluginInfo`); the `InstructionDuplication` pass still uses the legacy PM (`FunctionPass`, `RegisterPass<>`) and cannot be invoked via `opt` in LLVM 20
+- All passes use the **new pass manager** (`PassInfoMixin`, `llvmGetPassPluginInfo`); `InstructionDuplication` exposes both a legacy PM class and a new PM wrapper (`NewInstructionDuplicationPass`) registered as `"InstructionDuplicationPass"` in `SEDPasses.so`
 
 ---
 

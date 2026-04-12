@@ -29,7 +29,6 @@ https://github.com/DependableSystemsLab/LLFI/wiki/Using-FIDL-to-create-a-Custom-
 """
 
 import os
-import subprocess
 import sys
 import time
 import yaml
@@ -113,7 +112,7 @@ def parse_input(doc):
       elif 'src' in target:
         target_insts = target['src']
         if (set(target_insts) != set(trigger_insts) or # need to specify at least one src for each instruction
-            bool([target_inst for inst in target_insts.values() if inst == None or inst == [] or inst == '' or not isinstance(inst, list)])): # check that the specified src's aren't empty, an empty list, or an empty string, or isn't a list
+            bool([inst for inst in target_insts.values() if inst is None or inst == [] or inst == '' or not isinstance(inst, list)])): # check that the specified src's aren't empty, an empty list, or an empty string, or isn't a list
           raise Exception("Error: Invalid number/name of src's in Target, or Target sources are not specified as list!")
 
         if 'all' in target_insts and len(target_insts) != 1: 
@@ -338,12 +337,12 @@ def gen_and_write_selector(options) :
     sys.exit(1)
   
   # modify llvm_pass/CMakeLists.txt
-  l = read_file(cmakelists)
+  lines = read_file(cmakelists)
   try:
-    l.index('  software_failures/%s' % filename) 
+    lines.index('  software_failures/%s' % filename)
   except Exception:
-    l.insert(l.index("  #FIDL - DO NOT MODIFY UNTIL '#END'") + 1, '  software_failures/%s' % filename)
-    write_file(cmakelists, l)
+    lines.insert(lines.index("  #FIDL - DO NOT MODIFY UNTIL '#END'") + 1, '  software_failures/%s' % filename)
+    write_file(cmakelists, lines)
     
   print('Instrument module created.')
    
@@ -386,7 +385,7 @@ def gen_runtime_code(options, injectors_dict):
   insert = '_%s_%sFIDLInjector("%s(%s)",' % (f_class, f_mode, f_mode, f_class)
   
   if 'Corrupt' in action:
-    injector = 'BitCorruptionInjector';
+    injector = 'BitCorruptionInjector'
     code.append('static RegisterFaultInjector %s BitCorruptionInjector::getBitCorruptionInjector());' % (insert))
   elif 'Freeze' in action:
     injector = 'HangInjector'
@@ -504,17 +503,17 @@ def gen_custom_injector(insert, f_class, f_mode, custom_injector):
   
 # modify llvm_pass/CMakeLists.txt and remove the selector file
 def del_selectors(selectorfilenames):
-  l = read_file(cmakelists)
+  lines = read_file(cmakelists)
   for n in selectorfilenames:
     try:
-      l.remove('  software_failures/%s' % n) 
+      lines.remove('  software_failures/%s' % n)
     except Exception:
       pass
     try:
       os.remove(os.path.join(software_failures_passes_dir, n))
     except Exception:
       pass
-  write_file(cmakelists, l)
+  write_file(cmakelists, lines)
 
 def list_injectors(injector_type):
   all_injectors = read_input_yaml(all_injectors_yaml)
@@ -634,4 +633,3 @@ def main(args):
 
 if __name__ == '__main__':
   main(sys.argv[1:])
-

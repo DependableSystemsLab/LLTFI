@@ -329,7 +329,7 @@ def test_fault_injection():
         return result_list
 
     try:
-        llvm_paths = _import_llvm_paths()
+        _import_llvm_paths()
     except ImportError as e:
         result_list.append({'name': f'{prefix}/instrument',
             'result': f'FAIL: cannot import llvm_paths — {e}'})
@@ -413,7 +413,7 @@ def test_fault_injection():
         stat_dir = os.path.join(llfi_dir, 'llfi_stat_output')
         if not os.path.isdir(stat_dir):
             result_list.append({'name': f'{prefix}/inject',
-                'result': f'FAIL: no llfi_stat_output directory produced'})
+                'result': 'FAIL: no llfi_stat_output directory produced'})
         else:
             result_list.append({'name': f'{prefix}/inject', 'result': 'PASS'})
 

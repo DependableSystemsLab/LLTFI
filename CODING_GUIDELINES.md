@@ -87,10 +87,74 @@ Every non-void function must have a return statement on all code paths. Missing 
 
 ```cpp
 // Good
-virtual bool runOnModule(Module &M) {
+bool runOnModule(Module &M) override {
   // ... do work ...
   return false;  // ModulePass: return true only if IR was modified
 }
+```
+
+---
+
+## Virtual Methods and `override`
+
+In derived classes, always mark overriding methods with `override` and omit the redundant `virtual` keyword. This catches signature mismatches at compile time and makes the override relationship explicit.
+
+```cpp
+// Good — override makes the intent clear and catches errors
+class MyInstSelector : public HardwareFIInstSelector {
+  bool isInstFITarget(Instruction *inst) override;
+  void getCompileTimeInfo(std::map<std::string, std::string> &info) override;
+};
+
+// Bad — virtual is redundant; override is missing
+class MyInstSelector : public HardwareFIInstSelector {
+  virtual bool isInstFITarget(Instruction *inst);
+  virtual void getCompileTimeInfo(std::map<std::string, std::string> &info);
+};
+```
+
+Any abstract base class that may be deleted through a base pointer **must** declare a virtual destructor:
+
+```cpp
+class FIInstSelector {
+public:
+  virtual ~FIInstSelector() = default;  // Required — subclass instances may be deleted via base ptr
+  virtual bool isInstFITarget(Instruction *inst) = 0;
+  ...
+};
+```
+
+---
+
+## Variable Initialisation
+
+Initialise all local variables and pointers at the point of declaration. Uninitialised variables are undefined behaviour and are caught by the static analyser.
+
+```cpp
+// Good
+Instruction *insertPoint = nullptr;
+float bitSize = 0.0f;
+std::map<Instruction *, std::list<int> *> *regs_map = nullptr;
+
+// Bad — UB if the assignment is missed on any code path
+Instruction *insertPoint;
+float bitSize;
+```
+
+---
+
+## Container Emptiness
+
+Use `.empty()` to test whether a container has elements. Do not compare `.size()` to zero — it is less readable and some container types compute `size()` in O(n).
+
+```cpp
+// Good
+assert(!exitinsts.empty() && "Program has no exit point");
+if (reglist->empty()) return;
+
+// Bad
+assert(exitinsts.size() != 0 && "Program has no exit point");
+if (reglist->size() == 0) return;
 ```
 
 ---
@@ -100,10 +164,16 @@ virtual bool runOnModule(Module &M) {
 Use LLVM's type-checking utilities instead of C-style casts:
 
 ```cpp
-// Good
-if (isa<CallInst>(inst)) { ... }
+// Good — dyn_cast when the type may not match; always check for null
 CallInst *CI = dyn_cast<CallInst>(inst);
 if (CI) { ... }
+
+// Good — cast<> when the type is guaranteed (e.g. after an opcode or isa<> check);
+// it asserts on failure rather than returning null
+if (inst->getOpcode() == Instruction::Call) {
+  CallInst *CI = cast<CallInst>(inst);  // safe: opcode already verified
+  ...
+}
 
 // Bad
 if (dynamic_cast<CallInst*>(inst)) { ... }

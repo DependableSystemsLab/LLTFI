@@ -30,11 +30,11 @@ using namespace llvm;
 namespace llfi {
 //fidl_1
     public:
-    virtual void getCompileTimeInfo(std::map<std::string, std::string>& info) {
+    void getCompileTimeInfo(std::map<std::string, std::string>& info) override {
 //fidl_2
     }
     private:
-    virtual bool isInstFITarget(Instruction* inst) {
+    bool isInstFITarget(Instruction* inst) override {
 //fidl_3
     }
     

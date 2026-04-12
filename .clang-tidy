@@ -1,0 +1,62 @@
+# clang-tidy configuration for LLTFI
+#
+# Run from the repo root (requires compile_commands.json in the build dir):
+#   clang-tidy-20 -p /path/to/LLTFI-build <file.cpp>
+# Or use lint.sh which handles discovery automatically.
+#
+# To generate compile_commands.json, add -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+# to the cmake invocation inside ./setup, or run:
+#   cd /path/to/LLTFI-build && cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .
+
+---
+Checks: >
+  bugprone-*,
+  clang-analyzer-core.*,
+  clang-analyzer-cplusplus.*,
+  clang-analyzer-deadcode.*,
+  clang-analyzer-security.*,
+  cppcoreguidelines-init-variables,
+  cppcoreguidelines-narrowing-conversions,
+  cppcoreguidelines-slicing,
+  llvm-namespace-comment,
+  llvm-twine-local,
+  modernize-use-nullptr,
+  modernize-use-override,
+  modernize-redundant-void-arg,
+  performance-for-range-copy,
+  performance-implicit-conversion-in-loop,
+  performance-unnecessary-copy-initialization,
+  readability-const-return-type,
+  readability-container-size-empty,
+  readability-delete-null-pointer,
+  readability-misplaced-array-index,
+  readability-redundant-declaration,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-macro-parentheses,
+  -bugprone-branch-clone,
+  -bugprone-assignment-in-if-condition,
+  -clang-analyzer-optin.*,
+  -clang-analyzer-cplusplus.NewDelete,
+  -clang-diagnostic-macro-redefined,
+
+# Checks disabled because they fire heavily on legitimate LLVM-pass idioms:
+#   cppcoreguidelines-pro-bounds-*   — pointer arithmetic is normal in LLVM IR
+#   cppcoreguidelines-pro-type-*     — reinterpret_cast used in IR manipulation
+#   cppcoreguidelines-avoid-magic-numbers — opcode numbers are intentional
+#   cppcoreguidelines-pro-type-vararg    — some C APIs use varargs
+#   modernize-use-trailing-return-type   — not in our style guide
+
+WarningsAsErrors: ''
+
+HeaderFilterRegex: 'llvm_passes/.*\.h$'
+
+CheckOptions:
+  # Enforce nullptr over NULL
+  - key:   modernize-use-nullptr.NullMacros
+    value: 'NULL'
+
+  # Namespace comment style: closing brace should say "// namespace llfi"
+  - key:   llvm-namespace-comment.ShortNamespaceLines
+    value: '10'
+  - key:   llvm-namespace-comment.SpacesBeforeComments
+    value: '2'

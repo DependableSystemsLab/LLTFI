@@ -33,9 +33,9 @@ KNOWN PROBLEMS:
 	   be pre-built by running compile.sh in sample_programs/ml_sample_programs/
 	   vision_models/mnist/.
 
-	2. On Ubuntu systems where LLVM is installed via apt, clang is available as
-	   clang-15 (not clang) and will not be found automatically by ./setup. Pass
-	   -LLVM_GXX_BIN_DIR /usr/lib/llvm-15/bin explicitly in that case.
+	3. On Ubuntu systems where LLVM is installed via apt, clang is available as
+	   clang-20 (not clang) and will not be found automatically by ./setup. Pass
+	   -LLVM_GXX_BIN_DIR /usr/lib/llvm-20/bin explicitly in that case.
 
 Recommended Environment:
-	64-bit Linux (Ubuntu 20.04 or later), LLVM 15.0
+	64-bit Linux (Ubuntu 20.04 or later), LLVM 20.x

@@ -240,6 +240,41 @@ Infrastructure added:
 - `lint.sh` — unified C++ and Python lint runner (`./lint.sh --fix` auto-formats)
 - `CODING_GUIDELINES.md` — expanded with `override`, variable initialisation, container emptiness, and `cast<>` vs `dyn_cast<>` sections
 
+### C-8 — FIDL template cleanup, tracked software_failures files, and secondary pass on ML/SID code ✅ DONE
+
+A second audit of files not covered in C-7 (FIDL templates, the two hand-maintained
+files in `software_failures/` that predate the gitignore pattern, and the ML/SID passes)
+found and fixed the following:
+
+**FIDL templates** (`tools/FIDL/config/Target*Template.cpp`, `NewInjectorTemplate.cpp`):
+All four templates had `virtual` on override methods, `dyn_cast<>` after `isa<>` checks,
+`.size() == 0` instead of `.empty()`, and `std::string(getName())` instead of
+`.getName().str()`. Fixed in all templates; regenerated all 37 selectors.
+
+**Hand-maintained tracked files in `llvm_passes/software_failures/`** (predated gitignore):
+
+| File | Fixes |
+|------|-------|
+| `_SoftwareFaultRegSelectors.h` | `virtual` → `override` on 3 methods |
+| `_SoftwareFaultRegSelectors.cpp` | `dyn_cast` → `cast<>`; `== false` → `!`; simplified boolean returns |
+| `_Timing_HighFrequentEventSelector.cpp` | `virtual` → `override`; `NULL` → `nullptr`; `dyn_cast` → `cast<>`; `.getName().str()`; `.empty()` |
+
+**ML fault injection and instruction duplication passes**:
+
+| File | Fix |
+|------|-----|
+| `ProfilingPass.cpp` | `dyn_cast<CallInst>` → `cast<CallInst>` after `isa<>` check in `insertCallForMLFIStats()` |
+| `InstructionDuplication.cpp` | `for (auto insVector :` → `for (const auto& insVector :` to avoid copying inner vectors; removed dead `return false;` after exhaustive if/else |
+
+**Documentation fixes**:
+
+| File | Fix |
+|------|-----|
+| `caveats.txt` | LLVM version references updated 15 → 20; duplicate item number fixed |
+| `llvm_passes/instruction_duplication/README.md` | Final `opt` invocation updated from legacy PM `-always-inline` to `--passes=always-inline` (legacy PM removed in LLVM 17) |
+| `llvm_passes/instruction_duplication/shared_lib/build.sh` | Uses `LLVM_GXX_BIN_DIR` env var to find versioned `clang` (fixes failure on Ubuntu with apt-installed LLVM where only `clang-20` exists) |
+| `llvm_passes/instruction_duplication/shared_lib/compile_shrd_lib.sh` | Same fix for `clang++` |
+
 ---
 
 ## Recommended order of work
@@ -252,6 +287,8 @@ H-1  Install LLVM 17+ and attempt initial build           ✅ DONE
   └─> C-5  Fix SoftwareFailureAutoScan.py                 ✅ DONE
   └─> C-6  Iterative build-fix loop                       ✅ DONE
   └─> C-7  C++ static analysis and formatting cleanup     ✅ DONE
+  └─> C-8  FIDL templates, tracked software_failures      ✅ DONE
+            files, ML/SID secondary pass, doc fixes
 H-2  Review IRBuilder insertion-point diffs               Pending
   └─> C-3  Migrate InstructionDuplication pass            ✅ DONE
 H-3  Validate InstructionDuplication on onnx-mlir IR      Pending
@@ -276,6 +313,7 @@ H-4  Final test sign-off                                  ✅ DONE (21/21)
 | C-5: `SoftwareFailureAutoScan.py` flags | Claude Code | ✅ Done | — |
 | C-6: Iterative build-fix loop | Claude Code | ✅ Done | — |
 | C-7: C++ static analysis and formatting cleanup | Claude Code | ✅ Done | — |
+| C-8: FIDL templates, ML/SID, doc fixes | Claude Code | ✅ Done | — |
 | **Total Claude Code time remaining** | | | **None — all done** |
 
 Without Claude Code, a human developer would need approximately **2–3 weeks**

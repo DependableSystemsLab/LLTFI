@@ -31,12 +31,12 @@ namespace llfi {
 //fidl_1
     public:
 //fidl_2
-        if (funcNamesTargetArgs.size() == 0) {
+        if (funcNamesTargetArgs.empty()) {
 //fidl_3
         }
     }
     
-    virtual void getCompileTimeInfo(std::map<std::string, std::string>& info) {
+    void getCompileTimeInfo(std::map<std::string, std::string>& info) override {
 //fidl_4
         for (std::map<std::string, std::set<int> >::iterator MI = funcNamesTargetArgs.begin(); MI != funcNamesTargetArgs.end(); MI++) {
             info["targets"] += MI->first + "()/";
@@ -61,18 +61,18 @@ namespace llfi {
     private:
     static std::map<std::string, std::set<int> > funcNamesTargetArgs;
     
-    virtual bool isInstFITarget(Instruction* inst) {
+    bool isInstFITarget(Instruction* inst) override {
         if (!isa<CallInst>(inst)) {
             return false;
         }
-        
-        CallInst* CI = dyn_cast<CallInst>(inst);
+
+        CallInst* CI = cast<CallInst>(inst);
         Function* called_func = CI->getCalledFunction();
-        if (called_func == nullptr) { 
+        if (called_func == nullptr) {
             return false;
         }
-        
-        std::string func_name = std::string(called_func->getName());
+
+        std::string func_name = called_func->getName().str();
 //fidl_7
     }
     

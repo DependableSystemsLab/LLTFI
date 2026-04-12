@@ -21,14 +21,14 @@ namespace llfi {
     class _Timing_HighFrequentEventInstSelector : public SoftwareFIInstSelector {
         public:
         _Timing_HighFrequentEventInstSelector() {
-            if (funcNames.size() == 0) {
+            if (funcNames.empty()) {
                 funcNames.insert(std::string("fread"));
                 funcNames.insert(std::string("fopen"));
                 funcNames.insert(std::string("fwrite"));
             }
         }
             
-        virtual void getCompileTimeInfo(std::map<std::string, std::string>& info){
+        void getCompileTimeInfo(std::map<std::string, std::string>& info) override {
             info["failure_class"] = "Timing";
             info["failure_mode"] = "HighFrequentEvent";
             for(std::set<std::string>::iterator SI = funcNames.begin(); SI != funcNames.end(); SI++) {
@@ -41,14 +41,14 @@ namespace llfi {
         private:
         static std::set<std::string> funcNames;
 
-        virtual bool isInstFITarget(Instruction* inst) {
+        bool isInstFITarget(Instruction* inst) override {
             if (isa<CallInst>(inst)) {
-                CallInst* CI = dyn_cast<CallInst>(inst);
+                CallInst* CI = cast<CallInst>(inst);
                 Function* called_func = CI->getCalledFunction();
-                if (called_func == NULL) {
+                if (called_func == nullptr) {
                     return false;
                 }
-                std::string func_name = std::string(called_func->getName());
+                std::string func_name = called_func->getName().str();
                 if (funcNames.find(func_name) != funcNames.end()) {
                     return true;
                 } else {
@@ -64,16 +64,16 @@ namespace llfi {
 
     class _Timing_HighFrequentEventRegSelector : public SoftwareFIRegSelector {
         private:
-        virtual bool isRegofInstFITarget(Value *reg, Instruction *inst) {
+        bool isRegofInstFITarget(Value *reg, Instruction *inst) override {
             if (isa<CallInst>(inst)) {
-                CallInst* CI = dyn_cast<CallInst>(inst);
+                CallInst* CI = cast<CallInst>(inst);
                 Function* called_func = CI->getCalledFunction();
-                if (called_func == NULL) {
+                if (called_func == nullptr) {
                     return false;
                 }
                 return reg == CI; // selects dst register
             } else if (isa<ReturnInst>(inst)) {
-                ReturnInst* RI = dyn_cast<ReturnInst>(inst);
+                ReturnInst* RI = cast<ReturnInst>(inst);
                 return reg == RI->getReturnValue();
             } else {
                 return false;

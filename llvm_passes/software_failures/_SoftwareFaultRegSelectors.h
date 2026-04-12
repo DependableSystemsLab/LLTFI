@@ -21,20 +21,20 @@ namespace llfi {
 	private:
 		int pos_argument;
 		bool specified_arg;
-		virtual bool isRegofInstFITarget(Value *reg, Instruction *inst);
-		virtual bool isRegofInstFITarget(Value* reg, Instruction* inst, int pos);
+		bool isRegofInstFITarget(Value *reg, Instruction *inst) override;
+		bool isRegofInstFITarget(Value* reg, Instruction* inst, int pos) override;
 	};
-	
+
 	class FuncDestRegSelector: public SoftwareFIRegSelector {
 	private:
-		virtual bool isRegofInstFITarget(Value *reg, Instruction *inst);
-		
+		bool isRegofInstFITarget(Value *reg, Instruction *inst) override;
+
 	};
 
 	class RetValRegSelector: public SoftwareFIRegSelector {
 	private:
-		virtual bool isRegofInstFITarget(Value *reg, Instruction *inst);
-		
+		bool isRegofInstFITarget(Value *reg, Instruction *inst) override;
+
 	};
 
 }

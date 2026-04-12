@@ -2,21 +2,17 @@
 
 using namespace std;
 namespace llfi {
-    bool FuncArgRegSelector::isRegofInstFITarget(Value *reg, Instruction *inst){    
-        if(isa<CallInst>(inst) == false){
+    bool FuncArgRegSelector::isRegofInstFITarget(Value *reg, Instruction *inst) {
+        if (!isa<CallInst>(inst))
             return false;
-        }else{
-            CallInst* CI = dyn_cast<CallInst>(inst);
-            if(this->specified_arg == true){
-                if(reg == CI->getArgOperand(this->pos_argument)){
-                    return true;
-                }else   return false;
-            }else{
-                for(int i = 0; i<(int)CI->arg_size(); i++){
-                    if(reg == CI->getArgOperand(i)) return true;
-                }
-                return false;
+        CallInst* CI = cast<CallInst>(inst);
+        if (this->specified_arg) {
+            return reg == CI->getArgOperand(this->pos_argument);
+        } else {
+            for (int i = 0; i < (int)CI->arg_size(); i++) {
+                if (reg == CI->getArgOperand(i)) return true;
             }
+            return false;
         }
     }
     bool FuncArgRegSelector::isRegofInstFITarget(Value *reg, Instruction *inst, int pos){
@@ -25,21 +21,17 @@ namespace llfi {
         return false;
     }
 
-    bool FuncDestRegSelector::isRegofInstFITarget(Value *reg, Instruction *inst){    
-        if(isa<CallInst>(inst) == false){
+    bool FuncDestRegSelector::isRegofInstFITarget(Value *reg, Instruction *inst) {
+        if (!isa<CallInst>(inst))
             return false;
-        }else{
-            if(reg == inst) return true;
-            else    return false;
-        }
-    }    
+        return reg == inst;
+    }
 
-    bool RetValRegSelector::isRegofInstFITarget(Value *reg, Instruction *inst){ 
-        if(isa<ReturnInst>(inst)){
-            ReturnInst* RI = dyn_cast<ReturnInst>(inst);
-            if(reg == RI->getReturnValue()) return true;
-            else    return false;
-        }else   return false;
+    bool RetValRegSelector::isRegofInstFITarget(Value *reg, Instruction *inst) {
+        if (!isa<ReturnInst>(inst))
+            return false;
+        ReturnInst* RI = cast<ReturnInst>(inst);
+        return reg == RI->getReturnValue();
     }
 
     static RegisterFIRegSelector A("FuncArgRegSelector", new FuncArgRegSelector());

@@ -20,7 +20,6 @@ import sys
 import os
 import re
 import getopt
-import distutils.core
 import signal
 import subprocess
 import shutil
@@ -35,7 +34,6 @@ required_configs = {
 }
 optional_configs = {
   "LLVM_GXX_BIN_DIR": "",
-  "JAVA_HOME_DIR": "",
 }
 
 run_tests_flag = False
@@ -92,7 +90,7 @@ def checkEnvironment():
 # system
   if sys.platform != "linux" and sys.platform != "linux2" and sys.platform != "darwin":
     print("ERROR: LLFI does not support your platform " + sys.platform + "\n", file=sys.stderr)
-    sys.sys.exit(1)
+    sys.exit(1)
 
 # prerequisites
   has_error = False
@@ -138,7 +136,7 @@ def checkEnvironment():
 
   if has_error:
     print("Please fix the above error(s) before building LLFI.", file=sys.stderr)
-    sys.sys.exit(1)
+    sys.exit(1)
 
 
 
@@ -149,22 +147,20 @@ def build():
   llvm_paths_cmake = os.path.join(script_path, "config/llvm_paths.cmake")
   llvm_paths_py = os.path.join(script_path, "config/llvm_paths.py")
   llvm_paths_make = os.path.join(script_path, "config/llvm_paths.make")
-  java_paths_cmake = os.path.join(script_path, "config/java_paths.cmake")
-  java_paths_py = os.path.join(script_path, "config/java_paths.py")
-  
+
   # build all default software failures
-  #fidl_path =  os.path.join(script_path, 'tools/FIDL/FIDL-Algorithm.py')
-  #execlist = [fidl_path, '-a', 'default']
-  #print('-- Generating default software failures with %s...' % (fidl_path))
-  #p = subprocess.call(execlist, stdout = open(os.devnull, 'wb'))
-  #if p != 0:
-  #  print('-- Failed!')
-  #  sys.exit(p)
-  #else:
-  #  print('-- Success!')
+  fidl_path = os.path.join(script_path, 'tools/FIDL/FIDL-Algorithm.py')
+  execlist = [fidl_path, '-a', 'default']
+  print('-- Generating default software failures with %s...' % (fidl_path))
+  with open(os.devnull, 'wb') as devnull:
+    p = subprocess.call(execlist, stdout=devnull)
+  if p != 0:
+    print('-- Failed!')
+    sys.exit(p)
+  else:
+    print('-- Success!')
   
   # write cmake config file for llvm paths
-  cmake_File = open(llvm_paths_cmake, "w")
   LLVM_DST_ROOT = os.path.realpath(required_configs['LLVM_DST_ROOT'])
   LLVM_SRC_ROOT = os.path.realpath(required_configs['LLVM_SRC_ROOT'])
   if optional_configs['LLVM_GXX_BIN_DIR'] != "":
@@ -172,23 +168,21 @@ def build():
   else:
     LLVM_GXX_BIN_DIR = ""
 
-  cmake_File.write("set(LLVM_DST_ROOT " + LLVM_DST_ROOT + ")\n")
-  cmake_File.write("set(LLVM_SRC_ROOT " + LLVM_SRC_ROOT + ")\n")
-  cmake_File.close()
+  with open(llvm_paths_cmake, "w") as cmake_File:
+    cmake_File.write("set(LLVM_DST_ROOT " + LLVM_DST_ROOT + ")\n")
+    cmake_File.write("set(LLVM_SRC_ROOT " + LLVM_SRC_ROOT + ")\n")
 
   # write python config file for llvm paths
-  py_File = open(llvm_paths_py, "w")
-  py_File.write("LLVM_DST_ROOT = " + '"' + LLVM_DST_ROOT + '"\n')
-  py_File.write("LLVM_SRC_ROOT = " + '"' + LLVM_SRC_ROOT + '"\n')
-  py_File.write("LLVM_GXX_BIN_DIR = " + '"' + LLVM_GXX_BIN_DIR + '"\n')
-  py_File.close()
+  with open(llvm_paths_py, "w") as py_File:
+    py_File.write("LLVM_DST_ROOT = " + '"' + LLVM_DST_ROOT + '"\n')
+    py_File.write("LLVM_SRC_ROOT = " + '"' + LLVM_SRC_ROOT + '"\n')
+    py_File.write("LLVM_GXX_BIN_DIR = " + '"' + LLVM_GXX_BIN_DIR + '"\n')
 
   # write unix make config file for llvm paths
-  make_File = open(llvm_paths_make, 'w')
-  make_File.write("LLVM_DST_ROOT = " + LLVM_DST_ROOT + '\n')
-  make_File.write("LLVM_SRC_ROOT = " + LLVM_SRC_ROOT + '\n')
-  make_File.write("LLVM_GXX_BIN_DIR = " + LLVM_GXX_BIN_DIR + '\n')
-  make_File.close()
+  with open(llvm_paths_make, 'w') as make_File:
+    make_File.write("LLVM_DST_ROOT = " + LLVM_DST_ROOT + '\n')
+    make_File.write("LLVM_SRC_ROOT = " + LLVM_SRC_ROOT + '\n')
+    make_File.write("LLVM_GXX_BIN_DIR = " + LLVM_GXX_BIN_DIR + '\n')
 
 
   # build

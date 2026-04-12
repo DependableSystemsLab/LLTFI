@@ -108,7 +108,8 @@ if [[ $RUN_CPP -eq 1 ]]; then
       CPP_SOURCES=$(find "${REPO_ROOT}/llvm_passes" -name '*.cpp' \
         | grep -v 'software_failures/_')
       for f in $CPP_SOURCES; do
-        result=$("$CTIDY" -p "$BUILD_DIR" --quiet "$f" 2>&1 || true)
+        result=$("$CTIDY" -p "$BUILD_DIR" --quiet "$f" 2>&1 \
+          | grep -v "^[0-9]* warnings generated\.$" || true)
         if [[ -n "$result" ]]; then
           echo "$result"
           TIDY_ISSUES=$((TIDY_ISSUES + 1))

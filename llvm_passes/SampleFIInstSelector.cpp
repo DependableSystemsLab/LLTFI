@@ -1,7 +1,7 @@
-#include "llvm/IR/Instructions.h"
-
-#include "FIInstSelector.h"
 #include "FICustomSelectorManager.h"
+#include "FIInstSelector.h"
+
+#include "llvm/IR/Instructions.h"
 
 using namespace llvm;
 
@@ -12,16 +12,17 @@ namespace llfi {
  */
 // TODO: enable custom selctor to have more sources of options, e.g. read from
 // config file
-class SampleFIInstSelector: public HardwareFIInstSelector {
- private:
-  virtual bool isInstFITarget(Instruction *inst) {
+class SampleFIInstSelector : public HardwareFIInstSelector {
+private:
+  bool isInstFITarget(Instruction* inst) override {
     if (inst->getParent()->getParent()->getName() == "main")
       return true;
     else
       return false;
   }
- public:
- 	virtual void getCompileTimeInfo(std::map<std::string, std::string>& info){
+
+public:
+  void getCompileTimeInfo(std::map<std::string, std::string>& info) override {
     info["failure_class"] = "HardwareFault";
     info["failure_mode"] = "OnlyMain";
     info["targets"] = "<instructions in main() function>";
@@ -30,4 +31,4 @@ class SampleFIInstSelector: public HardwareFIInstSelector {
 };
 
 static RegisterFIInstSelector X("onlymain", new SampleFIInstSelector());
-}
+} // namespace llfi

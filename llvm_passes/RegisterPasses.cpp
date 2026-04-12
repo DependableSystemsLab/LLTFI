@@ -1,60 +1,59 @@
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
 
-#include "core/ProfilingPass.h"
-#include "core/GenLLFIIndexPass.h"
 #include "core/FaultInjectionPass.h"
-#include "core/LLFIDotGraphPass.h"
+#include "core/GenLLFIIndexPass.h"
 #include "core/InstTracePass.h"
+#include "core/LLFIDotGraphPass.h"
+#include "core/ProfilingPass.h"
 
 using namespace llvm;
 
 namespace llfi {
-  // Forward declarations for auto-scan free functions defined in their
-  // respective .cpp translation units.
-  void runSoftwareFailureAutoScan(llvm::Module &M);
-  void runHardwareFailureAutoScan(llvm::Module &M);
+// Forward declarations for auto-scan free functions defined in their
+// respective .cpp translation units.
+void runSoftwareFailureAutoScan(llvm::Module& M);
+void runHardwareFailureAutoScan(llvm::Module& M);
 
-  // New PM wrappers for the auto-scan passes.
-  struct NewSoftwareFailureAutoScanPass
-      : PassInfoMixin<NewSoftwareFailureAutoScanPass> {
-    PreservedAnalyses run(Module &M, ModuleAnalysisManager &) {
-      runSoftwareFailureAutoScan(M);
-      return PreservedAnalyses::all();
-    }
-    static bool isRequired() { return true; }
-  };
+// New PM wrappers for the auto-scan passes.
+struct NewSoftwareFailureAutoScanPass
+    : PassInfoMixin<NewSoftwareFailureAutoScanPass> {
+  PreservedAnalyses run(Module& M, ModuleAnalysisManager&) {
+    runSoftwareFailureAutoScan(M);
+    return PreservedAnalyses::all();
+  }
+  static bool isRequired() { return true; }
+};
 
-  struct NewHardwareFailureAutoScanPass
-      : PassInfoMixin<NewHardwareFailureAutoScanPass> {
-    PreservedAnalyses run(Module &M, ModuleAnalysisManager &) {
-      runHardwareFailureAutoScan(M);
-      return PreservedAnalyses::all();
-    }
-    static bool isRequired() { return true; }
-  };
+struct NewHardwareFailureAutoScanPass
+    : PassInfoMixin<NewHardwareFailureAutoScanPass> {
+  PreservedAnalyses run(Module& M, ModuleAnalysisManager&) {
+    runHardwareFailureAutoScan(M);
+    return PreservedAnalyses::all();
+  }
+  static bool isRequired() { return true; }
+};
 
-  //-----------------------------------------------------------------------------
-  // New PM Registration
-  //-----------------------------------------------------------------------------
-  llvm::PassPluginLibraryInfo getLLFIPassPluginInfo() {
-    return {LLVM_PLUGIN_API_VERSION, "llfi_passes", LLVM_VERSION_STRING,
-            [](PassBuilder &PB) {
+//-----------------------------------------------------------------------------
+// New PM Registration
+//-----------------------------------------------------------------------------
+llvm::PassPluginLibraryInfo getLLFIPassPluginInfo() {
+  return {LLVM_PLUGIN_API_VERSION, "llfi_passes", LLVM_VERSION_STRING,
+          [](PassBuilder& PB) {
+            // For GenLLFIIndexPass
+            PB.registerPipelineParsingCallback(
+                [](StringRef Name, ModulePassManager& MPM,
+                   ArrayRef<PassBuilder::PipelineElement>) {
+                  if (Name == "genllfiindexpass") {
+                    MPM.addPass(llfi::GenLLFIIndexPass());
+                    return true;
+                  }
+                  return false;
+                });
 
-              // For GenLLFIIndexPass
-              PB.registerPipelineParsingCallback(
-                  [](StringRef Name, ModulePassManager &MPM,
-                     ArrayRef<PassBuilder::PipelineElement>) {
-                    if (Name == "genllfiindexpass") {
-                      MPM.addPass(llfi::GenLLFIIndexPass());
-                      return true;
-                    }
-                    return false;
-                  });
-
-              // For ProfilingPass
-              PB.registerPipelineParsingCallback(
-                [](StringRef Name, ModulePassManager &MPM,
+            // For ProfilingPass
+            PB.registerPipelineParsingCallback(
+                [](StringRef Name, ModulePassManager& MPM,
                    ArrayRef<PassBuilder::PipelineElement>) {
                   if (Name == "profilingpass") {
                     MPM.addPass(llfi::ProfilingPass());
@@ -63,9 +62,9 @@ namespace llfi {
                   return false;
                 });
 
-              // For FaultInjectionPass
-              PB.registerPipelineParsingCallback(
-                [](StringRef Name, ModulePassManager &MPM,
+            // For FaultInjectionPass
+            PB.registerPipelineParsingCallback(
+                [](StringRef Name, ModulePassManager& MPM,
                    ArrayRef<PassBuilder::PipelineElement>) {
                   if (Name == "faultinjectionpass") {
                     MPM.addPass(llfi::NewFaultInjectionPass());
@@ -74,9 +73,9 @@ namespace llfi {
                   return false;
                 });
 
-              // For DotGraphPass
-              PB.registerPipelineParsingCallback(
-                [](StringRef Name, ModulePassManager &MPM,
+            // For DotGraphPass
+            PB.registerPipelineParsingCallback(
+                [](StringRef Name, ModulePassManager& MPM,
                    ArrayRef<PassBuilder::PipelineElement>) {
                   if (Name == "dotgraphpass") {
                     MPM.addPass(llfi::NewLLFIDotGraph());
@@ -85,9 +84,9 @@ namespace llfi {
                   return false;
                 });
 
-              // For InstructionTracePass
-              PB.registerPipelineParsingCallback(
-                [](StringRef Name, ModulePassManager &MPM,
+            // For InstructionTracePass
+            PB.registerPipelineParsingCallback(
+                [](StringRef Name, ModulePassManager& MPM,
                    ArrayRef<PassBuilder::PipelineElement>) {
                   if (Name == "insttracepass") {
                     MPM.addPass(llfi::NewInstTrace());
@@ -96,9 +95,9 @@ namespace llfi {
                   return false;
                 });
 
-              // For SoftwareFailureAutoScanPass
-              PB.registerPipelineParsingCallback(
-                [](StringRef Name, ModulePassManager &MPM,
+            // For SoftwareFailureAutoScanPass
+            PB.registerPipelineParsingCallback(
+                [](StringRef Name, ModulePassManager& MPM,
                    ArrayRef<PassBuilder::PipelineElement>) {
                   if (Name == "SoftwareFailureAutoScanPass") {
                     MPM.addPass(llfi::NewSoftwareFailureAutoScanPass());
@@ -107,9 +106,9 @@ namespace llfi {
                   return false;
                 });
 
-              // For HardwareFailureAutoScanPass
-              PB.registerPipelineParsingCallback(
-                [](StringRef Name, ModulePassManager &MPM,
+            // For HardwareFailureAutoScanPass
+            PB.registerPipelineParsingCallback(
+                [](StringRef Name, ModulePassManager& MPM,
                    ArrayRef<PassBuilder::PipelineElement>) {
                   if (Name == "HardwareFailureAutoScanPass") {
                     MPM.addPass(llfi::NewHardwareFailureAutoScanPass());
@@ -117,11 +116,11 @@ namespace llfi {
                   }
                   return false;
                 });
-            }};
-  }
-
-  extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo
-  llvmGetPassPluginInfo() {
-    return getLLFIPassPluginInfo();
-  }
+          }};
 }
+
+extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo
+llvmGetPassPluginInfo() {
+  return getLLFIPassPluginInfo();
+}
+} // namespace llfi

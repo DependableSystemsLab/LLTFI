@@ -60,21 +60,41 @@ miscompiled IR. A human who understands the intended pass semantics should
 review these diffs specifically before merging. The key files to scrutinise
 are `FaultInjectionPass.cpp` and `InstTracePass.cpp`.
 
-### H-3 — Validate InstructionDuplication against onnx-mlir generated IR
-**Estimated time: 2–4 hours**
+### H-3 — Provide onnx-mlir environment for real-model validation
+**Estimated time: 1–2 hours**
 
-After the InstructionDuplication pass is migrated to the new PM (task C-3),
-its behaviour must be verified on real onnx-mlir output, not just the
-synthetic LLVM IR used in the unit tests. This requires onnx-mlir to be
-available and the mnist sample model to be compiled. The unit tests in
-`test_instruction_duplication.py` check structural correctness; this step
-validates end-to-end numerical correctness of the duplicated arithmetic.
+The only step that requires a human is making onnx-mlir available:
 
-Steps:
 1. Install onnx-mlir or set `ONNX_MLIR_BUILD` to point at an existing build.
-2. Run `compile.sh` in `sample_programs/ml_sample_programs/vision_models/mnist/`.
-3. Apply the InstructionDuplication pass to the resulting `model.ll` and run
-   the model, comparing output against the non-duplicated baseline.
+2. Run `compile.sh` in `sample_programs/ml_sample_programs/vision_models/mnist/`
+   to produce `model.ll`.
+3. Build `SIDHelperFunctions.ll` (needed for end-to-end numerical run):
+   ```bash
+   cd llvm_passes/instruction_duplication/shared_lib
+   sh compile_shrd_lib.sh
+   ```
+
+Once `model.ll` and `SIDHelperFunctions.ll` exist, Claude Code (or the test
+suite) takes over automatically. Two tests in `test_instruction_duplication.py`
+cover the rest:
+
+- **`real_model_structural`** — applies the pass to the real onnx-mlir IR and
+  verifies that `compareFloatValues` calls are inserted and arithmetic
+  instructions are duplicated. This proves the pass handles genuine onnx-mlir
+  IR patterns, not just the synthetic fixtures used in the seven other tests.
+- **`real_model_end_to_end`** — runs both the baseline `model.ll` and the
+  duplicated+inlined model through `lli`, then asserts their outputs are
+  identical. Because `compareFloatValues(x, x) == x` (bitwise AND of equal
+  floats is the float itself), the outputs must match when no fault is injected.
+  Any divergence indicates a pass transformation bug.
+
+Both tests SKIP gracefully when their prerequisites are absent, so the suite
+continues to report 0 failures even before onnx-mlir is set up. Run them via:
+
+```bash
+cd /path/to/LLTFI-build/test_suite
+python3 SCRIPTS/test_instruction_duplication.py
+```
 
 ### H-4 — Final test sign-off ✅ DONE
 
@@ -303,9 +323,9 @@ H-4  Final test sign-off                                  ✅ DONE (21/21)
 |------|-------|--------|---------------|
 | H-1: Install LLVM 20 and update build config | Human | ✅ Done | 2–4 hours |
 | H-2: Review IRBuilder insertion-point correctness | Human | Pending | 2–3 hours |
-| H-3: Validate InstructionDuplication on onnx-mlir | Human | Pending | 2–4 hours |
+| H-3: Provide onnx-mlir environment (install + compile.sh) | Human | Pending | 1–2 hours |
 | H-4: Final test sign-off | Human | ✅ Done (21/21) | — |
-| **Total human time remaining** | | | **~4–7 hours** |
+| **Total human time remaining** | | | **~3–5 hours** |
 | C-1: Deprecated instruction-construction API | Claude Code | ✅ Done | — |
 | C-2: Iterator return-type fixes | Claude Code | ✅ Done | — |
 | C-3: InstructionDuplication new PM migration | Claude Code | ✅ Done | — |

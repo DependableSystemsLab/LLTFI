@@ -145,6 +145,37 @@ The following files appear as untracked after running tests and should not be st
 
 ---
 
+## Linting
+
+Run from the source tree root:
+
+```bash
+bash lint.sh          # check only
+bash lint.sh --fix    # auto-fix clang-format issues in-place
+bash lint.sh --cpp    # C++ checks only
+bash lint.sh --python # Python checks only
+```
+
+**Requirements:**
+- C++: `clang-format-20` and `clang-tidy-20` (`apt install clang-format-20 clang-tidy-20`)
+- C++ static analysis also needs `compile_commands.json` in the build root:
+  ```bash
+  cd /home/karthik/Programs/LLTFI-build && cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .
+  ```
+- Python: `flake8` and `flake8-bugbear` (`pip install flake8 flake8-bugbear`)
+
+**clang-tidy config (`.clang-tidy`):** Checks include `modernize-use-override`, `readability-container-size-empty`, `cppcoreguidelines-init-variables`, `bugprone-*`, `clang-analyzer-core.*`, `performance-*`, and others. The following are intentionally disabled because they fire on legitimate LLVM patterns or system-header code:
+
+| Disabled check | Reason |
+|---|---|
+| `cppcoreguidelines-slicing` | `cl::opt<string>` to `string` is idiomatic LLVM (use `.getValue()` instead) |
+| `clang-analyzer-optin.*` | Fires on standard LLVM pass framework patterns |
+| `clang-analyzer-cplusplus.NewDelete` | False positives from LLVM's internal memory management |
+| `clang-diagnostic-macro-redefined` | Suppress `DEBUG_TYPE` conflicts with LLVM headers |
+| `bugprone-assignment-in-if-condition` | `while ((pos = s.find(x)) != npos)` is idiomatic C++ |
+
+---
+
 ## Code style
 
 See `CODING_GUIDELINES.md` for the full style guide. Key points:
@@ -153,6 +184,8 @@ See `CODING_GUIDELINES.md` for the full style guide. Key points:
 - Use `nullptr`, not `NULL`
 - Every header needs `#ifndef` include guards
 - Missing `return` in `bool runOnModule(...)` is UB — always return `false` unless IR was modified
+- Derived-class overrides: use `override`, omit `virtual`; abstract base classes need `virtual ~Base() = default;`
+- Use `cast<>` (asserts) when type is guaranteed; `dyn_cast<>` (returns null) when it may not match
 - Use `except Exception:` in Python; in C++ use `errs()` for pass diagnostics
 
 **Python:**

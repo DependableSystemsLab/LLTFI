@@ -10,14 +10,12 @@ Prerequisite:
 You need to run \'batchInstrument\' first, then run %(prog)s under the same directory, the directory that contains multiple sub directories for different software faults. Same as \'batchInstrument\', %(prog)s is only applicable when multiple software failure modes are defined in input.yaml.
 """
 
-import sys, os, shutil
+import sys, os
 import yaml
 import subprocess
 
 prog = os.path.basename(sys.argv[0])
 script_path = os.path.realpath(os.path.dirname(__file__))
-sys.path.append(os.path.join(script_path, '../config'))
-import llvm_paths
 
 injectfault_script = os.path.join(script_path, 'injectfault')
 # basedir and options are assigned in parseArgs(args)
@@ -26,8 +24,6 @@ options = []
 
 def parseArgs(args):
 	global basedir
-	global options
-	cwd = os.getcwd()
 	for arg in args:
 		option = arg
 		if os.path.isfile(arg):
@@ -94,7 +90,6 @@ def callInjectfault(model_list, *argv):
 	return num_failed
 
 def main(*argv):
-	global options
 	parseArgs(argv)
 	master_yaml_dict, model_list = phraseMasterYaml()
 	r = callInjectfault(model_list, *options)

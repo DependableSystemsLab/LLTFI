@@ -87,7 +87,6 @@ def verbosePrint(msg, verbose):
 
 
 def parseArgs(args):
-  global options
   argid = 0
   while argid < len(args):
     arg = args[argid]
@@ -226,7 +225,7 @@ def readCompileOption():
         elif methodName == "customInstselector":
           prefix = "-fiinstselectorname="
           # For customInstselector, only one instruction selector is allowed
-          if custom_instselector_defined == True:
+          if custom_instselector_defined:
             print("\nERROR: '\'instrument\' only support one customInstselector included in input.yaml.")
             print("To apply a list of fault models/failure modes, please use \'batchinstrument\'")
             sys.exit(1)
@@ -292,7 +291,7 @@ def readCompileOption():
         sys.exit(1)
 
   ###Tracing Proppass
-  if "tracingPropagation" in cOpt and cOpt["tracingPropagation"] == True:
+  if "tracingPropagation" in cOpt and cOpt["tracingPropagation"]:
     print(("\nWARNING: You enabled 'tracingPropagation' option in input.yaml. "
            "The generate executables will be able to output dynamic values for instructions. "
            "However, the executables take longer time to execute. If you don't want the trace, "
@@ -303,7 +302,7 @@ def readCompileOption():
         if(str(cOpt["tracingPropagationOption"]["debugTrace"]).lower() == "true"):
           compileOptions.append('-debugtrace')
       if "maxTrace" in cOpt["tracingPropagationOption"]:
-        assert isinstance(cOpt["tracingPropagationOption"]["maxTrace"], int)==True, "maxTrace must be an integer in input.yaml"
+        assert isinstance(cOpt["tracingPropagationOption"]["maxTrace"], int), "maxTrace must be an integer in input.yaml"
         assert int(cOpt["tracingPropagationOption"]["maxTrace"])>0, "maxTrace must be greater than 0 in input.yaml"
         compileOptions.append('-maxtrace')
         compileOptions.append(str(cOpt["tracingPropagationOption"]["maxTrace"]))
@@ -321,7 +320,7 @@ def _suffixOfIR():
     return ".bc"
 
 def compileProg():
-  global proffile, fifile, compileOptions, defaultlinklibs
+  global proffile, fifile
   srcbase = os.path.basename(options["source"])
   progbin = os.path.join(options["dir"], srcbase[0 : srcbase.rfind(".")])
 

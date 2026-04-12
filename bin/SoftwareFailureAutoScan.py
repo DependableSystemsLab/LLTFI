@@ -23,7 +23,6 @@ List of options:
 import os
 import subprocess
 import sys
-from subprocess import call
 import yaml
 
 script_path = os.path.realpath(os.path.dirname(__file__))
@@ -51,11 +50,9 @@ no_input_yaml_flag = False
 
 def parseArgs(args):
    global basedir
-   global options
    global filename
    global no_input_yaml_flag
-   
-   cwd = os.getcwd()
+
    for i, arg in enumerate(args):
        option = arg
        if os.path.isfile(arg):
@@ -88,7 +85,6 @@ def usage(msg = None):
   sys.exit(retval)
 
 def runAutoScan(args):
-    global filename
     execlist = [optbin, "-load-pass-plugin", llfipasses, "--passes=genllfiindexpass,SoftwareFailureAutoScanPass"]
     execlist.extend(args)
     print(' '.join(execlist))
@@ -97,13 +93,12 @@ def runAutoScan(args):
     if p.returncode != 0:
         print("ERROR: Software Auto scan pass return code !=0\n")
         sys.exit(p.returncode)
-    elif os.path.isfile(os.path.join(basedir, filename)) == False:
+    elif not os.path.isfile(os.path.join(basedir, filename)):
         print("ERROR: No output file found at: "+os.path.join(basedir, filename)+"!\n")
         sys.exit(1)
     return 0
 
 def generateInputYaml():
-    global filename
     selector_list = []
     with open(os.path.join(basedir, filename)) as f:
         for line in f.readlines()[1:]:
@@ -130,18 +125,15 @@ def generateInputYaml():
     return 0
 
 def cleanDir():
-    global basedir
     stale_config_file_path = os.path.join(basedir, 'llfi.config.compiletime.txt')
     if os.path.isfile(stale_config_file_path):
       os.remove(stale_config_file_path)
 
 def main(args):
-    global no_input_yaml_flag
-
     parseArgs(args)
-    r = runAutoScan(options)
-    if no_input_yaml_flag == False:
-      s = generateInputYaml()
+    runAutoScan(options)
+    if not no_input_yaml_flag:
+        generateInputYaml()
     cleanDir()
     return 0
 

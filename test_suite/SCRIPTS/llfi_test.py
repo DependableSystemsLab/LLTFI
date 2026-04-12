@@ -50,7 +50,6 @@ prog = os.path.basename(sys.argv[0])
 verbose = False
 
 def verbosePrint(msg):
-	global verbose
 	if verbose:
 		print(msg)
 
@@ -64,7 +63,6 @@ def usage(msg = None):
 	sys.exit(retval)
 
 def parseArgs(args):
-	global options
 	global verbose
 	argid = 0
 	while argid < len(args):
@@ -119,15 +117,11 @@ def parseArgs(args):
 		argid += 1
 
 def startTestRoutine():
-	global options
 	script_dir = os.path.dirname(os.path.realpath(__file__))
 	sys.path.append(script_dir)
 	build_prog_script = os.path.join(script_dir, 'build_prog.py')
 	deploy_prog_script = os.path.join(script_dir, 'deploy_prog.py')
 	inject_prog_script = os.path.join(script_dir, 'inject_prog.py')
-	check_injection_script = os.path.join(script_dir, 'check_injection.py')
-	test_trace_tools_script = os.path.join(script_dir, 'test_trace_tools.py')
-	test_generate_makefile_script = os.path.join(script_dir, 'test_generate_makefile_script.py')
 	clear_all_script = os.path.join(script_dir, 'clear_all.py')
 
 	injection_result_list = []

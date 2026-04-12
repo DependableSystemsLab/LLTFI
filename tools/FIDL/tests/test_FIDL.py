@@ -77,8 +77,6 @@ def is_same_result(test_dir_path, program_name):
   return True
   
 def execute_tests():
-  global doc
-  
   # delete and create a new tests folder
   del_mkdir(fidl_tests_dir)
   
@@ -91,8 +89,8 @@ def execute_tests():
     
     program_name = n['config']['program']
     
-    l = [[expected, n['config']['simulate']], [output, name]]
-    for i in l:
+    items = [[expected, n['config']['simulate']], [output, name]]
+    for i in items:
       # create inner directory and cd to it
       inner_dir_path = os.path.join(dir_path, i[0])
       os.makedirs(inner_dir_path)
@@ -119,8 +117,6 @@ def execute_tests():
       print('Error: %s' % dir_name)
     
 def create_input_yaml(test, selector):
-  global doc
-  
   template = doc['inputTemplate'].copy()
   template['compileOption']['instSelMethod'][0]['customInstselector']['include'] = [selector]
     
@@ -145,8 +141,6 @@ def dump_yaml(path, yaml_object):
     f.write(yaml.dump(yaml_object))
 
 def run_fidl_algorithm(add):
-  global doc
-  
   # delete and create a new fidl script config(s) folder
   if add:
     del_mkdir(fidl_config_dir)

@@ -31,7 +31,6 @@ def usage(msg = None):
   sys.exit(retval)
 
 def parseArgs(args):
-  global options
   argid = 0
   while argid < len(args):
     arg = args[argid]
@@ -46,7 +45,7 @@ def startGUI():
 				java_paths.CMAKE_JAVA_INCLUDE_PATH+':'+lib_path+':'+class_path, 
 				'application.Main']
 	print(' '.join(execlist))
-	p = subprocess.Popen(execlist)
+	subprocess.Popen(execlist)
 	return
 
 ################################################################################

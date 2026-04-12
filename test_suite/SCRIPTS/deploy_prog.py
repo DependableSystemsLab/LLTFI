@@ -4,7 +4,6 @@ import os
 import sys
 import shutil
 import yaml
-import subprocess
 
 def deploy_prog(*prog_list):
 	r = 0

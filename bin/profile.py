@@ -42,7 +42,7 @@ def usage(msg = None):
 
 
 def parseArgs(args):
-  global optionlist, profiling_exe, env
+  global optionlist, profiling_exe
   profiling_exe = os.path.realpath(args[0])
   basedir = os.path.abspath(os.path.dirname(os.path.dirname(profiling_exe)))
   optionlist = args[1:]
@@ -66,7 +66,7 @@ def checkInputYaml():
   yamldir = os.path.dirname(os.path.dirname(profiling_exe))
   try:
     with open(os.path.join(yamldir, 'input.yaml'), 'r') as f:
-      doc = yaml.safe_load(f)
+      yaml.safe_load(f)
   except OSError:
     usage("No input.yaml file in the parent directory of profiling executable")
     sys.exit(1)
@@ -97,9 +97,6 @@ def config():
 
 ################################################################################
 def execute(execlist):
-  #print "Begin"
-  #inputFile = open(inputfile, "r")
-  global outputfile
   print('\t' + ' '.join(execlist))
   #get state of directory
   dirSnapshot()
@@ -168,7 +165,7 @@ def dirSnapshot():
 
 ################################################################################
 def main(args):
-  global optionlist, outputfile
+  global outputfile
 
   parseArgs(args)
   checkInputYaml()

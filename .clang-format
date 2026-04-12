@@ -1,0 +1,57 @@
+# clang-format configuration for LLTFI
+#
+# Based on LLVM style (K&R braces, 2-space indent, 80-col limit).
+# Run:  clang-format-20 -i <file.cpp>
+# Or:   lint.sh --fix  (reformats all C++ files in-place)
+
+---
+BasedOnStyle:  LLVM
+Language:      Cpp
+Standard:      c++17
+
+# Indentation
+IndentWidth:            2
+TabWidth:               2
+UseTab:                 Never
+ContinuationIndentWidth: 4
+IndentCaseLabels:       false
+IndentPPDirectives:     None
+
+# Line length
+ColumnLimit:  80
+
+# Braces — attach (K&R / LLVM style)
+BreakBeforeBraces: Attach
+
+# Includes
+SortIncludes:           CaseSensitive
+IncludeBlocks:          Regroup
+IncludeCategories:
+  # LLTFI local headers first
+  - Regex:    '^"(FI|Utils|Controller|Profil|Inst|Reg|Gen|LLFIDot)'
+    Priority: 1
+  # LLVM headers
+  - Regex:    '^"llvm/'
+    Priority: 2
+  # System headers
+  - Regex:    '^<'
+    Priority: 3
+
+# Pointer alignment: left (int *p, not int* p)
+PointerAlignment: Left
+
+# Function arguments
+AllowAllArgumentsOnNextLine:           true
+AllowAllParametersOfDeclarationOnNextLine: true
+BinPackArguments:  true
+BinPackParameters: true
+
+# Short constructs — keep consistent with LLVM defaults
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+# Misc
+SpaceBeforeParens:     ControlStatements
+SpacesInAngles:        Never
+SpacesInParentheses:   false

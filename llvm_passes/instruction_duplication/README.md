@@ -30,7 +30,7 @@ $LLVM_BUILD_PATH/bin/opt \
 llvm-link -o model_change.ll -S model_change.ll SIDHelperFunctions.ll
 
 # Inline the comparison checks
-$LLVM_BUILD_PATH/bin/opt model_change.ll -always-inline -S -o model.ll
+$LLVM_BUILD_PATH/bin/opt --passes=always-inline -S model_change.ll -o model.ll
 
 ```
 

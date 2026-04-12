@@ -10,10 +10,16 @@ Before writing any code, read:
 ## Development Setup
 
 ```bash
-mkdir build && cd build
-cmake /path/to/LLTFI -DLLVM_GXX_BIN_DIR /usr/lib/llvm-20/bin
-# On Ubuntu with apt-installed LLVM, use -DLLVM_GXX_BIN_DIR /usr/lib/llvm-20/bin
-../setup
+# Run from the repo root. The setup script runs cmake and make internally.
+./setup -LLFI_BUILD_ROOT /path/to/LLTFI-build \
+        -LLVM_SRC_ROOT /path/to/llvm-project \
+        -LLVM_DST_ROOT /usr/lib/llvm-20 \
+        -LLVM_GXX_BIN_DIR /usr/lib/llvm-20/bin
+```
+
+After code changes, rebuild without re-running setup:
+```bash
+cd /path/to/LLTFI-build && make
 ```
 
 ## Making Changes

@@ -81,6 +81,7 @@ runtime_lib/          Runtime library (libllfi-rt.so) linked into instrumented b
 bin/                  Python driver scripts: instrument.py, profile.py, injectfault.py
 docs/                 input_masterlist.yaml, input_masterlist_ml.yaml — reference schemas
                       for the input.yaml files that control instrumentation and injection
+                      input_yaml_guide.md — prose guide to writing input.yaml (user-facing)
 tools/                Trace analysis tools (tracediff.py, traceontograph.py, traceunion.py,
                       tracetodot.py), FIDL/, GenerateMakefile/
 test_suite/           Regression tests

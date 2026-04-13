@@ -83,9 +83,10 @@ tools/                  Post-processing and ML utilities
   outputONNXGraph.py      Visualises ONNX model graph
   compiletoIR.py          Converts source to LLVM IR
 
-docs/                   Reference schemas
-  input_masterlist.yaml   All valid keys for input.yaml (C/C++ programs)
-  input_masterlist_ml.yaml All valid keys for ML programs
+docs/                   Reference schemas and user guides
+  input_yaml_guide.md     Prose guide to writing input.yaml (start here)
+  input_masterlist.yaml   Full key reference for input.yaml (C/C++ programs)
+  input_masterlist_ml.yaml Full key reference for ML programs
 
 test_suite/             Regression tests
 ```

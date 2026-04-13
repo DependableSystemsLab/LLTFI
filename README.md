@@ -1,305 +1,274 @@
 LLTFI
 =====
-LLTFI (Low-Level Tensor Fault Injector) is a unified SWiFI (Software-implemented fault injection) tool that supports fault injection of both C/C++ programs and ML applications written using high-level frameworks such as TensorFlow and PyTorch.
+LLTFI (Low-Level Tensor Fault Injector) is a unified SWiFI tool that supports
+fault injection of both C/C++ programs and ML applications written using
+high-level frameworks such as TensorFlow and PyTorch.  Faults are injected at
+the LLVM IR level, giving precise control over which instructions and registers
+are targeted.
 
-As machine learning (ML) has become more prevalent across many critical domains, so has the need to understand ML system resilience. While there are many ML fault injectors at the application level, there has been little work enabling fault injection of ML applications at a lower level. **LLTFI** is a tool that allows users to run fault injection experiments on C/C++, TensorFlow and PyTorch applications at a lower level (at the LLVM IR level). Please refer to the following [paper](https://blogs.ubc.ca/dependablesystemslab/2021/08/31/wip-lltfi-low-level-tensor-fault-injector/) for more information about LLTFI.
+LLTFI is built on top of [LLFI](https://github.com/DependableSystemsLab/LLFI)
+and is fully backward compatible with it.
 
-LLTFI is built on top of [LLFI](https://github.com/DependableSystemsLab/LLFI) and is fully backward compatible with it. 
+For a detailed description of the internal architecture — pass pipeline,
+selector class hierarchy, hardware/software/ML fault modes, runtime library,
+and the interface between the compile-time and runtime layers — see
+**[architecture.md](architecture.md)**.
 
-### LLFI ###
-**LLFI** is an LLVM-based fault injection tool, that injects faults into the LLVM IR of the application source code.  The faults can be injected into specific program points, and the effect can be easily tracked back to the source code.  LLFI is typically used to map fault characteristics back to source code and hence understand source level or program characteristics for various kinds of fault outcomes. Detailed documentation about LLFI can be found at: https://github.com/DependableSystemsLab/LLFI/wiki. Because LLTFI is designed to be backward compatible with LLFI, the basic setup instructions for LLTFI are similar to those of LLFI. However, there are additional steps and dependencies for running ML programs. 
-
-LLTFI Workflow:
--------------------------
-High-level ML models need to be lowered to intermediate representation (IR) for fault injection. LLTFI provides a single script that converts ML models into LLVM IR, using several publicly available tools and performs fault injection.
-LLTFI first lowers ML models to **MLIR** (Multi-Level Intermediate Representation) using ONNX-MLIR before converting to LLVM IR. The reasons for choosing MLIR are MLIR's ability to better preserve the semantics of ML models, its integration with LLVM, testability and easier extensibility. 
-
-#### Workflow Diagram of LLTFI: ####
-
-![Alt text](images/workflow.png?raw=true "Workflow Diagram of LLTFI")
-
-- LLTFI first converts all ML models to the ONNX format. ONNX’s open exchange format allows LLTFI to
-support both TensorFlow and PyTorch. 
-- Then, the ONNX file is converted into MLIR through ONNX-MLIR. 
-- Finally, we convert MLIR into LLVM IR, using the mlir-translate tool.
-
-**LLTFI** can now inject faults into the LLVM IR, alike lowered C/C++ programs. 
-
-The LLFI tool was originally written for LLVM 3.4. While developing LLTFI, the entire LLFI tool was upgraded to support MLIR and has since been further upgraded to LLVM 20.
-This upgrade ensures that LLTFI is compatible with all of the newest C/C++ features and LLVM optimization passes.
+Please refer to the following
+[paper](https://blogs.ubc.ca/dependablesystemslab/2021/08/31/wip-lltfi-low-level-tensor-fault-injector/)
+for background on LLTFI.
 
 
-Manual Installation
--------------------
+Repository Layout
+-----------------
 
-In this method, the developer has more control over the location of the LLVM build that the LLTFI requires. If you already have LLVM built, you could use that build.
-
-**Dependencies:**
-  
-  1. 64 Bit Machine (preferably with GPU for faster training of ML programs) 
-  2. 64 bit Linux (Ubuntu 20.04) or OS X
-  3. CMake (minimum v3.15)
-  4. Python 3 and above
-  5. Python YAML library (PyYAML v5.4.1 or higher, v6.0+ supported)
-  6. Ninja >= 1.10.2
-  7. libprotoc >= 3.11.0
-  8. Clang v20.x
-  9. LLVM v20.x ([Reference](http://llvm.org/docs/CMake.html)).
-		The easiest way to install LLVM 20 on Ubuntu is via the LLVM apt repository:
-		```
-		wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh
-		sudo ./llvm.sh 20
-		```
-		If you need to build LLVM from source (e.g., to include MLIR for onnx-mlir):
-		```
-		git clone https://github.com/llvm/llvm-project.git
-		cd llvm-project && git checkout llvmorg-20.1.0 && cd ..
-
-		mkdir llvm-project/build && cd llvm-project/build
-
-		cmake -G Ninja ../llvm \
-			-DLLVM_ENABLE_PROJECTS="clang;mlir" \
-			-DLLVM_BUILD_TESTS=ON \
-			-DLLVM_TARGETS_TO_BUILD="host" \
-			-DLLVM_ENABLE_ASSERTIONS=ON \
-			-DLLVM_ENABLE_RTTI=ON
-
-		cmake --build . --target clang check-mlir mlir-translate opt llc lli llvm-dis llvm-link -j 2
-		```
-  10. For executing ML programs, following additional dependencies have to be installed:
-		1. TensorFlow framework (v2.0 or greater)
-		2. numpy package (part of TensorFlow)
-		3. [tensorflow-onnx](https://github.com/onnx/tensorflow-onnx): 
-		    Installation with pip is sufficient
-		    ```
-		    pip install tf2onnx
-		    ```
-		4. libprotoc
-			```
-			curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.17.2/protobuf-all-3.17.2.zip
-			unzip protobuf-all-3.17.2.zip
-			cd protobuf-3.17.2
-			
-			./configure
-			make -j 2
-			make check
-			sudo make install
-			sudo ldconfig # refresh shared library cache.
-			```
-		5. [ONNX-MLIR](https://github.com/onnx/onnx-mlir)
-
-		    Additional changes made in the ONNX-MLIR code are present in: https://github.com/DependableSystemsLab/onnx-mlir-lltfi. Clone this repo and checkout the `LLTFI` branch. The MLIR_DIR cmake variable must be set before building onnx-mlir. It should point to the mlir cmake module inside an llvm-project build or install directory (e.g., llvm-project/build/lib/cmake/mlir).
-            ```
-		    MLIR_DIR=$(pwd)/llvm-project/build/lib/cmake/mlir
-		    ```
-
-		    Onnx-mlir branch ``` LLTFI ``` has to be built and installed. 
-			```
-			git clone --recursive https://github.com/DependableSystemsLab/onnx-mlir-lltfi.git
-			mv onnx-mlir-lltfi onnx-mlir && cd onnx-mlir
-			git checkout LLTFI
-			cd ..
-	
-			mkdir onnx-mlir/build && cd onnx-mlir/build
-			cmake -G Ninja \
-				-DCMAKE_CXX_COMPILER=/usr/bin/c++ \
-				-DMLIR_DIR=${MLIR_DIR} \
-				.. 
-				
-			cmake --build .
-				
-			# Run lit tests:
-			export LIT_OPTS=-v
-			cmake --build . --target check-onnx-lit
-			
-			ninja install
-			```
-  11. GraphViz package (for visualizing error propagation)
-
-
-
-<!--
-GUI Dependencies:
-  1. JDK7/JDK8 with JavaFX
-  2. tcsh shell
--->
-
-### Building LLTFI: ###
-  
-  Run `./setup --help` for build instructions.
 ```
-  $ ./setup --help
-
-  Usage: setup OPTIONS
-  List of options:
-  -LLVM_DST_ROOT <LLVM CMake build root dir>:
-      Make sure you build LLVM with CMake and pass build root directory here
-  -LLVM_SRC_ROOT <LLVM source root dir>
-  -LLFI_BUILD_ROOT <path where you want to build LLTFI>
-  -LLVM_GXX_BIN_DIR <clang's parent directory> (optional):
-      You don't need to set it if clang is already in system path
-
-
-  --help(-h): show help information
-  --runTests: Add this option if you want to run all standard regression tests after building LLTFI (equivalent to --all). Note: ML/ONNX tests require additional dependencies and must be run separately with: python3 SCRIPTS/llfi_test --all_ml
+llvm_passes/          LLVM pass plugin (llfi-passes.so) — compile-time only
+  core/                 Pass infrastructure and selector framework
+  hardware_failures/    Built-in hardware fault instruction selectors
+  software_failures/    Software fault selectors (hand-written + FIDL-generated)
+  instruction_duplication/  SID pass for ML soft-error detection (SEDPasses.so)
+runtime_lib/          C/C++ runtime library linked into instrumented binaries
+bin/                  Python driver scripts: instrument.py, profile.py, injectfault.py
+tools/                Trace analysis, FIDL code generator, ML utilities
+  FIDL/                 Software fault mode generator (see architecture.md §4)
+  GenerateMakefile/     Test harness Makefile generator
+docs/                 input_masterlist.yaml — reference schemas for input.yaml
+test_suite/           Regression tests
+sample_programs/      Example C/C++ and ML programs with input.yaml files
+architecture.md       Internal architecture reference for developers
+CODING_GUIDELINES.md  C++ and Python style rules
+CONTRIBUTING.md       How to set up a dev environment and submit changes
+migration.md          LLVM 15 → 20 upgrade log
 ```
 
-  Below is the command to build LLTFI if `clang` is already in $PATH (replace paths with your actual directories):
+
+Dependencies
+------------
+
+1. 64-bit Linux (Ubuntu 20.04 or later) or macOS
+2. CMake ≥ 3.15
+3. Python 3
+4. Python YAML library (PyYAML ≥ 5.4.1)
+5. Ninja ≥ 1.10.2
+6. **Clang and LLVM 20.x**
+
+   Easiest install on Ubuntu via the LLVM apt repository:
+   ```bash
+   wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh
+   sudo ./llvm.sh 20
+   ```
+
+   To build LLVM from source (required if you also need MLIR for onnx-mlir):
+   ```bash
+   git clone https://github.com/llvm/llvm-project.git
+   cd llvm-project && git checkout llvmorg-20.1.0 && cd ..
+   mkdir llvm-project/build && cd llvm-project/build
+   cmake -G Ninja ../llvm \
+       -DLLVM_ENABLE_PROJECTS="clang;mlir" \
+       -DLLVM_BUILD_TESTS=ON \
+       -DLLVM_TARGETS_TO_BUILD="host" \
+       -DLLVM_ENABLE_ASSERTIONS=ON \
+       -DLLVM_ENABLE_RTTI=ON
+   cmake --build . --target clang check-mlir mlir-translate opt llc lli \
+       llvm-dis llvm-link -j$(nproc)
+   ```
+
+7. **For ML programs** (all optional; tests skip gracefully when absent):
+
+   | Dependency | Install |
+   |------------|---------|
+   | TensorFlow ≥ 2.0 | `pip install tensorflow` |
+   | tensorflow-onnx | `pip install tf2onnx` |
+   | PyTorch | `pip install torch` |
+   | ONNX | `pip install onnx` |
+   | pygraphviz, pydot | `pip install pygraphviz pydot` |
+   | libprotoc ≥ 3.11 | build from source (see below) |
+   | [ONNX-MLIR](https://github.com/DependableSystemsLab/onnx-mlir-lltfi) (LLTFI branch) | see below |
+
+   **libprotoc:**
+   ```bash
+   curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.17.2/protobuf-all-3.17.2.zip
+   unzip protobuf-all-3.17.2.zip && cd protobuf-3.17.2
+   ./configure && make -j$(nproc) && sudo make install && sudo ldconfig
+   ```
+
+   **ONNX-MLIR** (LLTFI branch, requires an MLIR-enabled LLVM build):
+   ```bash
+   git clone --recursive https://github.com/DependableSystemsLab/onnx-mlir-lltfi.git
+   mv onnx-mlir-lltfi onnx-mlir && cd onnx-mlir && git checkout LLTFI && cd ..
+   MLIR_DIR=$(pwd)/llvm-project/build/lib/cmake/mlir
+   mkdir onnx-mlir/build && cd onnx-mlir/build
+   cmake -G Ninja -DCMAKE_CXX_COMPILER=/usr/bin/c++ -DMLIR_DIR=${MLIR_DIR} ..
+   cmake --build . && ninja install
+   ```
+
+8. GraphViz (for dependency graph visualisation)
+
+
+Installation
+------------
+
+Run `./setup --help` for a full option list.
+
 ```
-./setup -LLFI_BUILD_ROOT /path/to/LLFI-build -LLVM_SRC_ROOT /path/to/llvm-project -LLVM_DST_ROOT /path/to/llvm-project/build
-```
-  On Ubuntu systems where LLVM is installed via apt, `clang` may only be available as `clang-20` (not `clang`) and will not be found automatically. In that case, pass `-LLVM_GXX_BIN_DIR` explicitly:
-```
-./setup -LLFI_BUILD_ROOT /path/to/LLFI-build -LLVM_SRC_ROOT /path/to/llvm-project -LLVM_DST_ROOT /usr/lib/llvm-20 -LLVM_GXX_BIN_DIR /usr/lib/llvm-20/bin
+./setup -LLFI_BUILD_ROOT <build-dir> \
+        -LLVM_SRC_ROOT   <llvm-project-dir> \
+        -LLVM_DST_ROOT   <llvm-install-or-build-dir>
 ```
 
-### Building LLTFI using Docker: ###
+On Ubuntu where LLVM is installed via apt, `clang` is only available as
+`clang-20`. Pass `-LLVM_GXX_BIN_DIR` explicitly:
 
-`docker/Dockerfile` can be used to build and run LLTFI in a docker container. You can modify the Dockerfile according to your system and project requirements. More details can be found [here](docker/README.md)
-
-Steps to build:
-1. **Creating a docker image from the Dockerfile:** Copy the Dockerfile to a directory of your choice outside this repository. To create an image, run the command `docker build --tag imageName .` in the terminal.
-2. **Starting a docker container:** Once the above step is completed, a docker container can be started using the command `docker run -it imageName`
-
-
-### Running tests: ###
-Running all regression tests after installation is highly recommended. Note that you may encounter some error messages during the fault injection stage. This is normal. Once all tests have been completed and they all passed, LLTFI is correctly installed.
-
-For complete test of whole of LLTFI, please use LLTFI test suite and refer to the wiki page: [Test suite for regression test](https://github.com/DependableSystemsLab/LLTFI/wiki/Test-Suite-for-Regression-Test) for details. Tests must be run from the build directory:
+```bash
+./setup -LLFI_BUILD_ROOT /path/to/LLTFI-build \
+        -LLVM_SRC_ROOT   /path/to/llvm-project \
+        -LLVM_DST_ROOT   /usr/lib/llvm-20 \
+        -LLVM_GXX_BIN_DIR /usr/lib/llvm-20/bin
 ```
+
+The build root must not already exist. Delete it first when rebuilding from
+scratch. To rebuild after source changes without re-running setup:
+
+```bash
+cd /path/to/LLTFI-build && make
+```
+
+
+Docker
+------
+
+`docker/Dockerfile` builds and runs LLTFI in a container.  Copy the Dockerfile
+outside the repository, then:
+
+```bash
+docker build --tag lltfi .
+docker run -it lltfi
+```
+
+See [docker/README.md](docker/README.md) for details.
+
+
+Running Tests
+-------------
+
+Tests must be run from the **build** directory.  Running all regression tests
+after installation is strongly recommended.
+
+```bash
 cd <LLFI_BUILD_ROOT>/test_suite
-python3 SCRIPTS/llfi_test --all
+
+python3 SCRIPTS/llfi_test --all                    # 21 core tests (expected: 21/21 PASS)
+python3 SCRIPTS/llfi_test --all_hardware_faults    # hardware fault injection (8 tests)
+python3 SCRIPTS/llfi_test --all_software_faults    # software fault injection (5 tests)
+python3 SCRIPTS/llfi_test --all_trace_tools_tests  # trace analysis tools (3 tests)
+python3 SCRIPTS/llfi_test --all_makefile_generation # Makefile generation (2 tests)
+python3 SCRIPTS/llfi_test --all_fidl               # FIDL generator (3 tests)
 ```
 
-Individual test categories can be run separately:
-```
-python3 SCRIPTS/llfi_test --all_hardware_faults     # hardware fault injection tests
-python3 SCRIPTS/llfi_test --all_software_faults     # software fault injection tests
-python3 SCRIPTS/llfi_test --all_trace_tools_tests   # trace analysis tool tests
-python3 SCRIPTS/llfi_test --all_makefile_generation # Makefile generation tests
-python3 SCRIPTS/llfi_test --all_fidl                # FIDL generator tests
-```
+Error messages during fault injection runs are normal and expected.
 
-#### ML/ONNX tests (optional dependencies)
+#### ML / ONNX tests (optional dependencies)
 
-```
+```bash
 python3 SCRIPTS/llfi_test --all_ml
 ```
 
-This runs additional tests for the ML infrastructure. Each group skips gracefully when its dependencies are absent:
+Tests that require missing dependencies are reported as **SKIP** (not FAIL) and
+excluded from the pass/fail count.
 
-| Group | What is tested | Additional requirements |
-|-------|----------------|------------------------|
-| `SoftwareFailureAutoScan` | Scans IR for injectable failure modes | LLTFI build only |
-| ML tool unit tests | `CompareLayerOutputs`, `ExtendONNXModel`, `outputONNXGraph` | `pip install onnx pygraphviz pydot` |
-| TensorFlow pipeline | Train model → ONNX conversion → validation | `pip install tensorflow tf2onnx onnx` |
-| PyTorch pipeline | Model export → ONNX validation | `pip install torch onnx` |
-| ONNX → LLVM IR | `onnx-mlir` + `mlir-translate` compilation | onnx-mlir (set `ONNX_MLIR_BUILD`) |
-| Fault injection (ML) | Full instrument → profile → inject on ML model | LLTFI build + `model.ll` from `sample_programs/.../mnist/compile.sh` |
+| Group | Requirements |
+|-------|-------------|
+| `SoftwareFailureAutoScan` | LLTFI build only |
+| ML tool unit tests | `pip install onnx pygraphviz pydot` |
+| Instruction duplication (synthetic IR) | LLTFI build only |
+| Instruction duplication (real model IR) | `model.ll` from `sample_programs/.../mnist/compile.sh` |
+| TensorFlow → ONNX | `pip install tensorflow tf2onnx onnx` |
+| PyTorch → ONNX | `pip install torch onnx` |
+| ONNX → LLVM IR | onnx-mlir binary (set `ONNX_MLIR_BUILD`) |
+| Fault injection (ML) | LLTFI build + `model.ll` |
 
-Note: software fault injection support (including default failure modes such as `BufferOverflow`, `MemoryLeak`, `WrongAPI`, etc.) is generated automatically by `./setup` via the FIDL tool. If you add or modify failure modes in `tools/FIDL/config/default_failures.yaml`, re-run `python3 tools/FIDL/FIDL-Algorithm.py -a default` from the source root and rebuild LLTFI.
-
-<!--
-VirtualBox Image
------------------
-
-If you want to quickly try out LLFI, an Ubuntu image with LLFI and its dependencies pre-installed 
-is available [here](https://drive.google.com/file/d/0B5inNk8m9EfeM096ejdfX2pTTUU/view?usp=sharing) (2.60GB). This image is built with VirtualBox v4.3.26, with Ubuntu 14.04.2 LTS, LLVM v3.4, CMake v3.4 and the current master branch version of LLFI (as of Sep 16th, 2015).
-
-user: `llfi`  
-password: `root`
-
-`<LLFI_SRC_ROOT>` is located under `~/Desktop/llfisrc/`.  
-`<LLFI_BUILD_ROOT>` is located under `~/Desktop/llfi/`.  
-`<LLVM_SRC_ROOT>` is located under `~/Desktop/llvmsrc/`.  
-`<LLVM_DST_ROOT>` is located under `~/Desktop/llvm/`.  
-`<LLVM_GXX_BIN_DIR >` is located under `~/Desktop/llvm/bin/`.  
-
-Sample tests can be found under `~/Desktop/test/`.
-
-To run it, open VirtualBox, select `File->Import Appliance...` and navigate to the `.ova` file.
--->
-
-### Running Sample Programs ###
-
-You can use test programs in the directory `sample_programs/` or `test_suite/PROGRAMS/` to test LLTFI. Programs in the `sample_programs` directory already contain a valid `input.yaml` file.
-
-Example program: `factorial`:
-  1. Copy the `sample_programs/cpp_sample_programs/factorial/` directory to your project directory.
-  2. Set the `LLFI_BUILD_ROOT` environment variable: `export LLFI_BUILD_ROOT=/path/to/LLFI-build`
-  3. Add the LLVM bin directory to your PATH: `export PATH=/path/to/llvm/bin:$PATH`
-  4. Run: `bash compileAndRun.sh factorial 6`
+For ML fault injection tests, `model.ll` must be pre-built by running
+`compile.sh` in `sample_programs/ml_sample_programs/vision_models/mnist/`
+(requires onnx-mlir).
 
 
-<!--
-####GUI
-If you have used `./setup` to install LLFI, you need to set new environment variables for tcsh shell before running the GUI for the first time. Open `~/.tcshrc` using your favorite text editor and add `setenv llfibuild <LLFI_BUILD_ROOT>/` and `setenv zgrviewer <LLFI_BUILD_ROOT>/tools/zgrviewer/` to it. [OPTIONAL] Create an environment variable "COMPARE" with the path of the SDC check script.
+Running a Sample Program
+------------------------
 
-Execute `<LLFI_BUILD_ROOT>/bin/llfi-gui` to start the **GUI**. The outputs will be saved in the directory where you have executed the command.
+Programs in `sample_programs/` already contain a valid `input.yaml`.
 
-####Web GUI Development Environment Setup
-Dependencies:
-Nodejs
-webpack   
+Example — `factorial`:
 
-Steps to set up the development environment:   
-1: Download this project from Git   
-2: Download NodeJs   
-3: Install libraries: Go to the web-app directory and run "npm install"   
-4: Install Webpack: In the same directory as step 3, run "sudo npm install -g webpack"   
-5: Configure the LLFI root path for the server:   
-The default behavior of the program use environment variable $llfibuild as the path of the llfi build directory  
-You can set the environment variable llfibuild in your system to point it to the LLFI build directory in your local machine.   
+1. Copy the directory to your working location:
+   ```bash
+   cp -r sample_programs/cpp_sample_programs/factorial/ /tmp/factorial
+   cd /tmp/factorial
+   ```
+2. Set environment variables:
+   ```bash
+   export LLFI_BUILD_ROOT=/path/to/LLTFI-build
+   export PATH=/path/to/llvm/bin:$PATH
+   ```
+3. Compile and run:
+   ```bash
+   bash compileAndRun.sh factorial 6
+   ```
 
-Start the server:   
-Go to the /web-app/server folder and run "node server.js"  
+Output from LLFI is written to the `llfi/` directory.  See
+[architecture.md §5.3](architecture.md) for a description of the output files.
 
-Start the front-end dev tool:   
-Go to the web-app directory and run "webpack" or "webpack -w"   
--->
 
 Results
 -------
-After fault injection, output from LLFI and the tested application can be found
-in the *llfi* directory.
 
-|     Directory         |                 Contents                       |
-| ----------------------| ---------------------------------------------- |
-| *std_output*          | Piped STDOUT from the tested application       |
-| *llfi_stat_output*    | Fault injection statistics and trace files     |
-| *error_output*        | Failure reports (program crashes, hangs, etc.) |
-| *baseline*            | Golden output and profiling trace              |
-| *prog_output*         | Disk output from faulty runs                   |
+After fault injection, output is in the `llfi/` directory inside your program
+folder.  For a full description of each file see
+[architecture.md — Interface Between the Two Layers](architecture.md).
+
+| Directory | Contents |
+|-----------|----------|
+| `std_output/` | Piped stdout from each run |
+| `llfi_stat_output/` | Fault injection statistics, profiling data, trace files |
+| `error_output/` | Failure reports (crashes, hangs, SDCs) |
+| `baseline/` | Golden output and profiling trace |
+| `prog_output/` | Disk output from faulty runs |
 
 
-Reproducing the experiments in our ISSRE'23 paper
--------------------------------------------------
+Reproducing ISSRE'23 Experiments
+---------------------------------
 
-Please refer to the following README file for instructions on obtaining benchmarks and reproducing the experiments in our ISSRE'23 paper. [ISSRE'23 AE](https://github.com/DependableSystemsLab/LLTFI/blob/ISSRE23_AE/README.md)
+See the [ISSRE'23 AE branch README](https://github.com/DependableSystemsLab/LLTFI/blob/ISSRE23_AE/README.md).
+
 
 References
 ----------
+
 * [LLFI Paper](http://blogs.ubc.ca/karthik/2013/02/15/llfi-an-intermediate-code-level-fault-injector-for-soft-computing-applications/)
 * [LLFI Wiki](https://github.com/DependableSystemsLab/LLFI/wiki)
 * [LLTFI Wiki](https://github.com/DependableSystemsLab/LLTFI/wiki)
-* Udit Kumar Agarwal, Abraham Chan, Karthik Pattabiraman. LLTFI: Framework agnostic fault injection for machine learning applications (Tools and Artifacts Track). International Symposium on Software Reliability Engineering (ISSRE), 2022. 10 pages.   [LLTFI Paper](https://www.dropbox.com/s/lgr3ed75sy0fq2p/issre22-camera-ready.pdf?dl=0)
-* Udit Kumar Agarwal, Abraham Chan, Karthik Pattabiraman. Resilience Assessment of Large Language Models under Transient Hardware Faults (PER). International Symposium on Software Reliability Engineering (ISSRE), 2023. [Paper](https://www.dropbox.com/scl/fi/mv6yehk0lctcz3l4efy0k/ISSRE23_Udit.pdf?rlkey=dzwbxk7js29pqjwirjj25ik8q&dl=0)
+* Udit Kumar Agarwal, Abraham Chan, Karthik Pattabiraman. *LLTFI: Framework agnostic fault injection for machine learning applications.* ISSRE 2022. [PDF](https://www.dropbox.com/s/lgr3ed75sy0fq2p/issre22-camera-ready.pdf?dl=0)
+* Udit Kumar Agarwal, Abraham Chan, Karthik Pattabiraman. *Resilience Assessment of Large Language Models under Transient Hardware Faults.* ISSRE 2023. [PDF](https://www.dropbox.com/scl/fi/mv6yehk0lctcz3l4efy0k/ISSRE23_Udit.pdf?rlkey=dzwbxk7js29pqjwirjj25ik8q&dl=0)
+
 
 Citations
-----------
+---------
 
-<pre>
+```bibtex
 @article{Agarwal22LLTFI,
-  title={LLTFI: Framework agnostic fault injection for machine learning applications (Tools and Artifacts Track)},
-  author={Agarwal, Udit and Chan, Abraham and Pattabiraman, Karthik},
-  journal={International Symposium on Software Reliability Engineering (ISSRE)},
-  year={2022},
-  publisher={IEEE}
+  title   = {LLTFI: Framework agnostic fault injection for machine learning
+             applications (Tools and Artifacts Track)},
+  author  = {Agarwal, Udit and Chan, Abraham and Pattabiraman, Karthik},
+  journal = {International Symposium on Software Reliability Engineering (ISSRE)},
+  year    = {2022},
+  publisher = {IEEE}
 }
-</pre>
+```
 
-======		
-Read *caveats.txt* for caveats and known problems.
+---
 
-Read *CODING_GUIDELINES.md* for C++, C, and Python coding conventions used in this project.
+Read *caveats.txt* for known limitations and gotchas.
 
+Read *CODING_GUIDELINES.md* for C++, C, and Python coding conventions.
+
+Read *architecture.md* for a detailed description of the internal architecture.

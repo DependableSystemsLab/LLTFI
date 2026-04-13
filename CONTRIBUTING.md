@@ -55,6 +55,12 @@ If you modify `tools/FIDL/config/Target*Template.cpp`, re-run:
 python3 tools/FIDL/FIDL-Algorithm.py -a default
 ```
 
+## Adding a Test Case
+
+See `docs/adding_a_test.md` for a step-by-step guide to creating a new
+regression test, including how to register a program, structure the test case
+directory, and use the SKIP convention for optional dependencies.
+
 ## Running Tests
 
 From the build directory:

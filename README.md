@@ -33,7 +33,9 @@ bin/                  Python driver scripts: instrument.py, profile.py, injectfa
 tools/                Trace analysis, FIDL code generator, ML utilities
   FIDL/                 Software fault mode generator (see architecture.md §4)
   GenerateMakefile/     Test harness Makefile generator
-docs/                 input_yaml_guide.md — user guide for writing input.yaml
+docs/                 tutorial_first_experiment.md — end-to-end walkthrough and output guide
+                      adding_a_test.md — how to add a regression test case
+                      input_yaml_guide.md — user guide for writing input.yaml
                       input_masterlist.yaml — full reference schema for input.yaml
 test_suite/           Regression tests
 sample_programs/      Example C/C++ and ML programs with input.yaml files

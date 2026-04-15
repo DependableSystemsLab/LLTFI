@@ -109,6 +109,12 @@ All 37 FIDL-generated selectors were regenerated from the updated templates.
 - `exit()` → `sys.exit()` in scripts
 - `%-format` strings → f-strings in new code
 
+#### Docker
+
+- `docker/Dockerfile` — LLVM source checkout updated from a pinned LLVM 15
+  commit hash (`9778ec057cf4`) to the `llvmorg-20.1.0` tag; `pyyaml===5.4.1`
+  corrected to `pyyaml==5.4.1` (non-standard triple-equals syntax).
+
 #### Documentation updates
 
 - `README.md` — restructured to eliminate overlap with `architecture.md`;

@@ -51,13 +51,13 @@ RUN distro=$(cat /etc/os-release|grep -Po '(?<=^ID=").*(?=")|(?<=^ID=)[^"].*[^"]
     
 RUN pip install tensorflow
 RUN pip install tf2onnx
-RUN pip3 install pyyaml===5.4.1
+RUN pip3 install pyyaml==5.4.1
    
 WORKDIR /home/
 
 ### LLVM
 RUN git clone https://github.com/llvm/llvm-project.git && \
-    cd llvm-project && git checkout 9778ec057cf4 && cd .. && \
+    cd llvm-project && git checkout llvmorg-20.1.0 && cd .. && \
     mkdir llvm-project/build && cd llvm-project/build && \
     cmake -G Ninja ../llvm \
       -DLLVM_ENABLE_PROJECTS="clang;mlir" \

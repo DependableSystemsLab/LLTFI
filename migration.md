@@ -60,6 +60,24 @@ miscompiled IR. A human who understands the intended pass semantics should
 review these diffs specifically before merging. The key files to scrutinise
 are `FaultInjectionPass.cpp` and `InstTracePass.cpp`.
 
+**Claude Code preliminary review (2026-04-14):** Both files were inspected and
+the insertion points appear semantically correct:
+
+- `FaultInjectionPass.cpp` lines 229–230, 266: uses the `BasicBlock*`
+  insertAtEnd form (`new AllocaInst(type, 0, name, block)`), which inserts at
+  the end of the given block. Allocas go in the entry block (standard practice);
+  the store and load go in the respective exit block immediately after the
+  injected value is computed. This is the same logical placement as before the
+  API change.
+- `InstTracePass.cpp` lines 141–142, 144, 152, 170: uses `BasicBlock::iterator`
+  from `getFirstNonPHIOrDbgOrLifetime()` for alloca insertion (correct: before
+  any non-PHI/dbg/lifetime instruction in the entry block), and
+  `insertPoint->getIterator()` for stores (correct: inserts immediately before
+  the trace call). All 21 tests pass with these changes.
+
+The remaining human task is to verify the *logical* placement makes sense for
+the pass's intended semantics, not just that it compiles and passes tests.
+
 ### H-3 — Provide onnx-mlir environment for real-model validation
 **Estimated time: 1–2 hours**
 

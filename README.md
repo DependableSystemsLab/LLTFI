@@ -33,7 +33,8 @@ bin/                  Python driver scripts: instrument.py, profile.py, injectfa
 tools/                Trace analysis, FIDL code generator, ML utilities
   FIDL/                 Software fault mode generator (see architecture.md §4)
   GenerateMakefile/     Test harness Makefile generator
-docs/                 tutorial_first_experiment.md — end-to-end walkthrough and output guide
+docs/                 tutorial_first_experiment.md — end-to-end C/C++ walkthrough and output guide
+                      tutorial_ml_experiment.md — end-to-end ML/ONNX walkthrough (layer targeting, multi-fault)
                       adding_a_test.md — how to add a regression test case
                       input_yaml_guide.md — user guide for writing input.yaml
                       input_masterlist.yaml — full reference schema for input.yaml

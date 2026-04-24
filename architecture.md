@@ -91,7 +91,8 @@ tools/                  Post-processing and ML utilities
   compiletoIR.py          Converts source to LLVM IR
 
 docs/                   Reference schemas and user guides
-  tutorial_first_experiment.md  End-to-end walkthrough and output interpretation
+  tutorial_first_experiment.md  End-to-end C/C++ walkthrough and output interpretation
+  tutorial_ml_experiment.md     End-to-end ML/ONNX walkthrough (layer targeting, multi-fault)
   adding_a_test.md        How to add a regression test case
   input_yaml_guide.md     Prose guide to writing input.yaml (start here)
   input_masterlist.yaml   Full key reference for input.yaml (C/C++ programs)

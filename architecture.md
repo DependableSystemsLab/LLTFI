@@ -73,6 +73,13 @@ bin/                    Driver scripts
   instrument.py           Compiles IR with LLFI passes; produces prof.exe + fi.exe
   profile.py              Runs prof.exe; collects opcode frequencies
   injectfault.py          Runs fi.exe repeatedly with configured fault parameters
+  batchInstrument.py      Runs instrument.py across multiple programs in one call
+  batchProfile.py         Runs profile.py across multiple programs
+  batchInjectfault.py     Runs injectfault.py across multiple programs
+  HardwareFailureAutoScan.py  Lists applicable hardware selectors for a program
+  SoftwareFailureAutoScan.py  Lists applicable software fault modes for a program
+  InjectorAutoScan.py     Lists all registered fault injector names (fi_type values)
+  llfi-gui.py             Launches the LLFI graphical front-end
 
 tools/                  Post-processing and ML utilities
   FIDL/                   Software fault mode code generator (§4)
@@ -139,12 +146,17 @@ FaultInjectionPass
     and registers are candidates.
 ```
 
-An optional fourth pass can be added:
+Optional passes can be added:
 
 ```
 InstTracePass
     Inserts printInstTracer() calls to record register values at runtime.
     Used for trace-based analysis with tracediff.py.
+
+LLFIDotGraphPass  (registered as "dotgraphpass")
+    Generates llfi.stat.graph.dot, a Graphviz data-dependency graph of the
+    module.  Added to the pass list when genDotGraph: true is set in
+    input.yaml.  Used by the zgrviewer-based graph viewer.
 ```
 
 Two additional passes are used only by the auto-scan scripts and not in the
@@ -299,6 +311,17 @@ runs all registered software selectors against the module IR and writes
 `llfi.applicable.software.failures.txt` listing only the modes that actually
 match instructions in the program.
 
+#### Known Limitation: memmove/memcpy Intrinsics
+
+Software fault modes that target `memmove` or `memcpy` by call site (e.g.
+`WrongDestination(Data)`, `BufferOverflowMemmove`) do not work when the
+compiler lowers those calls to LLVM intrinsics
+(`@llvm.memmove.p0.p0.i64`, `@llvm.memcpy.p0.p0.i64`). Intrinsics have no
+injectable register arguments at the call site that LLTFI can intercept at
+runtime. To inject software faults into memory operations in such programs,
+use fault modes that target regular C library calls instead (e.g.
+`WrongPointer(Data)` targeting `fread`/`fwrite`).
+
 ### 2.5 ML Fault Selectors
 
 ML fault injection operates on LLVM IR compiled from ONNX models via onnx-mlir.
@@ -372,13 +395,13 @@ around each fault-injection-candidate register:
 
 ```c
 // Called before the instruction executes.
-// Returns 1 if this dynamic instance should be injected, 0 otherwise.
-int preFunc(long llfi_index, char *opcode,
-            int my_reg_index, int total_reg_target_num);
+// Returns true if this dynamic instance should be injected, false otherwise.
+bool preFunc(long llfi_index, unsigned opcode,
+             unsigned my_reg_index, unsigned total_reg_target_num);
 
-// Called after preFunc returns 1.  Corrupts the register value in-place.
+// Called after preFunc returns true.  Corrupts the register value in-place.
 void injectFunc(long llfi_index, unsigned size, char *buf,
-                int my_reg_index, int reg_pos, char *opcode_str);
+                unsigned my_reg_index, unsigned reg_pos, char *opcode_str);
 ```
 
 **`preFunc` selection logic:**  
@@ -396,9 +419,7 @@ execution (even when multiple registers are targeted).
 | `bitflip` | XOR a randomly selected bit |
 | `stuck_at_0` | AND the bit to force it to 0 |
 | `stuck_at_1` | OR the bit to force it to 1 |
-| `random` | Write a random value to the register |
-| `data_corruption` | Corrupt a random byte |
-| Software injectors | Custom logic (sleep, wrong value, etc.) |
+| Software injectors | Custom logic (sleep, wrong value, etc.) — see §3.2 |
 
 After injection, the runtime appends a record to
 `llfi.stat.fi.injectedfaults.txt` with the LLFI index, register size, bit
@@ -424,15 +445,22 @@ returning a wrong value) register a `FaultInjector` subclass with the
 singleton `FaultInjectorManager`. The manager resolves the injector name from
 `fi_type` in the config file to the corresponding `injectFault()` implementation.
 
-FIDL-generated software fault injectors are compiled into
-`_FIDLSoftwareFaultInjectors.cpp` (also generated, not in git) and register
-themselves at static initialisation time.
+The runtime injector registrations live in two tracked files:
+
+- `runtime_lib/CommonFaultInjectors.cpp` — the three hardware injectors
+  (`bitflip`, `stuck_at_0`, `stuck_at_1`).
+- `runtime_lib/_FIDLSoftwareFaultInjectors.cpp` — an aggregator that
+  `#include`s the hand-written injector class definitions from
+  `_SoftwareFaultInjectors.cpp` and then registers all 37 FIDL-named software
+  injectors.  This file is tracked in git (unlike the selector `.cpp` files in
+  `llvm_passes/software_failures/`) and must be updated manually when a new
+  FIDL fault mode is added.
 
 ### 3.3 Profiling Runtime (ProfilingLib.cpp)
 
 ```c
-void doProfiling(unsigned opcode);   // Inserted before each FI-candidate inst
-void endProfiling();                 // Inserted at program exit
+void doProfiling(int opcode);   // Inserted before each FI-candidate inst
+void endProfiling();            // Inserted at program exit
 ```
 
 `doProfiling` increments a per-opcode counter weighted by an estimated cycle
@@ -445,7 +473,7 @@ total_cycle=<weighted sum across all opcodes>
 For ML models, `MLFaultInjectionLib.cpp` provides:
 
 ```c
-void lltfiMLLayer(long layer_id, long start_flag);
+void lltfiMLLayer(int64_t layerName, int64_t start);
 ```
 
 Called at each `OMInstrumentPoint` boundary, it records the start and end
@@ -455,8 +483,7 @@ fault space sampling (which dynamic instruction cycles to target).
 ### 3.4 Instruction Trace Runtime (InstTraceLib.c)
 
 ```c
-void printInstTracer(long llfi_index, unsigned opcode,
-                     unsigned size, char *ptr, long maxPrints);
+void printInstTracer(long instID, char *opcode, int size, char *ptr, int maxPrints);
 ```
 
 Writes a line to `llfi.stat.trace.txt` for every call. In the *golden run*
@@ -616,3 +643,18 @@ to be inspected locally after a build.
 (`CustomTensorOperatorInstSelector`, `MainGraphInstSelector`) are ordinary
 `HardwareFIInstSelector` subclasses that happen to look for `OMInstrumentPoint`
 calls. The core `FaultInjectionPass` and runtime are unchanged for ML workloads.
+
+**New pass manager only (legacy PM removed).** The legacy `opt -load` /
+`-enable-new-pm=0` interface was dropped in LLVM 17 and is no longer supported
+in LLTFI. All passes — including `InstructionDuplication` — use the new pass
+manager (`PassInfoMixin`, `llvmGetPassPluginInfo`). This removes the need to
+maintain two registration paths for every pass and aligns with LLVM's own
+direction for pass infrastructure.
+
+**SEDPasses.so is separate from llfi-passes.so.** The
+`InstructionDuplicationPass` lives in its own plugin so it can be applied to
+the model IR *before* LLFI instrumentation. The SED transformation alters
+instruction counts and structure; if it ran inside the LLFI pass pipeline (after
+`GenLLFIIndexPass` has already assigned indices) those indices would be
+invalidated. A separate library makes the mandatory pre-instrumentation ordering
+explicit and prevents accidental composition in the wrong sequence.

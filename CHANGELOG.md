@@ -60,6 +60,10 @@ and effort accounting are in `migration.md`.
   `cast<>` vs. `dyn_cast<>`.
 - `CONTRIBUTING.md` — added `Adding a Test Case` section pointing to
   `docs/adding_a_test.md`.
+- `docs/tutorial_ml_experiment.md` — new end-to-end walkthrough of an ML/ONNX
+  fault injection experiment covering the full ONNX → LLVM IR compilation
+  pipeline, `CustomTensorOperator` layer targeting, multi-fault injection
+  options, per-layer profiling output, and `CompareLayerOutputs.py`.
 
 ---
 
@@ -127,6 +131,17 @@ All 37 FIDL-generated selectors were regenerated from the updated templates.
 - `llvm_passes/instruction_duplication/shared_lib/build.sh` and
   `compile_shrd_lib.sh` — hardcoded `clang`/`clang++` → `LLVM_GXX_BIN_DIR`
   pattern, fixing builds on Ubuntu where apt installs `clang-20` only.
+- `architecture.md` — corrected several inaccuracies found during code review:
+  `preFunc` return type (`bool` not `int`) and parameter types (`unsigned`
+  throughout); `injectFunc` register parameter types; `doProfiling` parameter
+  type (`int` not `unsigned`); `printInstTracer` signature (second param is
+  `char *opcode`, not `unsigned`; last param is `int`, not `long`);
+  `lltfiMLLayer` parameter types (`int64_t`); removed non-existent `random`
+  and `data_corruption` `fi_type` entries; corrected claim that
+  `_FIDLSoftwareFaultInjectors.cpp` is generated/not-in-git (it is tracked);
+  added missing `bin/` scripts, `LLFIDotGraphPass`, and memmove/memcpy
+  intrinsic limitation; added design decisions for new-PM-only and separate
+  `SEDPasses.so`.
 
 ---
 

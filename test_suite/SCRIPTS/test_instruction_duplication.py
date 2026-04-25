@@ -414,7 +414,6 @@ def _test_real_model_end_to_end(opt, sed_so, model_ll, sid_helper_ll):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         # --- Baseline run ---
-        baseline_out = os.path.join(tmpdir, 'baseline.txt')
         p = subprocess.run(
             [lli, model_ll],
             cwd=mnist_dir,

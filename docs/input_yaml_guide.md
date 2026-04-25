@@ -11,6 +11,8 @@ The reference schemas for all keys are in:
 - `docs/input_masterlist_ml.yaml` — ML programs (ONNX-MLIR compiled)
 
 This guide explains the keys in prose and provides annotated examples.
+For a complete end-to-end walkthrough see `docs/tutorial_first_experiment.md`
+(C/C++ programs) or `docs/tutorial_ml_experiment.md` (ML/ONNX models).
 
 
 ## Top-level structure

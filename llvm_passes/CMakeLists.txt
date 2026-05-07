@@ -1,5 +1,9 @@
 include(../config/llvm_passes.cmake)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 set(LLVM_PASSES_DIRS_LLFI hardware_failures core software_failures)
 
 include_directories(${LLVM_PASSES_DIRS_LLFI})

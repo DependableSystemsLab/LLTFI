@@ -123,7 +123,7 @@ bool InstTrace::runOnFunction(Function& F) {
         continue;
       }
 
-      BasicBlock::iterator alloca_insertPoint =
+      Instruction *alloca_insertPoint =
           inst->getParent()
               ->getParent()
               ->begin()

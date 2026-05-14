@@ -15,8 +15,6 @@ add_library(llfi-rt SHARED
     InstTraceLib.c
     ProfilingLib.cpp
     Utils.c
-    #_FIDLSoftwareFaultInjectors.cpp
-    #_SoftwareFaultInjector.cpp is included in this file
 )
 
 # For ML backends. This static library is intended to be linked with the ML

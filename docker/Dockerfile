@@ -6,6 +6,14 @@ ARG NPROC=2
 RUN apt-get update
 RUN apt-get -y upgrade
 
+# Install prerequisites
+RUN apt-get update && apt-get install -y wget
+
+# Install specific version (3.20) of CMake
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.26.0/cmake-3.26.0-linux-x86_64.sh \
+    && sh cmake-3.26.0-linux-x86_64.sh --prefix=/usr/local --exclude-subdir \
+    && rm cmake-3.26.0-linux-x86_64.sh
+
 # Install tools needed
 RUN distro=$(cat /etc/os-release|grep -Po '(?<=^ID=").*(?=")|(?<=^ID=)[^"].*[^"]') \
     && TZ="America/Vancouver" \
@@ -16,7 +24,7 @@ RUN distro=$(cat /etc/os-release|grep -Po '(?<=^ID=").*(?=")|(?<=^ID=)[^"].*[^"]
           ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime && \
           dpkg-reconfigure -f noninteractive tzdata && \
           apt-get install -qq -y --no-install-recommends \
-                  autoconf automake ca-certificates cmake curl \
+                  autoconf automake ca-certificates curl \
                   default-jdk-headless gcc g++ git libncurses-dev \
                   libtool make maven ninja-build openjdk-11-jdk-headless \
                   python3 python3-dev python3-distutils python3-numpy \
@@ -31,7 +39,7 @@ RUN distro=$(cat /etc/os-release|grep -Po '(?<=^ID=").*(?=")|(?<=^ID=)[^"].*[^"]
               https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm && \
           yum update -q -y && \
           yum install -q -y \
-              autoconf automake ca-certificates cmake diffutils \
+              autoconf automake ca-certificates diffutils \
               file java-11-openjdk-devel java-11-openjdk-headless \
               gcc gcc-c++ git libtool make ncurses-devel \
               python39 python39-devel python39-numpy python39-pip \
@@ -57,7 +65,7 @@ WORKDIR /home/
 
 ### LLVM
 RUN git clone https://github.com/llvm/llvm-project.git && \
-    cd llvm-project && git checkout llvmorg-20.1.0 && cd .. && \
+    cd llvm-project && git checkout b270525f730be6e7196667925f5a9bfa153262e9 && cd .. && \
     mkdir llvm-project/build && cd llvm-project/build && \
     cmake -G Ninja ../llvm \
       -DLLVM_ENABLE_PROJECTS="clang;mlir" \
@@ -71,7 +79,6 @@ RUN git clone https://github.com/llvm/llvm-project.git && \
 
 RUN apt-get update
 RUN apt-get install unzip
-RUN apt-get install -y wget
 
 ### libprotoc
 RUN curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.17.2/protobuf-all-3.17.2.zip
@@ -93,7 +100,8 @@ RUN git clone --recursive https://github.com/DependableSystemsLab/onnx-mlir-lltf
     export MLIR_DIR=$(pwd)/llvm-project/build/lib/cmake/mlir && \
     mv onnx-mlir-lltfi onnx-mlir && \
     cd onnx-mlir && \
-    git checkout LLTFI && \
+    git checkout LLTFI-LLVM19 && \
+    git submodule update --init --recursive && \
     cd .. && \
     mkdir onnx-mlir/build && cd onnx-mlir/build && \
     cmake -G Ninja \

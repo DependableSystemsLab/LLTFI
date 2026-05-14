@@ -104,7 +104,6 @@ if [[ $RUN_CPP -eq 1 ]]; then
            "Rebuild with: cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..."
     else
       TIDY_ISSUES=0
-      # Only check hand-written passes; exclude FIDL-generated selectors
       CPP_SOURCES=$(find "${REPO_ROOT}/llvm_passes" -name '*.cpp' \
         | grep -v 'software_failures/_')
       for f in $CPP_SOURCES; do
@@ -137,7 +136,6 @@ if [[ $RUN_PYTHON -eq 1 ]]; then
     PYTHON_DIRS=(
       "${REPO_ROOT}/bin"
       "${REPO_ROOT}/test_suite/SCRIPTS"
-      "${REPO_ROOT}/tools/FIDL"
       "${REPO_ROOT}/tools/GenerateMakefile"
     )
     # Filter to directories that actually exist

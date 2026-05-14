@@ -11,12 +11,10 @@ List of options:
 --threads <number of threads to use>: number of threads to be used for fault injections, default value: 1.
 --all: Test all the test cases of LLFI test suite, including fault injection tests, trace analysis tests and make file generation tests.
 --all_fault_injections: Test all the test cases of fault injections, including HardwareFaults, SoftwareFaults and BatchMode tests.
---all_software_faults: Test all the test cases of SoftwareFaults.
 --all_hardware_faults: Test all the test cases of HardwareFaults.
 --all_batchmode: Test all the test cases of BatchMode fault injections.
 --all_trace_tools_tests: Test all the tests for trace analysis tools.
 --all_makefile_generation: Test all the tests for makefile generation script.
---all_fidl: Test that FIDL-Algorithm.py generates all expected selector files.
 --all_ml: Test ML/ONNX tools (CompareLayerOutputs, ExtendONNXModel, outputONNXGraph), SoftwareFailureAutoScan, TensorFlow/PyTorch ONNX pipelines, ONNX-to-LLVM-IR compilation, and ML fault injection. Tests that require optional dependencies (onnx, pygraphviz, pydot, tensorflow, tf2onnx, torch, onnx-mlir) are reported as SKIP when those packages are absent.
 --test_cases [test case names]: Test only specified test case.
 --clean_after_test: Clean all the generate files after testing.
@@ -34,12 +32,10 @@ import time
 options = {
 	'all':False,
 	'all_fault_injections':False,
-	'all_software_faults':False,
 	'all_hardware_faults':False,
 	'all_batchmode':False,
 	'all_trace_tools_tests':False,
 	'all_makefile_generation':False,
-	'all_fidl':False,
 	'all_ml':False,
 	'test_cases':[],
 	'threads':1,
@@ -74,9 +70,6 @@ def parseArgs(args):
 		elif arg == "--all_fault_injections":
 			options['all_fault_injections'] = True
 			
-		elif arg == "--all_software_faults":
-			options['all_software_faults'] = True
-
 		elif arg == "--all_hardware_faults":
 			options['all_hardware_faults'] = True
 			
@@ -98,9 +91,6 @@ def parseArgs(args):
 
 		elif arg == "--all_makefile_generation":
 			options['all_makefile_generation'] = True
-
-		elif arg == "--all_fidl":
-			options['all_fidl'] = True
 
 		elif arg == "--all_ml":
 			options['all_ml'] = True
@@ -127,12 +117,10 @@ def startTestRoutine():
 	injection_result_list = []
 	trace_result_list = []
 	generate_makefile_result_list = []
-	fidl_result_list = []
 	ml_result_list = []
 
 	if options['all'] or options['all_batchmode'] or options['all_hardware_faults']\
-	or options['all_software_faults'] or options['all_fault_injections']\
-	or options['test_cases'] != []:
+	or options['all_fault_injections'] or options['test_cases'] != []:
 		## build all the test program
 		execlist = ['python3', '-u', build_prog_script]
 		verbosePrint(' '.join(execlist))
@@ -149,8 +137,6 @@ def startTestRoutine():
 		execlist = ['python3', '-u', deploy_prog_script]
 		if options['all_batchmode']:
 			execlist.append('BatchMode')
-		elif options['all_software_faults']:
-			execlist.append('SoftwareFaults')
 		elif options['all_hardware_faults']:
 			execlist.append('HardwareFaults')
 		elif options['test_cases'] != []:
@@ -171,8 +157,6 @@ def startTestRoutine():
 		execlist = ['python3', '-u', inject_prog_script, str(options['threads'])]
 		if options['all_batchmode']:
 			execlist.append('BatchMode')
-		elif options['all_software_faults']:
-			execlist.append('SoftwareFaults')
 		elif options['all_hardware_faults']:
 			execlist.append('HardwareFaults')
 		elif options['test_cases'] != []:
@@ -193,8 +177,6 @@ def startTestRoutine():
 		prog_list = []
 		if options['all_batchmode']:
 			prog_list.append('BatchMode')
-		elif options['all_software_faults']:
-			prog_list.append('SoftwareFaults')
 		elif options['all_hardware_faults']:
 			prog_list.append('HardwareFaults')
 		elif options['test_cases'] != []:
@@ -214,12 +196,6 @@ def startTestRoutine():
 			pass
 		verbosePrint('Calling: test_trace_tools.test_trace_tools(' + ' '.join(prog_list) + ')')
 		test_trace_tools_returncode, trace_result_list = test_trace_tools.test_trace_tools(*prog_list)
-
-	## run FIDL generation tests
-	if options['all_fidl'] or options['all']:
-		import test_fidl_generation
-		verbosePrint('Calling: test_fidl_generation.test_fidl_generation()')
-		_, fidl_result_list = test_fidl_generation.test_fidl_generation()
 
 	## run ML/ONNX tools tests (not part of --all; requires optional deps)
 	if options['all_ml']:
@@ -269,14 +245,6 @@ def startTestRoutine():
 	if len(generate_makefile_result_list) > 0:
 		print("==== Test MakefileGeneration Tool Result ====")
 		for record in generate_makefile_result_list:
-			print(record["name"], '\t\t', record["result"])
-			total += 1
-			if record['result'] == 'PASS':
-				passed += 1
-
-	if len(fidl_result_list) > 0:
-		print("==== Test FIDL Generation Result ====")
-		for record in fidl_result_list:
 			print(record["name"], '\t\t', record["result"])
 			total += 1
 			if record['result'] == 'PASS':

@@ -148,18 +148,6 @@ def build():
   llvm_paths_py = os.path.join(script_path, "config/llvm_paths.py")
   llvm_paths_make = os.path.join(script_path, "config/llvm_paths.make")
 
-  # build all default software failures
-  fidl_path = os.path.join(script_path, 'tools/FIDL/FIDL-Algorithm.py')
-  execlist = [fidl_path, '-a', 'default']
-  print('-- Generating default software failures with %s...' % (fidl_path))
-  with open(os.devnull, 'wb') as devnull:
-    p = subprocess.call(execlist, stdout=devnull)
-  if p != 0:
-    print('-- Failed!')
-    sys.exit(p)
-  else:
-    print('-- Success!')
-  
   # write cmake config file for llvm paths
   LLVM_DST_ROOT = os.path.realpath(required_configs['LLVM_DST_ROOT'])
   LLVM_SRC_ROOT = os.path.realpath(required_configs['LLVM_SRC_ROOT'])

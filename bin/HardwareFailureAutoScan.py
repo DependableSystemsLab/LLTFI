@@ -22,9 +22,8 @@ import subprocess
 import sys
 
 script_path = os.path.realpath(os.path.dirname(__file__))
-sys.path.append(os.path.join(script_path, '../config'))
+sys.path.append(os.path.join(script_path, "../config"))
 import llvm_paths
-
 
 optbin = os.path.join(llvm_paths.LLVM_DST_ROOT, "bin/opt")
 llcbin = os.path.join(llvm_paths.LLVM_DST_ROOT, "bin/llc")
@@ -38,41 +37,52 @@ filename = "llfi.applicable.hardware.selectors.txt"
 # directory of the target IR
 basedir = ""
 
+
 def parseArgs(args):
-   global basedir
-   global filename
+    global basedir
+    global filename
 
-   for arg in args:
-       option = arg
-       if os.path.isfile(arg):
-           basedir = os.path.realpath(os.path.dirname(arg))
-           option = os.path.basename(arg)
-           options.append(option)
-       elif arg.startswith('-outputfilename='):
-           filename = arg.split('-outputfilename=')[-1]
-           options.append('-hardwarescan_outputfilename='+filename)
-   os.chdir(basedir)
+    for arg in args:
+        option = arg
+        if os.path.isfile(arg):
+            basedir = os.path.realpath(os.path.dirname(arg))
+            option = os.path.basename(arg)
+            options.append(option)
+        elif arg.startswith("-outputfilename="):
+            filename = arg.split("-outputfilename=")[-1]
+            options.append("-hardwarescan_outputfilename=" + filename)
+    os.chdir(basedir)
 
-def usage(msg = None):
-  retval = 0
-  if msg is not None:
-    retval = 1
-    msg = "ERROR: " + msg
-    print(msg, file=sys.stderr)
-  print(__doc__ % globals(), file=sys.stderr)
-  sys.exit(retval)
+
+def usage(msg=None):
+    retval = 0
+    if msg is not None:
+        retval = 1
+        msg = "ERROR: " + msg
+        print(msg, file=sys.stderr)
+    print(__doc__ % globals(), file=sys.stderr)
+    sys.exit(retval)
+
 
 def runAutoScan(args):
-    execlist = [optbin, "-load-pass-plugin", llfipasses, "--passes=HardwareFailureAutoScanPass", "-disable-output"]
+    execlist = [
+        optbin,
+        "-load-pass-plugin",
+        llfipasses,
+        "--passes=HardwareFailureAutoScanPass",
+        "-disable-output",
+    ]
     execlist.extend(args)
-    print(' '.join(execlist))
+    print(" ".join(execlist))
     p = subprocess.Popen(execlist)
     p.wait()
     if p.returncode != 0:
         print("ERROR: Hardware Auto scan pass return code !=0\n")
         sys.exit(p.returncode)
     elif not os.path.isfile(os.path.join(basedir, filename)):
-        print("ERROR: No output file found at: "+os.path.join(basedir, filename)+"!\n")
+        print(
+            "ERROR: No output file found at: " + os.path.join(basedir, filename) + "!\n"
+        )
         sys.exit(1)
     return 0
 
@@ -82,9 +92,10 @@ def main(args):
     runAutoScan(options)
     return 0
 
+
 if __name__ == "__main__":
-        if len(sys.argv[1:]) < 1 or sys.argv[1] == '--help' or sys.argv[1] == '-h':
-                usage()
-                sys.exit(0)
-        r = main(sys.argv[1:])
-        sys.exit(r)
+    if len(sys.argv[1:]) < 1 or sys.argv[1] == "--help" or sys.argv[1] == "-h":
+        usage()
+        sys.exit(0)
+    r = main(sys.argv[1:])
+    sys.exit(r)

@@ -5,6 +5,7 @@ Created on Mon Aug  3 17:32:40 2020
 
 @author: berk
 """
+
 from tensorflow.keras.preprocessing.image import img_to_array
 import scipy.misc
 import os
@@ -15,36 +16,35 @@ import time
 from pdb import set_trace
 
 input_shape = (66, 200, 3)
-angle=[]
-smooth_angle=0
-test_ids=[]
+angle = []
+smooth_angle = 0
+test_ids = []
 
 
-
-f= open("data.txt")                                 #read steering angles from disk and preprocess
+f = open("data.txt")  # read steering angles from disk and preprocess
 data = f.read()
 data = data.split()
-for i in data:                                      #if the node end with ".jpg" ignore it. It's for collecting angles
-    if i[-1]=='g':
+for i in data:  # if the node end with ".jpg" ignore it. It's for collecting angles
+    if i[-1] == "g":
         pass
     else:
-        angle.append(float(i) * scipy.pi / 180)     #convert rad.
-        
-model = load_model("model.h5")                      #import our model
-model.save('dave2-keras.tf/')
+        angle.append(float(i) * scipy.pi / 180)  # convert rad.
 
-#sahin_direksiyon = cv2.imread("sahin_direksiyon_simiti.png") #read steering image
+model = load_model("model.h5")  # import our model
+model.save("dave2-keras.tf/")
 
-#set_trace()
+# sahin_direksiyon = cv2.imread("sahin_direksiyon_simiti.png") #read steering image
 
-#image=cv2.resize(sahin_direksiyon[-150:], (200,66))
-#image = image / 255
+# set_trace()
 
-#image = img_to_array(image)/255
-#result = -model.predict(image[None])*180.0/scipy.pi             #make a prediction
-#print("Predicted Angle= " + str(-result))
+# image=cv2.resize(sahin_direksiyon[-150:], (200,66))
+# image = image / 255
 
-'''
+# image = img_to_array(image)/255
+# result = -model.predict(image[None])*180.0/scipy.pi             #make a prediction
+# print("Predicted Angle= " + str(-result))
+
+"""
 test_paths = list(paths.list_images(os.getcwd()+"/test")) 
 #get test images ids (names)
 for i in test_paths:
@@ -77,12 +77,7 @@ for i in test_ids:
     time.sleep(0.02)        
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
-'''
+"""
 
 
 cv2.destroyAllWindows()
-
-
-
-
-

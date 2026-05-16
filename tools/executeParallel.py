@@ -8,6 +8,7 @@ from collections import Counter
 import subprocess
 import time
 
+
 ##### MAIN #####
 def main():
     parser = argparse.ArgumentParser()
@@ -56,7 +57,9 @@ def main():
         with open("output.txt", "w") as f:
             print("Launching process for input " + str(i) + "...")
             # execute runAllInput.sh script in this directory.
-            p = subprocess.Popen(["bash", "./runAllInputs.sh", str(i)], stdout=f, stderr=f)
+            p = subprocess.Popen(
+                ["bash", "./runAllInputs.sh", str(i)], stdout=f, stderr=f
+            )
 
             # Add directory to list of directories
             all_dirs.append(new_dir)
@@ -71,5 +74,5 @@ def main():
             time.sleep(5)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

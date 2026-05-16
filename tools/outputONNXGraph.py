@@ -5,24 +5,26 @@ import pydot
 import os
 import sys
 
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+
 
 def get_tensor_shape(node):
     # returns the shape of the tensor given an ONNX node
 
-    return tuple( int(item.dim_value) for item in node.type.tensor_type.shape.dim )
+    return tuple(int(item.dim_value) for item in node.type.tensor_type.shape.dim)
 
 
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
-def makeDot(model, addIndex = False):
+
+def makeDot(model, addIndex=False):
 
     ingraph = model.graph
 
     # see e.g. https://pythonhaven.wordpress.com/2009/12/09/generating_graphs_with_pydot/
-    outgraph = pydot.Dot(graph_type='digraph')
+    outgraph = pydot.Dot(graph_type="digraph")
 
-    #----------
+    # ----------
     # Note that in the onnx model (at least when created
     # from pytorch) the computational boxes do not have names
     # but rather the connections between them
@@ -32,23 +34,23 @@ def makeDot(model, addIndex = False):
     # (which defines the value) but can have multiple
     # inputs connected. We draw an edge from each of the
     # inputs to the single output
-    #----------
+    # ----------
 
     # this maps from an edge / netlist name to the node
     # which provides the output with this name
     nameToNodeOfOutput = {}
 
-    #----------
+    # ----------
     # find input nodes which have initializers
     # these are not real inputs but rather weights
     # learned during training
-    #----------
+    # ----------
 
-    initializerNames = set([ node.name for node in ingraph.initializer ])
+    initializerNames = set([node.name for node in ingraph.initializer])
 
-    #----------
+    # ----------
     # add boxes for the input nodes
-    #----------
+    # ----------
     for index, node in enumerate(ingraph.input):
         # note that (at least when generated from pytorch)
         # things like convolution matrix weights
@@ -58,23 +60,23 @@ def makeDot(model, addIndex = False):
             # this is a weight node, skip it
             continue
 
-        labels = [ "input " + node.name,
-                  get_tensor_shape(node)
-                  ]
+        labels = ["input " + node.name, get_tensor_shape(node)]
 
         gn = pydot.Node(
             "in%d" % (index + 1),
-            label = "\n".join([ str(x) for x in labels ]),
-            shape = 'record', style = 'filled',
-            fillcolor = '#A2CECE')
+            label="\n".join([str(x) for x in labels]),
+            shape="record",
+            style="filled",
+            fillcolor="#A2CECE",
+        )
         outgraph.add_node(gn)
 
         assert node.name not in nameToNodeOfOutput
         nameToNodeOfOutput[node.name] = gn
 
-    #----------
+    # ----------
     # add boxes for the output nodes
-    #----------
+    # ----------
 
     outputGraphNodes = []
 
@@ -83,80 +85,79 @@ def makeDot(model, addIndex = False):
         # things like convolution matrix weights
         # can be considered as inputs
 
-        labels = [ "output " + node.name,
-                  get_tensor_shape(node)
-                  ]
-
+        labels = ["output " + node.name, get_tensor_shape(node)]
 
         gn = pydot.Node(
             "out%d" % (index + 1),
-            label = "\n".join([ str(x) for x in labels ]),
-            shape = 'record')
+            label="\n".join([str(x) for x in labels]),
+            shape="record",
+        )
 
         outgraph.add_node(gn)
 
         outputGraphNodes.append(gn)
 
-    #----------
+    # ----------
     # add boxes for the computational nodes
     # and the corresponding edges
-    #----------
+    # ----------
 
     for index, node in enumerate(ingraph.node):
         # note that these nodes most of the time
         # do not have a name, i.e. node.name is the empty string
 
-        labels = [ node.op_type, str(node.input), str(node.output),
-                   ]
+        labels = [
+            node.op_type,
+            str(node.input),
+            str(node.output),
+        ]
 
-        #----------
+        # ----------
         # this should go into some kind of decorator
-        #----------
-        if node.op_type in ('Conv', 'MaxPool'):
+        # ----------
+        if node.op_type in ("Conv", "MaxPool"):
 
             # TODO: get number of filter banks
 
             for attr in node.attribute:
                 # TODO: we should guarantee an ordering of the labels
-                if attr.name == 'kernel_shape':
+                if attr.name == "kernel_shape":
                     shape = tuple(int(x) for x in attr.ints)
                     labels.append("kernel size " + str(shape))
 
-                elif attr.name == 'strides':
+                elif attr.name == "strides":
                     shape = tuple(int(x) for x in attr.ints)
-                    if shape != (1,1):
+                    if shape != (1, 1):
                         labels.append("strides " + str(shape))
 
-
-        elif node.op_type == 'Reshape':
+        elif node.op_type == "Reshape":
 
             for attr in node.attribute:
                 # TODO: we should guarantee an ordering of the labels
-                if attr.name == 'shape':
+                if attr.name == "shape":
                     shape = tuple(int(x) for x in attr.ints)
                     labels.append("shape " + str(shape))
 
-
-        elif node.op_type == 'Dropout':
+        elif node.op_type == "Dropout":
 
             for attr in node.attribute:
                 # TODO: we should guarantee an ordering of the labels
-                if attr.name == 'ratio':
+                if attr.name == "ratio":
                     labels.append("p=" + str(attr.f))
 
-
-        #----------
+        # ----------
 
         if addIndex:
             # for debugging
             labels.append("(index = %d)" % index)
 
-
         # create a graphviz node
         gn = pydot.Node(
-                "n%d" % (index + 1),
-                label = "\n".join([ str(x) for x in labels ]),
-                shape = 'record', style = 'filled')
+            "n%d" % (index + 1),
+            label="\n".join([str(x) for x in labels]),
+            shape="record",
+            style="filled",
+        )
         outgraph.add_node(gn)
 
         # add outputs first
@@ -176,11 +177,11 @@ def makeDot(model, addIndex = False):
             # get the pydot node we have to connect to
             inputNode = nameToNodeOfOutput[inputName]
 
-            outgraph.add_edge(pydot.Edge(src = inputNode, dst = gn))
+            outgraph.add_edge(pydot.Edge(src=inputNode, dst=gn))
 
-    #----------
+    # ----------
     # add edges of output nodes to their sources
-    #----------
+    # ----------
 
     # note that the output nodes do not have an input
 
@@ -189,14 +190,14 @@ def makeDot(model, addIndex = False):
         # get the pydot node we have to connect to
         inputNode = nameToNodeOfOutput[node.name]
 
-        outgraph.add_edge(pydot.Edge(src = inputNode, dst = graphNode))
-
+        outgraph.add_edge(pydot.Edge(src=inputNode, dst=graphNode))
 
     return outgraph
 
-#----------------------------------------------------------------------
 
-if __name__ == '__main__':
+# ----------------------------------------------------------------------
+
+if __name__ == "__main__":
 
     ARGV = sys.argv[1:]
 
@@ -205,15 +206,18 @@ if __name__ == '__main__':
     inputFname, outputFname = ARGV
 
     if os.path.exists(outputFname):
-        print("output file " + outputFname + " exists already, refusing to overwrite it",
-              file=sys.stderr)
+        print(
+            "output file " + outputFname + " exists already, refusing to overwrite it",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     # infer output format from suffix
-    outputFormat = outputFname.split('.')[-1].lower()
+    outputFormat = outputFname.split(".")[-1].lower()
 
     if inputFname.endswith(".gz"):
         import gzip
+
         with gzip.GzipFile(inputFname) as fin:
             model = onnx.load(fin)
     else:
@@ -221,9 +225,8 @@ if __name__ == '__main__':
 
     outgraph = makeDot(model)
 
-    #----------
+    # ----------
     # write the graph out
-    #----------
+    # ----------
 
-    outgraph.write(outputFname, format = outputFormat)
-
+    outgraph.write(outputFname, format=outputFormat)

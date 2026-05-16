@@ -9,7 +9,7 @@ List of options:
 
 -outputfilename=<filename>: set the name of the file that stores the list of applicable software failures (default: llfi.applicable.software.failures.txt)
  Note: If <filename> is a relative path instead of an absolute path, the base path of <filename> will be the path of the targeting IR file instead of the calling path.
- 
+
 -numOfRuns <number of runs>: set the number of runs for each found failure mode (default: 1)
 --enable_tracing: enable tracing
 --enable_forward_injection: enable injection on the forward slice of the selected injection point
@@ -19,16 +19,14 @@ List of options:
 
 """
 
-
 import os
 import subprocess
 import sys
 import yaml
 
 script_path = os.path.realpath(os.path.dirname(__file__))
-sys.path.append(os.path.join(script_path, '../config'))
+sys.path.append(os.path.join(script_path, "../config"))
 import llvm_paths
-
 
 optbin = os.path.join(llvm_paths.LLVM_DST_ROOT, "bin/opt")
 llcbin = os.path.join(llvm_paths.LLVM_DST_ROOT, "bin/llc")
@@ -42,92 +40,104 @@ filename = "llfi.applicable.software.failures.txt"
 # directory of the target IR
 basedir = ""
 # input.yaml generation
-run_num_dict = {'numOfRuns': 1}
-tracing_dict = {'tracingPropagation':False, 'tracingPropagationOption':{'generateCDFG':False}}
-trace_injection_dict = {'includeInjectionTrace':[]}
+run_num_dict = {"numOfRuns": 1}
+tracing_dict = {
+    "tracingPropagation": False,
+    "tracingPropagationOption": {"generateCDFG": False},
+}
+trace_injection_dict = {"includeInjectionTrace": []}
 
 no_input_yaml_flag = False
 
+
 def parseArgs(args):
-   global basedir
-   global filename
-   global no_input_yaml_flag
+    global basedir
+    global filename
+    global no_input_yaml_flag
 
-   for i, arg in enumerate(args):
-       option = arg
-       if os.path.isfile(arg):
-           basedir = os.path.realpath(os.path.dirname(arg))
-           option = os.path.basename(arg)
-           options.append(option)
-       elif arg.startswith('-outputfilename='):
-           filename = arg.split('-outputfilename=')[-1]
-           options.append('-softwarescan_outputfilename='+filename)
-       elif arg == "-numOfRuns":
-           run_num_dict['numOfRuns'] = int(args[i+1])
-       elif arg == "--enable_tracing":
-           tracing_dict['tracingPropagation'] = True
-           tracing_dict['tracingPropagationOption']['generateCDFG'] = True
-       elif arg == "--enable_backward_injection":
-           trace_injection_dict['includeInjectionTrace'].append('forward')
-       elif arg == "--enable_forward_injection":
-           trace_injection_dict['includeInjectionTrace'].append('backward')
-       elif arg == "--no_input_yaml":
-           no_input_yaml_flag = True
-   os.chdir(basedir)
+    for i, arg in enumerate(args):
+        option = arg
+        if os.path.isfile(arg):
+            basedir = os.path.realpath(os.path.dirname(arg))
+            option = os.path.basename(arg)
+            options.append(option)
+        elif arg.startswith("-outputfilename="):
+            filename = arg.split("-outputfilename=")[-1]
+            options.append("-softwarescan_outputfilename=" + filename)
+        elif arg == "-numOfRuns":
+            run_num_dict["numOfRuns"] = int(args[i + 1])
+        elif arg == "--enable_tracing":
+            tracing_dict["tracingPropagation"] = True
+            tracing_dict["tracingPropagationOption"]["generateCDFG"] = True
+        elif arg == "--enable_backward_injection":
+            trace_injection_dict["includeInjectionTrace"].append("forward")
+        elif arg == "--enable_forward_injection":
+            trace_injection_dict["includeInjectionTrace"].append("backward")
+        elif arg == "--no_input_yaml":
+            no_input_yaml_flag = True
+    os.chdir(basedir)
 
-def usage(msg = None):
-  retval = 0
-  if msg is not None:
-    retval = 1
-    msg = "ERROR: " + msg
-    print(msg, file=sys.stderr)
-  print(__doc__ % globals(), file=sys.stderr)
-  sys.exit(retval)
+
+def usage(msg=None):
+    retval = 0
+    if msg is not None:
+        retval = 1
+        msg = "ERROR: " + msg
+        print(msg, file=sys.stderr)
+    print(__doc__ % globals(), file=sys.stderr)
+    sys.exit(retval)
+
 
 def runAutoScan(args):
-    execlist = [optbin, "-load-pass-plugin", llfipasses, "--passes=genllfiindexpass,SoftwareFailureAutoScanPass"]
+    execlist = [
+        optbin,
+        "-load-pass-plugin",
+        llfipasses,
+        "--passes=genllfiindexpass,SoftwareFailureAutoScanPass",
+    ]
     execlist.extend(args)
-    print(' '.join(execlist))
+    print(" ".join(execlist))
     p = subprocess.Popen(execlist)
     p.wait()
     if p.returncode != 0:
         print("ERROR: Software Auto scan pass return code !=0\n")
         sys.exit(p.returncode)
     elif not os.path.isfile(os.path.join(basedir, filename)):
-        print("ERROR: No output file found at: "+os.path.join(basedir, filename)+"!\n")
+        print(
+            "ERROR: No output file found at: " + os.path.join(basedir, filename) + "!\n"
+        )
         sys.exit(1)
     return 0
+
 
 def generateInputYaml():
     selector_list = []
     with open(os.path.join(basedir, filename)) as f:
         for line in f.readlines()[1:]:
-            selector_list.append(line.split('-')[-1].strip())
-    customInstselector_dict = {'customInstselector':{'include':selector_list}}
+            selector_list.append(line.split("-")[-1].strip())
+    customInstselector_dict = {"customInstselector": {"include": selector_list}}
     yaml_dict = {
-                    'compileOption':{
-                        'instSelMethod':[customInstselector_dict],
-                        'regSelMethod':'customregselector',
-                        'customRegSelector':'Automatic',
-                        },
-                    'runOption':[{
-                        'run':{
-                            'fi_type':'AutoInjection'
-                        }
-                    }]
-                }
-    yaml_dict['compileOption'].update(tracing_dict)
-    yaml_dict['compileOption'].update(trace_injection_dict)
-    yaml_dict['runOption'][0]['run'].update(run_num_dict)
+        "compileOption": {
+            "instSelMethod": [customInstselector_dict],
+            "regSelMethod": "customregselector",
+            "customRegSelector": "Automatic",
+        },
+        "runOption": [{"run": {"fi_type": "AutoInjection"}}],
+    }
+    yaml_dict["compileOption"].update(tracing_dict)
+    yaml_dict["compileOption"].update(trace_injection_dict)
+    yaml_dict["runOption"][0]["run"].update(run_num_dict)
     yaml_text = yaml.dump(yaml_dict, default_flow_style=False)
-    with open(os.path.join(basedir, 'input.yaml'), 'w') as f:
+    with open(os.path.join(basedir, "input.yaml"), "w") as f:
         f.write(yaml_text)
     return 0
 
+
 def cleanDir():
-    stale_config_file_path = os.path.join(basedir, 'llfi.config.compiletime.txt')
+    stale_config_file_path = os.path.join(basedir, "llfi.config.compiletime.txt")
     if os.path.isfile(stale_config_file_path):
-      os.remove(stale_config_file_path)
+        os.remove(stale_config_file_path)
+
 
 def main(args):
     parseArgs(args)
@@ -137,9 +147,10 @@ def main(args):
     cleanDir()
     return 0
 
+
 if __name__ == "__main__":
-        if len(sys.argv[1:]) < 1 or sys.argv[1] == '--help' or sys.argv[1] == '-h':
-                usage()
-                sys.exit(0)
-        r = main(sys.argv[1:])
-        sys.exit(r)
+    if len(sys.argv[1:]) < 1 or sys.argv[1] == "--help" or sys.argv[1] == "-h":
+        usage()
+        sys.exit(0)
+    r = main(sys.argv[1:])
+    sys.exit(r)

@@ -30,264 +30,312 @@ import subprocess
 import time
 
 options = {
-	'all':False,
-	'all_fault_injections':False,
-	'all_hardware_faults':False,
-	'all_batchmode':False,
-	'all_trace_tools_tests':False,
-	'all_makefile_generation':False,
-	'all_ml':False,
-	'test_cases':[],
-	'threads':1,
-	'clean_after_test':False,
+    "all": False,
+    "all_fault_injections": False,
+    "all_hardware_faults": False,
+    "all_batchmode": False,
+    "all_trace_tools_tests": False,
+    "all_makefile_generation": False,
+    "all_ml": False,
+    "test_cases": [],
+    "threads": 1,
+    "clean_after_test": False,
 }
 
 prog = os.path.basename(sys.argv[0])
 verbose = False
 
-def verbosePrint(msg):
-	if verbose:
-		print(msg)
 
-def usage(msg = None):
-	retval = 0
-	if msg is not None:
-		retval = 1
-		msg = "ERROR: " + msg
-		print(msg, file=sys.stderr)
-	print(__doc__ % globals(), file=sys.stderr)
-	sys.exit(retval)
+def verbosePrint(msg):
+    if verbose:
+        print(msg)
+
+
+def usage(msg=None):
+    retval = 0
+    if msg is not None:
+        retval = 1
+        msg = "ERROR: " + msg
+        print(msg, file=sys.stderr)
+    print(__doc__ % globals(), file=sys.stderr)
+    sys.exit(retval)
+
 
 def parseArgs(args):
-	global verbose
-	argid = 0
-	while argid < len(args):
-		arg = args[argid]
-		
-		if arg == "--all":
-			options['all'] = True
-			
-		elif arg == "--all_fault_injections":
-			options['all_fault_injections'] = True
-			
-		elif arg == "--all_hardware_faults":
-			options['all_hardware_faults'] = True
-			
-		elif arg == "--all_batchmode":
-			options['all_batchmode'] = True
-			
-		elif arg == "--test_cases":
-			argid += 1
-			while(argid < len(args) and args[argid][0] != '-'):
-				options['test_cases'].append(str(args[argid]))
-				argid += 1
+    global verbose
+    argid = 0
+    while argid < len(args):
+        arg = args[argid]
 
-		elif arg == "--threads":
-			argid += 1
-			options['threads'] = int(args[argid])
+        if arg == "--all":
+            options["all"] = True
 
-		elif arg == "--all_trace_tools_tests":
-			options['all_trace_tools_tests'] = True
+        elif arg == "--all_fault_injections":
+            options["all_fault_injections"] = True
 
-		elif arg == "--all_makefile_generation":
-			options['all_makefile_generation'] = True
+        elif arg == "--all_hardware_faults":
+            options["all_hardware_faults"] = True
 
-		elif arg == "--all_ml":
-			options['all_ml'] = True
+        elif arg == "--all_batchmode":
+            options["all_batchmode"] = True
 
-		elif arg == "--clean_after_test":
-			options['clean_after_test'] = True
+        elif arg == "--test_cases":
+            argid += 1
+            while argid < len(args) and args[argid][0] != "-":
+                options["test_cases"].append(str(args[argid]))
+                argid += 1
 
-		elif arg == "--help" or arg == "-h":
-			usage()
+        elif arg == "--threads":
+            argid += 1
+            options["threads"] = int(args[argid])
 
-		elif arg == "--verbose":
-			verbose = True
+        elif arg == "--all_trace_tools_tests":
+            options["all_trace_tools_tests"] = True
 
-		argid += 1
+        elif arg == "--all_makefile_generation":
+            options["all_makefile_generation"] = True
+
+        elif arg == "--all_ml":
+            options["all_ml"] = True
+
+        elif arg == "--clean_after_test":
+            options["clean_after_test"] = True
+
+        elif arg == "--help" or arg == "-h":
+            usage()
+
+        elif arg == "--verbose":
+            verbose = True
+
+        argid += 1
+
 
 def startTestRoutine():
-	script_dir = os.path.dirname(os.path.realpath(__file__))
-	sys.path.append(script_dir)
-	build_prog_script = os.path.join(script_dir, 'build_prog.py')
-	deploy_prog_script = os.path.join(script_dir, 'deploy_prog.py')
-	inject_prog_script = os.path.join(script_dir, 'inject_prog.py')
-	clear_all_script = os.path.join(script_dir, 'clear_all.py')
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    sys.path.append(script_dir)
+    build_prog_script = os.path.join(script_dir, "build_prog.py")
+    deploy_prog_script = os.path.join(script_dir, "deploy_prog.py")
+    inject_prog_script = os.path.join(script_dir, "inject_prog.py")
+    clear_all_script = os.path.join(script_dir, "clear_all.py")
 
-	injection_result_list = []
-	trace_result_list = []
-	generate_makefile_result_list = []
-	ml_result_list = []
+    injection_result_list = []
+    trace_result_list = []
+    generate_makefile_result_list = []
+    ml_result_list = []
 
-	if options['all'] or options['all_batchmode'] or options['all_hardware_faults']\
-	or options['all_fault_injections'] or options['test_cases'] != []:
-		## build all the test program
-		execlist = ['python3', '-u', build_prog_script]
-		verbosePrint(' '.join(execlist))
-		p = subprocess.Popen(execlist, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		p.wait()
-		r = p.returncode
-		if r != 0:
-			print("ERROR: Failed in building all test programs")
-			sys.exit(-1)
-		else:
-			print("Build test programs successfully.")
-	
-		## deploy programs
-		execlist = ['python3', '-u', deploy_prog_script]
-		if options['all_batchmode']:
-			execlist.append('BatchMode')
-		elif options['all_hardware_faults']:
-			execlist.append('HardwareFaults')
-		elif options['test_cases'] != []:
-			execlist.extend(options['test_cases'])
-		elif options['all'] or options['all_fault_injections']:
-			pass
-		verbosePrint(' '.join(execlist))
-		p = subprocess.Popen(execlist, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		p.wait()
-		r = p.returncode
-		if r != 0:
-			print("ERROR: Failed in deploy test programs")
-			sys.exit(-1)
-		else:
-			print("Deploy test programs successfully.")
+    if (
+        options["all"]
+        or options["all_batchmode"]
+        or options["all_hardware_faults"]
+        or options["all_fault_injections"]
+        or options["test_cases"] != []
+    ):
+        ## build all the test program
+        execlist = ["python3", "-u", build_prog_script]
+        verbosePrint(" ".join(execlist))
+        p = subprocess.Popen(execlist, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p.wait()
+        r = p.returncode
+        if r != 0:
+            print("ERROR: Failed in building all test programs")
+            sys.exit(-1)
+        else:
+            print("Build test programs successfully.")
 
-		## start fault injection
-		execlist = ['python3', '-u', inject_prog_script, str(options['threads'])]
-		if options['all_batchmode']:
-			execlist.append('BatchMode')
-		elif options['all_hardware_faults']:
-			execlist.append('HardwareFaults')
-		elif options['test_cases'] != []:
-			execlist.extend(options['test_cases'])
-		elif options['all'] or options['all_fault_injections']:
-			pass
-		verbosePrint(' '.join(execlist))
-		p = subprocess.Popen(execlist, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		p.wait()
-		r = p.returncode
-		if r != 0:
-			print("WARNING: error occurs during fault injection. Continue on testing.")
-		else:
-			print("Fault injection ends normally.")
+        ## deploy programs
+        execlist = ["python3", "-u", deploy_prog_script]
+        if options["all_batchmode"]:
+            execlist.append("BatchMode")
+        elif options["all_hardware_faults"]:
+            execlist.append("HardwareFaults")
+        elif options["test_cases"] != []:
+            execlist.extend(options["test_cases"])
+        elif options["all"] or options["all_fault_injections"]:
+            pass
+        verbosePrint(" ".join(execlist))
+        p = subprocess.Popen(execlist, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p.wait()
+        r = p.returncode
+        if r != 0:
+            print("ERROR: Failed in deploy test programs")
+            sys.exit(-1)
+        else:
+            print("Deploy test programs successfully.")
 
-		## check the injection
-		import check_injection
-		prog_list = []
-		if options['all_batchmode']:
-			prog_list.append('BatchMode')
-		elif options['all_hardware_faults']:
-			prog_list.append('HardwareFaults')
-		elif options['test_cases'] != []:
-			prog_list.extend(options['test_cases'])
-		elif options['all'] or options['all_fault_injections']:
-			pass
-		verbosePrint('Calling: check_injection.check_injection(' + ' '.join(prog_list) + ')')
-		check_injection_returncode, injection_result_list = check_injection.check_injection(*prog_list)
+        ## start fault injection
+        execlist = ["python3", "-u", inject_prog_script, str(options["threads"])]
+        if options["all_batchmode"]:
+            execlist.append("BatchMode")
+        elif options["all_hardware_faults"]:
+            execlist.append("HardwareFaults")
+        elif options["test_cases"] != []:
+            execlist.extend(options["test_cases"])
+        elif options["all"] or options["all_fault_injections"]:
+            pass
+        verbosePrint(" ".join(execlist))
+        p = subprocess.Popen(execlist, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p.wait()
+        r = p.returncode
+        if r != 0:
+            print("WARNING: error occurs during fault injection. Continue on testing.")
+        else:
+            print("Fault injection ends normally.")
 
-	## run trace tools's tests
-	if options['all_trace_tools_tests'] or options['all'] or options['test_cases'] != []:
-		import test_trace_tools
-		prog_list = []
-		if options['test_cases'] != []:
-			prog_list.extend(options['test_cases'])
-		elif options['all_trace_tools_tests'] or options['all']:
-			pass
-		verbosePrint('Calling: test_trace_tools.test_trace_tools(' + ' '.join(prog_list) + ')')
-		test_trace_tools_returncode, trace_result_list = test_trace_tools.test_trace_tools(*prog_list)
+        ## check the injection
+        import check_injection
 
-	## run ML/ONNX tools tests (not part of --all; requires optional deps)
-	if options['all_ml']:
-		import test_ml_tools
-		import test_software_failure_autoscan
-		import test_ml_models
-		import test_instruction_duplication
-		verbosePrint('Calling: test_ml_tools.test_ml_tools()')
-		_, ml_tools_list = test_ml_tools.test_ml_tools()
-		verbosePrint('Calling: test_software_failure_autoscan.test_software_failure_autoscan()')
-		_, autoscan_list = test_software_failure_autoscan.test_software_failure_autoscan()
-		verbosePrint('Calling: test_ml_models.test_ml_models()')
-		_, ml_models_list = test_ml_models.test_ml_models()
-		verbosePrint('Calling: test_instruction_duplication.test_instruction_duplication()')
-		_, sid_list = test_instruction_duplication.test_instruction_duplication()
-		ml_result_list = ml_tools_list + autoscan_list + ml_models_list + sid_list
+        prog_list = []
+        if options["all_batchmode"]:
+            prog_list.append("BatchMode")
+        elif options["all_hardware_faults"]:
+            prog_list.append("HardwareFaults")
+        elif options["test_cases"] != []:
+            prog_list.extend(options["test_cases"])
+        elif options["all"] or options["all_fault_injections"]:
+            pass
+        verbosePrint(
+            "Calling: check_injection.check_injection(" + " ".join(prog_list) + ")"
+        )
+        check_injection_returncode, injection_result_list = (
+            check_injection.check_injection(*prog_list)
+        )
 
-	## run MakefileGeneration tests
-	if options['all_makefile_generation'] or options['all'] or options['test_cases'] != []:
-		import test_generate_makefile
-		prog_list = []
-		if options['test_cases'] != []:
-			prog_list.extend(options['test_cases'])
-		elif options['all_makefile_generation'] or options['all']:
-			pass
-		verbosePrint('Calling: test_generate_makefile.test_generate_makefile(' + ' '.join(prog_list) + ')')
-		test_generate_makefile_returncode, generate_makefile_result_list = test_generate_makefile.test_generate_makefile(*prog_list)
+    ## run trace tools's tests
+    if (
+        options["all_trace_tools_tests"]
+        or options["all"]
+        or options["test_cases"] != []
+    ):
+        import test_trace_tools
 
-	## collect the results
-	total = 0
-	passed = 0
-	if len(injection_result_list) > 0:
-		print ("==== Check Injection Result ====")
-		for record in injection_result_list:
-			print(record["name"], "\t\t", record["result"])
-			total += 1
-			if record['result'] == 'PASS':
-				passed += 1
-	if len(trace_result_list) > 0:
-		print ("==== Test Trace Tools Result ====")
-		for record in trace_result_list:
-			print(record["name"], "\t\t", record["result"])
-			total += 1
-			if record['result'] == 'PASS':
-				passed += 1
+        prog_list = []
+        if options["test_cases"] != []:
+            prog_list.extend(options["test_cases"])
+        elif options["all_trace_tools_tests"] or options["all"]:
+            pass
+        verbosePrint(
+            "Calling: test_trace_tools.test_trace_tools(" + " ".join(prog_list) + ")"
+        )
+        test_trace_tools_returncode, trace_result_list = (
+            test_trace_tools.test_trace_tools(*prog_list)
+        )
 
-	if len(generate_makefile_result_list) > 0:
-		print("==== Test MakefileGeneration Tool Result ====")
-		for record in generate_makefile_result_list:
-			print(record["name"], '\t\t', record["result"])
-			total += 1
-			if record['result'] == 'PASS':
-				passed += 1
+    ## run ML/ONNX tools tests (not part of --all; requires optional deps)
+    if options["all_ml"]:
+        import test_ml_tools
+        import test_software_failure_autoscan
+        import test_ml_models
+        import test_instruction_duplication
 
-	if len(ml_result_list) > 0:
-		print("==== Test ML/ONNX Tools Result ====")
-		for record in ml_result_list:
-			print(record["name"], '\t\t', record["result"])
-			if record['result'].startswith('SKIP'):
-				continue  # SKIPs are neither pass nor fail
-			total += 1
-			if record['result'] == 'PASS':
-				passed += 1
+        verbosePrint("Calling: test_ml_tools.test_ml_tools()")
+        _, ml_tools_list = test_ml_tools.test_ml_tools()
+        verbosePrint(
+            "Calling: test_software_failure_autoscan.test_software_failure_autoscan()"
+        )
+        _, autoscan_list = (
+            test_software_failure_autoscan.test_software_failure_autoscan()
+        )
+        verbosePrint("Calling: test_ml_models.test_ml_models()")
+        _, ml_models_list = test_ml_models.test_ml_models()
+        verbosePrint(
+            "Calling: test_instruction_duplication.test_instruction_duplication()"
+        )
+        _, sid_list = test_instruction_duplication.test_instruction_duplication()
+        ml_result_list = ml_tools_list + autoscan_list + ml_models_list + sid_list
 
-	print("=== Overall Counts ====")
-	print("Total tests:\t", total)
-	print("Passed tests:\t", passed)
-	print("Failed tests:\t", total - passed)
+    ## run MakefileGeneration tests
+    if (
+        options["all_makefile_generation"]
+        or options["all"]
+        or options["test_cases"] != []
+    ):
+        import test_generate_makefile
 
-	if options['clean_after_test']:
-		execlist = ['python3', '-u', clear_all_script]
-		verbosePrint(' '.join(execlist))
-		p = subprocess.Popen(execlist, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		p.wait()
-		os.chdir(os.path.join(script_dir, os.pardir, 'PROGRAMS'))
-		os.system('make clean')
-		dirs = [d for d in os.listdir(os.path.join(script_dir, os.pardir, 'MakefileGeneration')) 
-		if os.path.isdir(os.path.join(script_dir, os.pardir, 'MakefileGeneration',d))]
-		print(dirs)
-		for d in dirs:
-			p = os.path.join(script_dir, os.pardir, 'MakefileGeneration', d)
-			os.chdir(p)
-			os.system('make clean')
+        prog_list = []
+        if options["test_cases"] != []:
+            prog_list.extend(options["test_cases"])
+        elif options["all_makefile_generation"] or options["all"]:
+            pass
+        verbosePrint(
+            "Calling: test_generate_makefile.test_generate_makefile("
+            + " ".join(prog_list)
+            + ")"
+        )
+        test_generate_makefile_returncode, generate_makefile_result_list = (
+            test_generate_makefile.test_generate_makefile(*prog_list)
+        )
 
+    ## collect the results
+    total = 0
+    passed = 0
+    if len(injection_result_list) > 0:
+        print("==== Check Injection Result ====")
+        for record in injection_result_list:
+            print(record["name"], "\t\t", record["result"])
+            total += 1
+            if record["result"] == "PASS":
+                passed += 1
+    if len(trace_result_list) > 0:
+        print("==== Test Trace Tools Result ====")
+        for record in trace_result_list:
+            print(record["name"], "\t\t", record["result"])
+            total += 1
+            if record["result"] == "PASS":
+                passed += 1
 
-	return 0
+    if len(generate_makefile_result_list) > 0:
+        print("==== Test MakefileGeneration Tool Result ====")
+        for record in generate_makefile_result_list:
+            print(record["name"], "\t\t", record["result"])
+            total += 1
+            if record["result"] == "PASS":
+                passed += 1
+
+    if len(ml_result_list) > 0:
+        print("==== Test ML/ONNX Tools Result ====")
+        for record in ml_result_list:
+            print(record["name"], "\t\t", record["result"])
+            if record["result"].startswith("SKIP"):
+                continue  # SKIPs are neither pass nor fail
+            total += 1
+            if record["result"] == "PASS":
+                passed += 1
+
+    print("=== Overall Counts ====")
+    print("Total tests:\t", total)
+    print("Passed tests:\t", passed)
+    print("Failed tests:\t", total - passed)
+
+    if options["clean_after_test"]:
+        execlist = ["python3", "-u", clear_all_script]
+        verbosePrint(" ".join(execlist))
+        p = subprocess.Popen(execlist, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p.wait()
+        os.chdir(os.path.join(script_dir, os.pardir, "PROGRAMS"))
+        os.system("make clean")
+        dirs = [
+            d
+            for d in os.listdir(
+                os.path.join(script_dir, os.pardir, "MakefileGeneration")
+            )
+            if os.path.isdir(
+                os.path.join(script_dir, os.pardir, "MakefileGeneration", d)
+            )
+        ]
+        print(dirs)
+        for d in dirs:
+            p = os.path.join(script_dir, os.pardir, "MakefileGeneration", d)
+            os.chdir(p)
+            os.system("make clean")
+
+    return 0
+
 
 if __name__ == "__main__":
-	if len(sys.argv) == 1:
-		usage()
-	parseArgs(sys.argv[1:])
-	print("Tests Start on: ", time.ctime())
-	r = startTestRoutine()
-	print("Tests Ends on: ", time.ctime())
-	sys.exit(r)
+    if len(sys.argv) == 1:
+        usage()
+    parseArgs(sys.argv[1:])
+    print("Tests Start on: ", time.ctime())
+    r = startTestRoutine()
+    print("Tests Ends on: ", time.ctime())
+    sys.exit(r)

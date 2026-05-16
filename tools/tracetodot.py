@@ -8,7 +8,6 @@
 #  Output: Generate trace different report files and its .dot files to the folder trace_report_output
 
 
-
 """
 
 %(prog)s needs to be called in the folder that contains the llfi trace files (e.g. /llfi_stat_output)
@@ -23,7 +22,6 @@ List of options:
 
 """
 
-
 import sys, os
 import subprocess
 import shlex
@@ -31,102 +29,123 @@ import shlex
 prog = os.path.basename(sys.argv[0])
 
 
-
 def parseArgs(args):
-  argid = 0
-  while argid < len(args):
-    arg = args[argid]
-    if arg.startswith("-"):
-      if arg == "--help" or arg == "-h":
-        usage()
-      else:
-        usage("Invalid argument: " + arg)
-    argid += 1
+    argid = 0
+    while argid < len(args):
+        arg = args[argid]
+        if arg.startswith("-"):
+            if arg == "--help" or arg == "-h":
+                usage()
+            else:
+                usage("Invalid argument: " + arg)
+        argid += 1
 
 
-def usage(msg = None):
-  retval = 0
-  if msg is not None:
-    retval = 1
-    msg = "ERROR: " + msg
-    print(msg, file=sys.stderr)
-  print(__doc__ % globals(), file=sys.stderr)
-  sys.exit(retval)
+def usage(msg=None):
+    retval = 0
+    if msg is not None:
+        retval = 1
+        msg = "ERROR: " + msg
+        print(msg, file=sys.stderr)
+    print(__doc__ % globals(), file=sys.stderr)
+    sys.exit(retval)
 
 
 def findPath():
-	global currentpath, scriptdir
+    global currentpath, scriptdir
 
-	currentpath = os.getcwd()
-	#print (currentpath)
+    currentpath = os.getcwd()
+    # print (currentpath)
 
-	scriptdir = os.path.dirname(os.path.abspath(__file__))
-
+    scriptdir = os.path.dirname(os.path.abspath(__file__))
 
 
 def makeTraceOutputFolder():
-	global traceOutputFolder, goldenTraceFilePath
-	traceOutputFolder = os.path.abspath(os.path.join(currentpath, "../trace_report_output"))
-	#print (traceOutputFolder)
-	goldenTraceFilePath = os.path.abspath(os.path.join(currentpath, "../baseline/llfi.stat.trace.prof.txt"))
-	if not os.path.exists(traceOutputFolder):
-		os.makedirs(traceOutputFolder)
-	else:
-		# Remove the contents in traceOutputFolder
-		for f in os.listdir(traceOutputFolder):
-			file_path = os.path.join(traceOutputFolder,f)
-			if os.path.isfile(file_path):
-				os.unlink(file_path)
-	if not os.path.isfile(goldenTraceFilePath):
-		print ("Cannot find golden Trace File 'llfi.stat.trace.prof.txt'")
-
+    global traceOutputFolder, goldenTraceFilePath
+    traceOutputFolder = os.path.abspath(
+        os.path.join(currentpath, "../trace_report_output")
+    )
+    # print (traceOutputFolder)
+    goldenTraceFilePath = os.path.abspath(
+        os.path.join(currentpath, "../baseline/llfi.stat.trace.prof.txt")
+    )
+    if not os.path.exists(traceOutputFolder):
+        os.makedirs(traceOutputFolder)
+    else:
+        # Remove the contents in traceOutputFolder
+        for f in os.listdir(traceOutputFolder):
+            file_path = os.path.join(traceOutputFolder, f)
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+    if not os.path.isfile(goldenTraceFilePath):
+        print("Cannot find golden Trace File 'llfi.stat.trace.prof.txt'")
 
 
 def executeTraceDiff():
-	traceFileCount = 0
-	log_path = os.path.abspath(os.path.join(traceOutputFolder, "stderr_log.txt"))
-	with open(log_path, 'w') as log_file:
-		for file in os.listdir(currentpath):
-			if file.endswith(".txt") and file.startswith("llfi.stat.trace."):
-				suffix = file[file.find("llfi.stat.trace") + len("llfi.stat.trace"):]
-				out_path = os.path.join(traceOutputFolder, "TraceDiffReportFile" + suffix)
-				with open(out_path, 'w') as out_file:
-					subprocess.call(
-						[os.path.join(scriptdir, "tracediff"), goldenTraceFilePath, file],
-						stdout=out_file, stderr=log_file)
-				traceFileCount += 1
-	if traceFileCount == 0:
-		print("Cannot find Trace input files.")
-		print("Please make sure you are running this script in the llfi_stat_output folder")
+    traceFileCount = 0
+    log_path = os.path.abspath(os.path.join(traceOutputFolder, "stderr_log.txt"))
+    with open(log_path, "w") as log_file:
+        for file in os.listdir(currentpath):
+            if file.endswith(".txt") and file.startswith("llfi.stat.trace."):
+                suffix = file[file.find("llfi.stat.trace") + len("llfi.stat.trace") :]
+                out_path = os.path.join(
+                    traceOutputFolder, "TraceDiffReportFile" + suffix
+                )
+                with open(out_path, "w") as out_file:
+                    subprocess.call(
+                        [
+                            os.path.join(scriptdir, "tracediff"),
+                            goldenTraceFilePath,
+                            file,
+                        ],
+                        stdout=out_file,
+                        stderr=log_file,
+                    )
+                traceFileCount += 1
+    if traceFileCount == 0:
+        print("Cannot find Trace input files.")
+        print(
+            "Please make sure you are running this script in the llfi_stat_output folder"
+        )
+
 
 def generateDotFile():
-	log_path = os.path.abspath(os.path.join(traceOutputFolder, "stderr_log.txt"))
-	goldenTraceDotFile = os.path.abspath(os.path.join(currentpath, "../../../llfi.stat.graph.dot"))
-	if not os.path.isfile(goldenTraceDotFile):
-		goldenTraceDotFile = os.path.abspath(os.path.join(currentpath, "../../llfi.stat.graph.dot"))
-		if not os.path.isfile(goldenTraceDotFile):
-			print("Cannot find golden Trace Dot File 'llfi.stat.graph.dot'")
+    log_path = os.path.abspath(os.path.join(traceOutputFolder, "stderr_log.txt"))
+    goldenTraceDotFile = os.path.abspath(
+        os.path.join(currentpath, "../../../llfi.stat.graph.dot")
+    )
+    if not os.path.isfile(goldenTraceDotFile):
+        goldenTraceDotFile = os.path.abspath(
+            os.path.join(currentpath, "../../llfi.stat.graph.dot")
+        )
+        if not os.path.isfile(goldenTraceDotFile):
+            print("Cannot find golden Trace Dot File 'llfi.stat.graph.dot'")
 
-	with open(log_path, 'a') as log_file:
-		for file in os.listdir(traceOutputFolder):
-			if file.startswith("TraceDiffReportFile"):
-				name = file[len("TraceDiffReportFile"):].replace("txt", "dot")
-				out_path = os.path.join(traceOutputFolder, "TraceGraph" + name)
-				with open(out_path, 'w') as out_file:
-					subprocess.call(
-						[os.path.join(scriptdir, "traceontograph"),
-						 os.path.join(traceOutputFolder, file),
-						 goldenTraceDotFile],
-						stdout=out_file, stderr=log_file)
+    with open(log_path, "a") as log_file:
+        for file in os.listdir(traceOutputFolder):
+            if file.startswith("TraceDiffReportFile"):
+                name = file[len("TraceDiffReportFile") :].replace("txt", "dot")
+                out_path = os.path.join(traceOutputFolder, "TraceGraph" + name)
+                with open(out_path, "w") as out_file:
+                    subprocess.call(
+                        [
+                            os.path.join(scriptdir, "traceontograph"),
+                            os.path.join(traceOutputFolder, file),
+                            goldenTraceDotFile,
+                        ],
+                        stdout=out_file,
+                        stderr=log_file,
+                    )
 
 
 def main(args):
-	global currentpath, scriptdir, traceOutputFolder, goldenTraceFilePath
-	parseArgs(args)
-	findPath()
-	makeTraceOutputFolder()
-	executeTraceDiff()
-	generateDotFile()
+    global currentpath, scriptdir, traceOutputFolder, goldenTraceFilePath
+    parseArgs(args)
+    findPath()
+    makeTraceOutputFolder()
+    executeTraceDiff()
+    generateDotFile()
 
-if __name__=="__main__":
-  main(sys.argv[1:])
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

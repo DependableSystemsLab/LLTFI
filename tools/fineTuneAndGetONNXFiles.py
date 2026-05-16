@@ -8,21 +8,21 @@ from onnx import numpy_helper
 from transformers import DataCollatorForLanguageModeling
 
 models = [
-"aajrami/bert-sr-base",
-"aajrami/bert-sr-medium",
-"aajrami/bert-sr-small",
-"aajrami/bert-mlm-base",
-"aajrami/bert-mlm-medium",
-"aajrami/bert-mlm-small",
-"aajrami/bert-fc-base",
-"aajrami/bert-fc-medium",
-"aajrami/bert-fc-small",
-"aajrami/bert-ascii-base",
-"aajrami/bert-ascii-medium",
-"aajrami/bert-ascii-small",
-"aajrami/bert-rand-base",
-"aajrami/bert-rand-medium",
-"aajrami/bert-rand-small"
+    "aajrami/bert-sr-base",
+    "aajrami/bert-sr-medium",
+    "aajrami/bert-sr-small",
+    "aajrami/bert-mlm-base",
+    "aajrami/bert-mlm-medium",
+    "aajrami/bert-mlm-small",
+    "aajrami/bert-fc-base",
+    "aajrami/bert-fc-medium",
+    "aajrami/bert-fc-small",
+    "aajrami/bert-ascii-base",
+    "aajrami/bert-ascii-medium",
+    "aajrami/bert-ascii-small",
+    "aajrami/bert-rand-base",
+    "aajrami/bert-rand-medium",
+    "aajrami/bert-rand-small",
 ]
 
 inputs = [
@@ -30,10 +30,11 @@ inputs = [
     "The <mask> is the largest organ in the human body",
     "One of the defining features of <mask> (the phylum that sea urchins belong to) is radial symmetry.",
     "Not my field, but let me offer one possible point of <mask>:",
-    "Inertial reference frames are, by definition, inertial. Rotation is a kind of <mask>."
+    "Inertial reference frames are, by definition, inertial. Rotation is a kind of <mask>.",
 ]
 
 block_size = 128
+
 
 def group_texts(examples):
     # Concatenate all texts.
@@ -51,8 +52,10 @@ def group_texts(examples):
     result["labels"] = result["input_ids"].copy()
     return result
 
+
 def preprocess_function(examples):
     return tokenizer([" ".join(x) for x in examples["answers.text"]])
+
 
 eli5 = load_dataset("eli5", split="train_asks[:5000]")
 eli5 = eli5.train_test_split(test_size=0.2)
@@ -72,7 +75,9 @@ for ii in range(0, len(models)):
     lm_dataset = tokenized_eli5.map(group_texts, batched=True, num_proc=4)
 
     tokenizer.pad_token = tokenizer.eos_token
-    data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=0.15)
+    data_collator = DataCollatorForLanguageModeling(
+        tokenizer=tokenizer, mlm_probability=0.15
+    )
     model = AutoModelForMaskedLM.from_pretrained(modelName).to("cuda")
 
     training_args = TrainingArguments(
@@ -82,7 +87,7 @@ for ii in range(0, len(models)):
         per_device_train_batch_size=16,
         per_device_eval_batch_size=16,
         num_train_epochs=10,
-        weight_decay=0.01
+        weight_decay=0.01,
     )
 
     trainer = Trainer(
@@ -96,25 +101,30 @@ for ii in range(0, len(models)):
 
     trainer.train()
 
-    modelName = modelName.replace('/', '-') + 'fine-tuned'
+    modelName = modelName.replace("/", "-") + "fine-tuned"
 
     tokenizer.save_pretrained(modelName)
     model = model.to("cpu")
     model.save_pretrained(modelName)
 
     # Convert the model to ONNX
-    os.system("python3 -m transformers.onnx --model=" + modelName + ' --feature=masked-lm ' + str(modelName + '-onnx'))
+    os.system(
+        "python3 -m transformers.onnx --model="
+        + modelName
+        + " --feature=masked-lm "
+        + str(modelName + "-onnx")
+    )
     os.system("rm -rf " + str(modelName))
-    os.chdir(str(modelName + '-onnx'))
+    os.chdir(str(modelName + "-onnx"))
     tokenizer = AutoTokenizer.from_pretrained(".")
 
     # Convert inputs to .pb file
     for j in range(0, len(inputs)):
         inp = inputs[j]
         inp = tokenizer(inp, return_tensors="np")
-        #pdb.set_trace()
-        input_ids = numpy_helper.from_array(inp['input_ids'])
-        attention_mask = numpy_helper.from_array(inp['attention_mask'])
+        # pdb.set_trace()
+        input_ids = numpy_helper.from_array(inp["input_ids"])
+        attention_mask = numpy_helper.from_array(inp["attention_mask"])
 
         # Convert to torch tensors
         with open(os.path.join("", f"input{j}_0.pb"), "wb") as f:
@@ -123,4 +133,4 @@ for ii in range(0, len(models)):
         with open(os.path.join("", f"input{j}_1.pb"), "wb") as f:
             f.write(attention_mask.SerializeToString())
 
-    os.chdir('..')
+    os.chdir("..")

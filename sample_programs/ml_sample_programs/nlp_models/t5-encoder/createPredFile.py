@@ -10,48 +10,77 @@ import os
 import json, pdb
 
 ROOT = os.getcwd()
-LLFI_OUT = os.path.join(ROOT, 'llfi')
-PROG_OUT = os.path.join(LLFI_OUT, 'prog_output')
+LLFI_OUT = os.path.join(ROOT, "llfi")
+PROG_OUT = os.path.join(LLFI_OUT, "prog_output")
 
 # WMT19 Dataset from huggingface
 prompts = []
-prompts.append('translate English to German: I declare resumed the session of the European Parliament adjourned on Friday, 15 December 2000.')
-prompts.append('translate English to German: Statements by the President')
-prompts.append('translate English to French: Statements by the President')
-prompts.append('translate English to French: I declare resumed the session of the European Parliament adjourned on Friday, 15 December 2000.')
-prompts.append('translate English to German: Ladies and gentlemen, on Saturday, as you know, an earthquake struck Central America once again, with tragic consequences. This is an area which has already been seriously affected on a number of occasions since the beginning of the twentieth century.')
-prompts.append('translate English to French: Ladies and gentlemen, on Saturday, as you know, an earthquake struck Central America once again, with tragic consequences. This is an area which has already been seriously affected on a number of occasions since the beginning of the twentieth century.')
-prompts.append('''translate English to German: (The House rose and observed a minute's silence)''')
-prompts.append('''translate English to French: (The House rose and observed a minute's silence)''')
-prompts.append('translate English to German: I should like, on behalf of the European Parliament, to express our sympathy to the parents and families of the victims.')
-prompts.append('translate English to French: I should like, on behalf of the European Parliament, to express our sympathy to the parents and families of the victims.')
+prompts.append(
+    "translate English to German: I declare resumed the session of the European Parliament adjourned on Friday, 15 December 2000."
+)
+prompts.append("translate English to German: Statements by the President")
+prompts.append("translate English to French: Statements by the President")
+prompts.append(
+    "translate English to French: I declare resumed the session of the European Parliament adjourned on Friday, 15 December 2000."
+)
+prompts.append(
+    "translate English to German: Ladies and gentlemen, on Saturday, as you know, an earthquake struck Central America once again, with tragic consequences. This is an area which has already been seriously affected on a number of occasions since the beginning of the twentieth century."
+)
+prompts.append(
+    "translate English to French: Ladies and gentlemen, on Saturday, as you know, an earthquake struck Central America once again, with tragic consequences. This is an area which has already been seriously affected on a number of occasions since the beginning of the twentieth century."
+)
+prompts.append(
+    """translate English to German: (The House rose and observed a minute's silence)"""
+)
+prompts.append(
+    """translate English to French: (The House rose and observed a minute's silence)"""
+)
+prompts.append(
+    "translate English to German: I should like, on behalf of the European Parliament, to express our sympathy to the parents and families of the victims."
+)
+prompts.append(
+    "translate English to French: I should like, on behalf of the European Parliament, to express our sympathy to the parents and families of the victims."
+)
 
-def lltfi_sort(elem):                                                           
-    return int(elem.split('layeroutput')[-1].split('-')[-1].split('.txt')[0])
+
+def lltfi_sort(elem):
+    return int(elem.split("layeroutput")[-1].split("-")[-1].split(".txt")[0])
+
 
 class GenerativeT5_custom_encoder(torch.nn.Module):
-    """ Code Ref: https://github.com/abelriboulot/onnxt5
-        Args:
-            encoder: huggingface encoder or onnx session for the encoder of T5. Can be obtained with the
-                create_t5_encoder_decoder utility function for pytorch, see examples below.
-            decoder_with_lm_head: decoder with language model head on top. Can be obtained with the
-                create_t5_encoder_decoder utility function for pytorch, see examples below.
-            tokenizer: huggingface tokenizer
-            onnx (bool): whether to use onnx or the default pytorch
-            cuda (bool): whether to use cuda or the cpu"""
-    def __init__(self, encoder_outputs_prompt, decoder_with_lm_head, tokenizer, cuda=False):
+    """Code Ref: https://github.com/abelriboulot/onnxt5
+    Args:
+        encoder: huggingface encoder or onnx session for the encoder of T5. Can be obtained with the
+            create_t5_encoder_decoder utility function for pytorch, see examples below.
+        decoder_with_lm_head: decoder with language model head on top. Can be obtained with the
+            create_t5_encoder_decoder utility function for pytorch, see examples below.
+        tokenizer: huggingface tokenizer
+        onnx (bool): whether to use onnx or the default pytorch
+        cuda (bool): whether to use cuda or the cpu"""
+
+    def __init__(
+        self, encoder_outputs_prompt, decoder_with_lm_head, tokenizer, cuda=False
+    ):
         super().__init__()
         self.encoder_outputs_prompt = encoder_outputs_prompt
         self.decoder_with_lm_head = decoder_with_lm_head
         self.tokenizer = tokenizer
         self.cuda = cuda
 
-    def forward(self, max_length, temperature=1., repetition_penalty=1., top_k=50, top_p=0, max_context_length=512):
-        """ Forward function to generate text after a prompt
-            Args:
-                prompt: str to run (don't forget to add at the beginning the task to run such as "summarize:"
-                        or "translate English to German:"
-                max_context_length: maximum number of tokens to use as context
+    def forward(
+        self,
+        max_length,
+        temperature=1.0,
+        repetition_penalty=1.0,
+        top_k=50,
+        top_p=0,
+        max_context_length=512,
+    ):
+        """Forward function to generate text after a prompt
+        Args:
+            prompt: str to run (don't forget to add at the beginning the task to run such as "summarize:"
+                    or "translate English to German:"
+            max_context_length: maximum number of tokens to use as context
         """
         with torch.no_grad():
             new_tokens = torch.tensor(())
@@ -62,16 +91,24 @@ class GenerativeT5_custom_encoder(torch.nn.Module):
             top_p = top_p
 
             # The sequence now needs to start with a
-            generated = torch.zeros((1,1), dtype=torch.long)
+            generated = torch.zeros((1, 1), dtype=torch.long)
             if self.cuda and not self.onnx:
                 generated = generated.cuda()
 
-
             for _ in range(max_length):
-                outputs = torch.tensor(self.decoder_with_lm_head.run(None, {"input_ids": generated.cpu().numpy(),
-                                                   "encoder_hidden_states": self.encoder_outputs_prompt}))
+                outputs = torch.tensor(
+                    self.decoder_with_lm_head.run(
+                        None,
+                        {
+                            "input_ids": generated.cpu().numpy(),
+                            "encoder_hidden_states": self.encoder_outputs_prompt,
+                        },
+                    )
+                )
                 outputs = outputs[0][0]
-                next_token_logits = outputs[-1, :] / (temperature if temperature > 0 else 1.0)
+                next_token_logits = outputs[-1, :] / (
+                    temperature if temperature > 0 else 1.0
+                )
                 if int(next_token_logits.argmax()) == 1:
                     break
                 new_logits.append(next_token_logits)
@@ -80,8 +117,12 @@ class GenerativeT5_custom_encoder(torch.nn.Module):
                 if temperature == 0:  # greedy sampling:
                     next_token = torch.argmax(next_token_logits).unsqueeze(0)
                 else:
-                    filtered_logits = top_k_top_p_filtering(next_token_logits, top_k=top_k, top_p=top_p)
-                    next_token = torch.multinomial(F.softmax(filtered_logits, dim=-1), num_samples=1)
+                    filtered_logits = top_k_top_p_filtering(
+                        next_token_logits, top_k=top_k, top_p=top_p
+                    )
+                    next_token = torch.multinomial(
+                        F.softmax(filtered_logits, dim=-1), num_samples=1
+                    )
                 generated = torch.cat((generated, next_token.unsqueeze(0)), dim=1)
                 new_tokens = torch.cat((new_tokens, next_token), 0)
 
@@ -91,8 +132,12 @@ class GenerativeT5_custom_encoder(torch.nn.Module):
 def main():
     # Get LLTFI outputs in listResArr
     listResArr = []
-    list_of_files = sorted( filter( lambda x: os.path.isfile(os.path.join(PROG_OUT, x)),
-                            os.listdir(PROG_OUT) ), key=lltfi_sort )
+    list_of_files = sorted(
+        filter(
+            lambda x: os.path.isfile(os.path.join(PROG_OUT, x)), os.listdir(PROG_OUT)
+        ),
+        key=lltfi_sort,
+    )
 
     for i in range(len(list_of_files)):
         list_of_files[i] = os.path.join(PROG_OUT, list_of_files[i])
@@ -103,28 +148,31 @@ def main():
             resultJson = json.load(read_file)
 
         for key, value in resultJson.items():
-            resforSingleInput.append(value['Data'])
+            resforSingleInput.append(value["Data"])
         listResArr.append(resforSingleInput)
 
     list_output_np = []
     # Reshape the output and store as numpy array
     for elem in listResArr:
         output_np = np.asarray(elem[0], dtype=np.float32)
-        output_np = output_np.reshape(1,-1,768)
+        output_np = output_np.reshape(1, -1, 768)
         list_output_np.append(output_np)
 
     # Script to convert numpy output to text
     listPreds = []
-    decoder_sess = InferenceSession('t5-decoder-with-lm-head-12.onnx')
+    decoder_sess = InferenceSession("t5-decoder-with-lm-head-12.onnx")
     _, _, tokenizer = get_encoder_decoder_tokenizer()
     for elemIndex in range(len(list_output_np)):
-        generative_t5 = GenerativeT5_custom_encoder(list_output_np[elemIndex], decoder_sess, tokenizer)
-        output_text = generative_t5(30, temperature=0.)[0]
+        generative_t5 = GenerativeT5_custom_encoder(
+            list_output_np[elemIndex], decoder_sess, tokenizer
+        )
+        output_text = generative_t5(30, temperature=0.0)[0]
         listPreds.append(f"Run #{elemIndex} Prediction:{output_text}\n")
 
-    myfile = open('prediction/PredResult.txt', 'w')
+    myfile = open("prediction/PredResult.txt", "w")
     myfile.writelines(listPreds)
     myfile.close()
+
 
 if __name__ == "__main__":
     main()

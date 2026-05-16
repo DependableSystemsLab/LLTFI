@@ -7,7 +7,6 @@ config/java_paths.py
 tools/zgrviewer/llfi_run.sh
 
 build/
-sample_programs/
 
 # All the .ll and .bc files
 *.ll

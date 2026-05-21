@@ -26,12 +26,10 @@ Repository Layout
 llvm_passes/          LLVM pass plugin (llfi-passes.so) — compile-time only
   core/                 Pass infrastructure and selector framework
   hardware_failures/    Built-in hardware fault instruction selectors
-  software_failures/    Software fault selectors (hand-written + FIDL-generated)
   instruction_duplication/  SID pass for ML soft-error detection (SEDPasses.so)
 runtime_lib/          C/C++ runtime library linked into instrumented binaries
 bin/                  Python driver scripts: instrument.py, profile.py, injectfault.py
-tools/                Trace analysis, FIDL code generator, ML utilities
-  FIDL/                 Software fault mode generator (see architecture.md §4)
+tools/                Trace analysis, ML utilities
   GenerateMakefile/     Test harness Makefile generator
 docs/                 tutorial_first_experiment.md — end-to-end C/C++ walkthrough and output guide
                       tutorial_ml_experiment.md — end-to-end ML/ONNX walkthrough (layer targeting, multi-fault)
@@ -167,7 +165,6 @@ python3 SCRIPTS/llfi_test --all                    # 21 core tests (expected: 21
 python3 SCRIPTS/llfi_test --all_hardware_faults    # hardware fault injection (8 tests)
 python3 SCRIPTS/llfi_test --all_trace_tools_tests  # trace analysis tools (3 tests)
 python3 SCRIPTS/llfi_test --all_makefile_generation # Makefile generation (2 tests)
-python3 SCRIPTS/llfi_test --all_fidl               # FIDL generator (3 tests)
 ```
 
 Error messages during fault injection runs are normal and expected.
@@ -183,7 +180,6 @@ excluded from the pass/fail count.
 
 | Group | Requirements |
 |-------|-------------|
-| `SoftwareFailureAutoScan` | LLTFI build only |
 | ML tool unit tests | `pip install onnx pygraphviz pydot` |
 | Instruction duplication (synthetic IR) | LLTFI build only |
 | Instruction duplication (real model IR) | `model.ll` from `sample_programs/.../mnist/compile.sh` |
@@ -192,7 +188,6 @@ excluded from the pass/fail count.
 | ONNX → LLVM IR | onnx-mlir binary (set `ONNX_MLIR_BUILD`) |
 | Fault injection (ML) | LLTFI build + `model.ll` |
 
-<<<<<<< HEAD
 <!--
 VirtualBox Image
 -----------------
@@ -223,14 +218,13 @@ Example program: `factorial`:
   2. Set the `LLFI_BUILD_ROOT` environment variable: `export LLFI_BUILD_ROOT=/path/to/LLFI-build`
   3. Add the LLVM bin directory to your PATH: `export PATH=/path/to/llvm/bin:$PATH`
   4. Run: `bash compileAndRun.sh factorial 6`
-=======
+
 For ML fault injection tests, `model.ll` must be pre-built by running
 `compile.sh` in `sample_programs/ml_sample_programs/vision_models/mnist/`
 (requires onnx-mlir).
->>>>>>> 6d100878 (Removed redundancies with architecture.md)
 
 
-Running a Sample Program
+Running a Sample Program (Factorial Example)
 ------------------------
 
 Programs in `sample_programs/` already contain a valid `input.yaml`.

@@ -1,4 +1,0 @@
-failure_class=API
-failure_mode=BufferOverflow
-targets=fread()/fwrite()
-injector=ChangeValueInjector

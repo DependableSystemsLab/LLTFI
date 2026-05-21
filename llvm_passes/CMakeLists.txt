@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(LLVM_PASSES_DIRS_LLFI hardware_failures core software_failures)
+set(LLVM_PASSES_DIRS_LLFI hardware_failures core)
 
 include_directories(${LLVM_PASSES_DIRS_LLFI})
 
@@ -12,7 +12,6 @@ include_directories(${LLVM_PASSES_DIRS_LLFI})
 add_llvm_library(llfi-passes MODULE
   SampleFIInstSelector.cpp
   SampleFIRegSelector.cpp
-  SoftwareFailureAutoScanPass.cpp
   HardwareFailureAutoScanPass.cpp
   MainGraphInstSelector.cpp
   CustomTensorOperatorInstSelector.cpp

@@ -303,8 +303,7 @@ def readCompileOption():
                 sys.exit(1)
             else:
                 if (
-                    cOpt["customRegSelector"] == "SoftwareFault"
-                    or cOpt["customRegSelector"] == "Automatic"
+                    cOpt["customRegSelector"] == "Automatic"
                 ):
                     ## replace the Automatic tag with the customInstSelector name
                     try:

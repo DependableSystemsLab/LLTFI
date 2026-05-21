@@ -25,12 +25,6 @@ private:
   bool isRegofInstInjectable(Value* reg, Instruction* inst);
 };
 
-class SoftwareFIRegSelector : public FIRegSelector {
-  std::string getRegSelectorClass() override {
-    return std::string("SoftwareFault");
-  }
-};
-
 class HardwareFIRegSelector : public FIRegSelector {
   std::string getRegSelectorClass() override {
     return std::string("HardwareFault");

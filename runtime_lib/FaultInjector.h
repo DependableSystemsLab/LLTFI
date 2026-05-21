@@ -20,10 +20,4 @@ class HardwareFaultInjector: public FaultInjector {
 	}
 };
 
-class SoftwareFaultInjector: public FaultInjector {
-	std::string getFaultInjectorType(){
-		return std::string("SoftwareFault");
-	}
-};
-
 #endif

@@ -56,7 +56,6 @@ post-processing.
 llvm_passes/            Compile-time: LLVM pass plugin source
   core/                   Pass infrastructure and selector framework
   hardware_failures/      Built-in hardware fault instruction selectors
-  software_failures/      Software fault selectors (hand-written + FIDL-generated)
   instruction_duplication/ SID pass (SEDPasses.so)
   RegisterPasses.cpp      New-PM plugin entry point for llfi-passes.so
   CustomTensorOperatorInstSelector.cpp  ML-specific inst selector
@@ -77,12 +76,10 @@ bin/                    Driver scripts
   batchProfile.py         Runs profile.py across multiple programs
   batchInjectfault.py     Runs injectfault.py across multiple programs
   HardwareFailureAutoScan.py  Lists applicable hardware selectors for a program
-  SoftwareFailureAutoScan.py  Lists applicable software fault modes for a program
   InjectorAutoScan.py     Lists all registered fault injector names (fi_type values)
   llfi-gui.py             Launches the LLFI graphical front-end
 
 tools/                  Post-processing and ML utilities
-  FIDL/                   Software fault mode code generator (§4)
   GenerateMakefile/       Test harness Makefile generator
   tracediff.py            Compares golden vs faulty instruction traces
   traceontograph.py       Overlays traces onto dependency graph
@@ -110,7 +107,7 @@ two shared libraries:
 
 | Library | Contents |
 |---------|----------|
-| `llfi-passes.so` | All core passes, all hardware and software fault selectors |
+| `llfi-passes.so` | All core passes, all hardware fault selectors |
 | `SEDPasses.so` | Selective Instruction Duplication (ML only) |
 
 ### 2.1 Pass Pipeline
@@ -165,7 +162,6 @@ normal instrumentation pipeline:
 
 ```
 HardwareFailureAutoScanPass   Writes llfi.applicable.hardware.selectors.txt
-SoftwareFailureAutoScanPass   Writes llfi.applicable.software.failures.txt
 ```
 
 ### 2.2 Instruction and Register Selector Framework
@@ -182,30 +178,20 @@ FIInstSelector  (llvm_passes/core/FIInstSelector.h)
 │   virtual void getCompileTimeInfo(map<string,string>&)
 │   void getFIInsts(Module&, set<Instruction*>*)  — calls isInstFITarget
 │
-├── HardwareFIInstSelector
-│   │   (for hardware fault modes — any instruction may be the target)
-│   ├── InstTypeFIInstSelector          by opcode (fadd, load, store, …)
-│   ├── FuncNameFIInstSelector          all insts in a named function
-│   ├── LLFIIndexFIInstSelector         one specific LLFI index
-│   ├── CustomTensorOperatorInstSelector  ONNX operator boundary (ML)
-│   └── MainGraphInstSelector           all arith insts in main_graph (ML)
-│
-└── SoftwareFIInstSelector
-    │   (for software fault modes — typically targets call instructions)
-    ├── [35+ FIDL-generated selectors]  _Data_*, _API_*, _MPI_*, …
-    └── [_Timing_HighFrequentEventInstSelector]  hand-written
+└── HardwareFIInstSelector
+    │   (for hardware fault modes — any instruction may be the target)
+    ├── InstTypeFIInstSelector          by opcode (fadd, load, store, …)
+    ├── FuncNameFIInstSelector          all insts in a named function
+    ├── LLFIIndexFIInstSelector         one specific LLFI index
+    ├── CustomTensorOperatorInstSelector  ONNX operator boundary (ML)
+    └── MainGraphInstSelector           all arith insts in main_graph (ML)
 
 FIRegSelector  (llvm_passes/core/FIRegSelector.h)
 │   virtual bool isRegofInstFITarget(Value*, Instruction*) = 0
 │   void getFIInstRegMap(set<Instruction*>, map<Instruction*, list<int>>*)
 │
-├── HardwareFIRegSelector
-│   └── RegLocBasedFIRegSelector   dstreg / srcreg1–4 / allreg / allsrcreg
-│
-└── SoftwareFIRegSelector
-    ├── FuncArgRegSelector    argument registers of a call
-    ├── FuncDestRegSelector   destination register of a call
-    └── RetValRegSelector     return value register
+└── HardwareFIRegSelector
+    └── RegLocBasedFIRegSelector   dstreg / srcreg1–4 / allreg / allsrcreg
 ```
 
 #### Controller
@@ -230,7 +216,7 @@ Key options it parses:
 #### Custom Selector Manager
 
 `FICustomInstSelectorManager` and `FICustomRegSelectorManager` are singleton
-registries. Hardware and software selectors register themselves at static
+registries. Hardware selectors register themselves at static
 initialisation time via:
 
 ```cpp
@@ -262,68 +248,7 @@ The `HardwareFailureAutoScanPass` (invoked by `HardwareFailureAutoScan.py`)
 enumerates all registered hardware selectors and writes the list to
 `llfi.applicable.hardware.selectors.txt`.
 
-### 2.4 Software Fault Selectors
-
-Software fault selectors model high-level software bugs (wrong API usage,
-memory corruption, timing errors). Unlike hardware selectors, each software
-fault mode pairs an instruction selector with a custom register selector and
-often a custom fault injector.
-
-#### Architecture of a Software Fault Mode
-
-Each software fault mode consists of three parts registered under the same name:
-
-```
-  Instruction selector   — which call instruction to target
-  Register selector      — which argument/return register to perturb
-  Fault injector         — how to perturb it (bitflip, sleep, override value, …)
-```
-
-#### FIDL-Generated Selectors
-
-The majority of software fault modes are generated by the FIDL tool (see §4)
-from `tools/FIDL/config/default_failures.yaml`. The generated files live in
-`llvm_passes/software_failures/` and are excluded from git (they are
-regenerated by `./setup`). There are 37 generated fault modes organised into
-six categories:
-
-| Category | Example modes |
-|----------|---------------|
-| `Data` | `DataCorruption`, `WrongSource`, `WrongDestination`, `WrongPointer`, `BufferOverflowMalloc`, `BufferOverflowMemmove` |
-| `API` | `BufferOverflow`, `BufferUnderflow`, `WrongAPI`, `WrongMode`, `NoOpen`, `NoClose`, `InappropriateClose`, `NoOutput`, `IncorrectOutput` |
-| `MPI` | `NoMessage`, `InvalidMessage`, `InvalidSender`, `NoAck`, `NoDrain`, `DeadLock`, `PacketStorm` |
-| `Resource` | `LowMemory`, `MemoryExhaustion`, `MemoryLeak`, `InvalidPointer`, `StalePointer`, `DeadLock`, `ThreadKiller`, `CPUHog`, `UnderAccumulator` |
-| `IO` | `WrongSavedFormat`, `WrongRetrievedFormat`, `WrongSavedAddress`, `WrongRetrievedAddress` |
-| `Timing` | `RaceCondition` |
-
-#### Hand-Written Software Fault Selectors
-
-Two files are tracked in git and not generated by FIDL:
-
-- `_SoftwareFaultRegSelectors.h/cpp` — defines `FuncArgRegSelector`,
-  `FuncDestRegSelector`, `RetValRegSelector` (the register-level counterparts
-  used by many FIDL-generated instruction selectors)
-- `_Timing_HighFrequentEventSelector.cpp` — a complete hand-written fault mode
-  (`HighFrequentEvent(Timing)`) that targets `fread`/`fopen`/`fwrite` calls
-  and return instructions
-
-The `SoftwareFailureAutoScanPass` (invoked by `SoftwareFailureAutoScan.py`)
-runs all registered software selectors against the module IR and writes
-`llfi.applicable.software.failures.txt` listing only the modes that actually
-match instructions in the program.
-
-#### Known Limitation: memmove/memcpy Intrinsics
-
-Software fault modes that target `memmove` or `memcpy` by call site (e.g.
-`WrongDestination(Data)`, `BufferOverflowMemmove`) do not work when the
-compiler lowers those calls to LLVM intrinsics
-(`@llvm.memmove.p0.p0.i64`, `@llvm.memcpy.p0.p0.i64`). Intrinsics have no
-injectable register arguments at the call site that LLTFI can intercept at
-runtime. To inject software faults into memory operations in such programs,
-use fault modes that target regular C library calls instead (e.g.
-`WrongPointer(Data)` targeting `fread`/`fwrite`).
-
-### 2.5 ML Fault Selectors
+### 2.4 ML Fault Selectors
 
 ML fault injection operates on LLVM IR compiled from ONNX models via onnx-mlir.
 The onnx-mlir compiler annotates the IR with `@OMInstrumentPoint(operator_id, flag)`
@@ -348,7 +273,7 @@ Registered as `"maingraph"`. Simpler selector that targets all `FAdd`, `FMul`,
 and `FCmp` instructions anywhere in `main_graph()`, without operator-boundary
 awareness. Used when operator-level granularity is not required.
 
-### 2.6 Selective Instruction Duplication (SEDPasses.so)
+### 2.5 Selective Instruction Duplication (SEDPasses.so)
 
 The `InstructionDuplicationPass` in `SEDPasses.so` is a separate pass plugin
 for soft-error detection and correction in ML models. It is not part of the
@@ -420,7 +345,6 @@ execution (even when multiple registers are targeted).
 | `bitflip` | XOR a randomly selected bit |
 | `stuck_at_0` | AND the bit to force it to 0 |
 | `stuck_at_1` | OR the bit to force it to 1 |
-| Software injectors | Custom logic (sleep, wrong value, etc.) — see §3.2 |
 
 After injection, the runtime appends a record to
 `llfi.stat.fi.injectedfaults.txt` with the LLFI index, register size, bit
@@ -441,21 +365,15 @@ position, and fault type.
 
 ### 3.2 Fault Injector Plugin Registry (FaultInjectorManager)
 
-Software fault modes that need custom injection logic (e.g. inserting a sleep,
-returning a wrong value) register a `FaultInjector` subclass with the
-singleton `FaultInjectorManager`. The manager resolves the injector name from
-`fi_type` in the config file to the corresponding `injectFault()` implementation.
+Software fault modes that need custom injection logic register a `FaultInjector`
+subclass with the singleton `FaultInjectorManager`. The manager resolves the
+injector name from `fi_type` in the config file to the corresponding
+`injectFault()` implementation.
 
 The runtime injector registrations live in two tracked files:
 
 - `runtime_lib/CommonFaultInjectors.cpp` — the three hardware injectors
   (`bitflip`, `stuck_at_0`, `stuck_at_1`).
-- `runtime_lib/_FIDLSoftwareFaultInjectors.cpp` — an aggregator that
-  `#include`s the hand-written injector class definitions from
-  `_SoftwareFaultInjectors.cpp` and then registers all 37 FIDL-named software
-  injectors.  This file is tracked in git (unlike the selector `.cpp` files in
-  `llvm_passes/software_failures/`) and must be updated manually when a new
-  FIDL fault mode is added.
 
 ### 3.3 Profiling Runtime (ProfilingLib.cpp)
 
@@ -495,46 +413,12 @@ input to `tracediff.py`.
 
 ---
 
-## 4. FIDL — Software Fault Code Generator
-
-FIDL (Fault Injection Description Language) generates the software fault
-selector `.cpp` files from a YAML description, avoiding the need to write
-repetitive boilerplate for each fault mode.
-
-```
-tools/FIDL/config/default_failures.yaml   Fault mode specifications
-tools/FIDL/FIDL-Algorithm.py              Generator script
-tools/FIDL/config/TargetSingleTemplate.cpp     Template: single function target
-tools/FIDL/config/TargetMultiSourceTemplate.cpp  Template: multi-arg target
-tools/FIDL/config/TargetAllTemplate.cpp    Template: all instructions
-tools/FIDL/config/NewInjectorTemplate.cpp  Template: custom fault injector
-```
-
-To regenerate after editing `default_failures.yaml`:
-```bash
-python3 tools/FIDL/FIDL-Algorithm.py -a default
-```
-
-This is run automatically by `./setup`. The generated `_*_*Selector.cpp` files
-are listed in `.gitignore` — do not commit them.
-
-Each YAML fault mode entry specifies:
-- **`Failure_Class`** / **`Failure_Mode`** — naming (e.g. `Data` / `WrongPointer`)
-- **`Trigger`** — which call to intercept (`call: [fread, fwrite]`, `return:`)
-- **`Target`** — source arguments or destination register to perturb
-- **`Action`** — how to perturb (`Bitflip: true` or custom C++ injector code)
-
-FIDL selects the appropriate template based on the trigger/target combination
-and substitutes the fault-mode-specific values.
-
----
-
-## 5. Interface Between the Two Layers
+## 4. Interface Between the Two Layers
 
 The compile-time and runtime layers share three interfaces. There is no shared
 header between them — the contract is purely by convention.
 
-### 5.1 LLVM Metadata (compile-time → runtime)
+### 4.1 LLVM Metadata (compile-time → runtime)
 
 `GenLLFIIndexPass` stores each instruction's LLFI index as LLVM metadata:
 
@@ -548,13 +432,13 @@ inst->setMetadata("llfi_index", MDNode::get(ctx, ConstantAsMetadata::get(
 `injectFunc` calls, embedding the index as a constant argument. The runtime
 never parses metadata — it receives the index as a plain integer argument.
 
-### 5.2 Runtime Config File (driver → runtime)
+### 4.2 Runtime Config File (driver → runtime)
 
 `injectfault.py` writes `llfi.config.runtime.txt` immediately before launching
 `fi.exe`. The runtime reads it at startup in `initInjections()`. No LLVM types
 or headers are involved — it is a plain text key=value file.
 
-### 5.3 Log Files (runtime → driver / post-processing tools)
+### 4.3 Log Files (runtime → driver / post-processing tools)
 
 All output files are written by the runtime to the `llfi/` directory created
 by `instrument.py`:
@@ -574,7 +458,7 @@ llfi/
 
 ---
 
-## 6. Adding a New Fault Mode
+## 5. Adding a New Fault Mode
 
 ### New hardware fault mode (inst selector only)
 
@@ -588,20 +472,6 @@ llfi/
    ```
 2. Add the file to `llvm_passes/CMakeLists.txt` under the `llfi-passes` target.
 3. Rebuild (`make` in the build root).
-
-### New software fault mode via FIDL
-
-1. Add an entry to `tools/FIDL/config/default_failures.yaml`.
-2. Run `python3 tools/FIDL/FIDL-Algorithm.py -a default` and rebuild.
-3. Update `expected_count` in `test_suite/SCRIPTS/test_fidl_generation.py`.
-
-### New software fault mode (hand-written)
-
-Follow the same pattern as `_Timing_HighFrequentEventSelector.cpp`:
-- Define `_<Class>_<Mode>InstSelector : public SoftwareFIInstSelector`
-- Define `_<Class>_<Mode>RegSelector : public SoftwareFIRegSelector`
-- Register both with `RegisterFIInstSelector` / `RegisterFIRegSelector`
-- Add to `CMakeLists.txt` explicitly (not caught by the FIDL gitignore pattern)
 
 ### New fault injector (runtime)
 
@@ -618,7 +488,7 @@ Set `fi_type=MySoftwareInjector` in `input.yaml` to select it at runtime.
 
 ---
 
-## 7. Key Design Decisions
+## 6. Key Design Decisions
 
 **Selector registration at static init time.** Both inst and reg selectors
 register themselves via `static RegisterFI*Selector` objects, which run before
@@ -634,11 +504,6 @@ called only when `preFunc` returns true, keeping the hot path overhead minimal.
 a unique stable integer at compile time. This index is the only way the
 compile-time and runtime layers refer to the same instruction — no function
 names, no IR text, no debug info dependency.
-
-**FIDL-generated files are not committed.** They are regenerated deterministically
-from the YAML spec by `./setup`. This keeps the repository free of large
-amounts of repetitive generated code while still allowing the generated files
-to be inspected locally after a build.
 
 **ML instrumentation is non-invasive to the core.** The ML-specific selectors
 (`CustomTensorOperatorInstSelector`, `MainGraphInstSelector`) are ordinary

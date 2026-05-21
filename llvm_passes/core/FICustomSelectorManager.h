@@ -20,8 +20,6 @@ public:
                              FIInstSelector* instselector);
   FIInstSelector* getCustomInstSelector(const std::string& name);
   void
-  getAllSoftwareSelectors(std::set<std::string>& all_software_failure_names);
-  void
   getAllHardwareSelectors(std::set<std::string>& all_hardware_failure_names);
 
 private:
@@ -37,8 +35,6 @@ public:
   void addCustomRegSelector(const std::string& name,
                             FIRegSelector* regselector);
   FIRegSelector* getCustomRegSelector(const std::string& name);
-  void
-  getAllSoftwareSelectors(std::set<std::string>& all_software_failure_names);
   void
   getAllHardwareSelectors(std::set<std::string>& all_hardware_failure_names);
 

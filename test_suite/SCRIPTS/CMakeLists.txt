@@ -15,7 +15,6 @@ copy(test_trace_tools.py test_trace_tools.py)
 copy(llfi_test.py llfi_test)
 copy(test_generate_makefile.py test_generate_makefile.py)
 copy(test_ml_tools.py test_ml_tools.py)
-copy(test_software_failure_autoscan.py test_software_failure_autoscan.py)
 copy(test_ml_models.py test_ml_models.py)
 copy(test_instruction_duplication.py test_instruction_duplication.py)
 

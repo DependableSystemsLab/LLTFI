@@ -40,11 +40,9 @@ From the **build** directory:
 cd /home/karthik/Programs/LLTFI-build/test_suite
 python3 SCRIPTS/llfi_test --all                      # all 21 tests
 python3 SCRIPTS/llfi_test --all_hardware_faults      # 8 tests
-python3 SCRIPTS/llfi_test --all_software_faults      # 5 tests
 python3 SCRIPTS/llfi_test --all_trace_tools_tests    # 3 tests
 python3 SCRIPTS/llfi_test --all_makefile_generation  # 2 tests
-python3 SCRIPTS/llfi_test --all_fidl                 # 3 tests (FIDL generator)
-python3 SCRIPTS/llfi_test --all_ml                   # ML/ONNX tools + SoftwareFailureAutoScan
+python3 SCRIPTS/llfi_test --all_ml                   # ML/ONNX tools
 ```
 
 Expected: **21/21 PASS** for `--all`. Some error messages during fault injection runs are normal.
@@ -53,7 +51,6 @@ Expected: **21/21 PASS** for `--all`. Some error messages during fault injection
 
 | Test group | Tests | Requirements |
 |------------|-------|--------------|
-| `SoftwareFailureAutoScan` | 4 | LLTFI build only |
 | `CompareLayerOutputs` | 2 | `pip install onnx pygraphviz` |
 | `ExtendONNXModel` | 1 | `pip install onnx` |
 | `outputONNXGraph` | 1 | `pip install onnx pydot` |
@@ -76,46 +73,25 @@ test also requires `model.ll` which is produced by that directory's `compile.sh`
 llvm_passes/          LLVM pass plugins (compiled to llfi-passes.so)
   core/               Fault injection, profiling, tracing passes
   hardware_failures/  Built-in hardware fault selectors (bitflip, funcname, etc.)
-  software_failures/  Software fault selectors — hand-written and FIDL-generated
 runtime_lib/          Runtime library (libllfi-rt.so) linked into instrumented binaries
 bin/                  Python driver scripts: instrument.py, profile.py, injectfault.py
 docs/                 input_masterlist.yaml, input_masterlist_ml.yaml — reference schemas
                       for the input.yaml files that control instrumentation and injection
                       input_yaml_guide.md — prose guide to writing input.yaml (user-facing)
 tools/                Trace analysis tools (tracediff.py, traceontograph.py, traceunion.py,
-                      tracetodot.py), FIDL/, GenerateMakefile/
+                      tracetodot.py), GenerateMakefile/
 test_suite/           Regression tests
   PROGRAMS/           Source programs used by tests
   HardwareFaults/     Hardware fault injection test cases
-  SoftwareFaults/     Software fault injection test cases
   Traces/             Pre-committed trace reference files for trace tool tests
   MakefileGeneration/ Makefile generation test cases
 ```
 
 ---
 
-## FIDL — software fault infrastructure
+## LLVM 19 API constraints
 
-FIDL generates LLVM pass selector `.cpp` files from YAML fault mode descriptions:
-
-```bash
-python3 tools/FIDL/FIDL-Algorithm.py -a default
-```
-
-This reads `tools/FIDL/config/default_failures.yaml` and writes selector files to `llvm_passes/software_failures/`. **These generated files are in `.gitignore`** — do not commit them. `./setup` runs FIDL automatically before cmake.
-
-If you add or modify fault modes in `default_failures.yaml`, re-run FIDL and rebuild. Edit templates in `tools/FIDL/config/` (not the generated files) for structural changes.
-
-The three FIDL templates are:
-- `TargetSingleTemplate.cpp` — targets a single function name
-- `TargetMultiSourceTemplate.cpp` — targets multiple function args
-- `TargetAllTemplate.cpp` — targets all instructions
-
----
-
-## LLVM 20 API constraints
-
-The codebase targets **LLVM 20**. Key API changes to keep in mind:
+The codebase targets **LLVM 19**. Key API changes to keep in mind:
 
 - `#include "llvm/IR/CFG.h"` (not `llvm/Support/CFG.h` — removed in LLVM 15)
 - `CI->arg_size()` (not `CI->getNumArgOperands()` — removed in LLVM 15)
@@ -128,12 +104,6 @@ The codebase targets **LLVM 20**. Key API changes to keep in mind:
 - `M.getGlobalList()` is private — use `new GlobalVariable(M, type, ...)` to insert directly
 - `itaniumDemangle(str)` takes a single `string_view` argument (old 4-arg form removed)
 - All passes use the **new pass manager** (`PassInfoMixin`, `llvmGetPassPluginInfo`); `InstructionDuplication` exposes both a legacy PM class and a new PM wrapper (`NewInstructionDuplicationPass`) registered as `"InstructionDuplicationPass"` in `SEDPasses.so`
-
----
-
-## Software fault injection — known limitation
-
-Fault modes that target `memmove`/`memcpy` by function call (e.g. `WrongDestination(Data)`) do **not** work with programs where the compiler optimises those calls to LLVM intrinsics (`@llvm.memmove.p0.p0.i64`). The intrinsic has no injectable register arguments at runtime. Use fault modes targeting `fread`/`fwrite` or other regular C library calls instead (e.g. `WrongPointer(Data)`).
 
 ---
 

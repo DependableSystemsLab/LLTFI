@@ -19,7 +19,6 @@ injectfault_script = ""
 batchinstrument_script = ""
 batchprofile_script = ""
 batchinjectfault_script = ""
-autoscan_script = ""
 
 
 def enqueue_output(out, queue):
@@ -139,16 +138,6 @@ def callBatchLLFI(work_dir, target_IR, prog_input):
         print("ERROR: Unable to change directory to:", work_dir)
         return -1, None
 
-    if "SoftwareFailureAutoScan" in os.path.basename(work_dir):
-        with open("llfi.test.log.SoftwareFailureAutoScan.txt", "w", buffering=1) as log:
-            p = subprocess.Popen([autoscan_script, target_IR], stdout=log, stderr=log)
-            p.wait()
-            if p.returncode != 0:
-                print("ERROR: SoftwareFailureAutoScan failed for:", work_dir, target_IR)
-                return -1, None
-            else:
-                print("MSG: SoftwareFailureAutoScan succeed for:", work_dir, target_IR)
-
     with open("llfi.test.log.instrument.txt", "w", buffering=1) as log:
         p = subprocess.Popen(
             [batchinstrument_script, "--readable", "-lpthread", target_IR],
@@ -220,7 +209,6 @@ def inject_prog(num_threads, *prog_list):
     global batchinstrument_script
     global batchprofile_script
     global batchinjectfault_script
-    global autoscan_script
 
     r = 0
     suite = {}
@@ -232,7 +220,6 @@ def inject_prog(num_threads, *prog_list):
     batchinstrument_script = os.path.join(llfi_bin_dir, "batchInstrument")
     batchprofile_script = os.path.join(llfi_bin_dir, "batchProfile")
     batchinjectfault_script = os.path.join(llfi_bin_dir, "batchInjectfault")
-    autoscan_script = os.path.join(llfi_bin_dir, "SoftwareFailureAutoScan")
 
     testsuite_dir = os.path.join(script_dir, os.pardir)
     with open(os.path.join(testsuite_dir, "test_suite.yaml")) as f:
@@ -243,9 +230,6 @@ def inject_prog(num_threads, *prog_list):
             return -1
 
     work_dict = {}
-    for test in suite.get("SoftwareFaults", {}):
-        if len(prog_list) == 0 or test in prog_list or "SoftwareFaults" in prog_list:
-            work_dict["./SoftwareFaults/" + test] = suite["SoftwareFaults"][test]
     for test in suite.get("HardwareFaults", {}):
         if len(prog_list) == 0 or test in prog_list or "HardwareFaults" in prog_list:
             work_dict["./HardwareFaults/" + test] = suite["HardwareFaults"][test]

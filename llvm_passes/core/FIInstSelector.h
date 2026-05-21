@@ -49,12 +49,6 @@ protected:
   bool includeforwardtrace;
 };
 
-class SoftwareFIInstSelector : public FIInstSelector {
-  std::string getInstSelectorClass() override {
-    return std::string("SoftwareFault");
-  }
-};
-
 class HardwareFIInstSelector : public FIInstSelector {
   std::string getInstSelectorClass() override {
     return std::string("HardwareFault");

@@ -16,13 +16,8 @@ GOTCHAS:
 	   arguments at runtime. Use a fault mode targeting a regular C library call
 	   instead (e.g. WrongPointer(Data) targets fread/fwrite).
 
-	5. FIDL-generated selector files (llvm_passes/software_failures/_*_*Selector.cpp)
-	   are not committed to the repository. They are regenerated automatically by
-	   ./setup via tools/FIDL/FIDL-Algorithm.py. If you edit fault mode definitions,
-	   re-run: python3 tools/FIDL/FIDL-Algorithm.py -a default
-
 KNOWN PROBLEMS:
-	1. ML-related tools (compiletoIR.py, SoftwareFailureAutoScan for ML models)
+	1. ML-related tools (compiletoIR.py for ML models)
 	   require additional dependencies (TensorFlow, PyTorch, ONNX-MLIR) that are
 	   not part of the base installation. See README.md for installation instructions.
 

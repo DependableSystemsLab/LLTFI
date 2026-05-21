@@ -52,7 +52,7 @@ Optional.  Currently only one value is meaningful:
 
 | Value | Effect |
 |-------|--------|
-| `forceRun` | Run the program even if profiling detects zero injectable instructions.  Useful when the target kernel is very short or when using a software fault selector that does not match every run. |
+| `forceRun` | Run the program even if profiling detects zero injectable instructions.  Useful when the target kernel is very short. |
 
 ```yaml
 kernelOption:
@@ -118,15 +118,8 @@ instSelMethod:
 
 #### `customInstselector` — use a named selector plugin
 
-Used for software fault modes and ML layer targeting.  The `include` list names
+Used for ML layer targeting.  The `include` list names
 the selector class; `options` passes arguments to it.
-
-```yaml
-instSelMethod:
-  - customInstselector:
-      include:
-        - BufferOverflow(API)
-```
 
 For ML programs (see [ML selectors](#ml-programs-customtensoroperator) below):
 
@@ -175,17 +168,6 @@ regloc: dstreg     # destination register (output of the instruction)
 
 `dstreg` is the most common choice for hardware fault experiments.  `allreg`
 increases the injection surface.
-
-#### `customregselector` — use a named register selector plugin
-
-Required for software fault modes that have a paired register selector (most do):
-
-```yaml
-regSelMethod: customregselector
-customRegSelector: BufferOverflow(API)
-```
-
-When using a `customInstselector`, the `customregselector` name should match.
 
 ---
 
@@ -249,14 +231,6 @@ instrumented binary.
 | `bitflip` | Flip a randomly chosen bit in the register |
 | `stuck_at_0` | Force all bits to 0 |
 | `stuck_at_1` | Force all bits to 1 |
-
-**Software faults** — use the selector name:
-
-```yaml
-fi_type: BufferOverflow(API)
-```
-
-See [Software fault modes](#software-fault-modes) for the full list.
 
 **Auto-injection** — let the runtime choose the injector:
 
@@ -383,47 +357,6 @@ The `layerNo` and `layerName` lists must have the same length.
 
 ---
 
-## Software fault modes
-
-Software faults use a `customInstselector` at compile time and a matching
-`fi_type` at run time.  Both use the same name string, e.g. `BufferOverflow(API)`.
-
-### Available modes (FIDL-generated)
-
-| Class | Mode name |
-|-------|-----------|
-| **API** | `BufferOverflow(API)`, `BufferUnderflow(API)`, `InappropriateClose(API)`, `IncorrectOutput(API)`, `NoClose(API)`, `NoOpen(API)`, `NoOutput(API)`, `WrongAPI(API)`, `WrongMode(API)` |
-| **Data** | `BufferOverflowMalloc(Data)`, `BufferOverflowMemmove(Data)`, `DataCorruption(Data)`, `WrongDestination(Data)`, `WrongPointer(Data)`, `WrongSource(Data)` |
-| **IO** | `WrongRetrievedAddress(IO)`, `WrongRetrievedFormat(IO)`, `WrongSavedAddress(IO)`, `WrongSavedFormat(IO)` |
-| **MPI** | `DeadLock(MPI)`, `InvalidMessage(MPI)`, `InvalidSender(MPI)`, `NoAck(MPI)`, `NoDrain(MPI)`, `NoMessage(MPI)`, `PacketStorm(MPI)` |
-| **Res** | `CPUHog(Res)`, `DeadLock(Res)`, `InvalidPointer(Res)`, `LowMemory(Res)`, `MemoryExhaustion(Res)`, `MemoryLeak(Res)`, `StalePointer(Res)`, `ThreadKiller(Res)`, `UnderAccumulator(Res)`, `RaceCondition(Res)` |
-| **Timing** | `HighFrequentEvent(Timing)` (hand-written) |
-
-> **Note:** Fault modes that target `memmove`/`memcpy` by call site (e.g.
-> `WrongDestination(Data)`, `BufferOverflowMemmove(Data)`) do not work when the
-> compiler lowers those calls to LLVM intrinsics (`@llvm.memmove.*`).  Use API
-> or IO modes (which target `fread`/`fwrite`) instead.
-
-For a software fault experiment, both `instSelMethod` and `regSelMethod` should
-name the same selector, and `fi_type` should match:
-
-```yaml
-compileOption:
-    instSelMethod:
-      - customInstselector:
-          include:
-            - BufferOverflow(API)
-    regSelMethod: customregselector
-    customRegSelector: BufferOverflow(API)
-
-runOption:
-    - run:
-        numOfRuns: 5
-        fi_type: BufferOverflow(API)
-```
-
----
-
 ## Complete examples
 
 ### Minimal hardware fault experiment
@@ -485,29 +418,6 @@ runOption:
     - run:
         numOfRuns: 50
         fi_type: stuck_at_1
-```
-
-### Software fault experiment
-
-```yaml
-defaultTimeOut: 500
-
-kernelOption:
-    - forceRun
-
-compileOption:
-    instSelMethod:
-      - customInstselector:
-          include:
-            - BufferOverflow(API)
-
-    regSelMethod: customregselector
-    customRegSelector: BufferOverflow(API)
-
-runOption:
-    - run:
-        numOfRuns: 10
-        fi_type: BufferOverflow(API)
 ```
 
 ### ML model — all convolutional layers, multiple faults per run

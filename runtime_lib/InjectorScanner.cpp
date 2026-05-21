@@ -37,20 +37,6 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	vector<string> softwarefaultinjectornames = faultinjectormanager->getInjectorNamesForType(string("SoftwareFault"));
-	if(output_file.is_open()){
-		output_file << "SoftwareFaultInjector:" << endl;
-	}else{
-		cout << "SoftwareFaultInjector:" << endl;
-	}
-	for(int i = 0; i<softwarefaultinjectornames.size(); i++){
-		if(output_file.is_open()){
-			output_file << "    - " << softwarefaultinjectornames[i] << endl;
-		}else{
-			cout << "    - " << softwarefaultinjectornames[i] << endl;
-		}
-	}
-
 	if(output_file.is_open())	output_file.close();
 
 	return 0;

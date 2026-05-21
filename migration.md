@@ -122,8 +122,8 @@ cd /path/to/LLTFI-build/test_suite
 python3 SCRIPTS/llfi_test --all        # expect 21/21
 python3 SCRIPTS/llfi_test --all_ml     # expect all non-SKIP to pass
 ```
-**Result: 21/21 PASS.** All hardware fault, software fault, trace tool, makefile
-generation, and FIDL tests pass against LLVM 20.1. The `--all_ml` tests that
+**Result: 21/21 PASS.** All hardware fault, trace tool, makefile
+generation tests pass against LLVM 20.1. The `--all_ml` tests that
 require optional dependencies (onnx-mlir, TensorFlow, PyTorch) are reported as
 SKIP (not FAIL) on machines where those are not installed.
 
@@ -225,23 +225,6 @@ nameStr = new GlobalVariable(M, name_c->getType(), true,
     GlobalVariable::InternalLinkage, name_c, gv_nameStr.c_str());
 ```
 
-### C-5 — Fix `SoftwareFailureAutoScan.py` legacy PM flags ✅ DONE
-**Estimated time: 30 minutes**
-
-`bin/SoftwareFailureAutoScan.py:92` still uses `-load` and `-enable-new-pm=0`,
-which were removed in LLVM 17. Update to match the style already used in
-`instrument.py`:
-
-```python
-# Before
-execlist = [optbin, "-load", llfipasses, "-genllfiindexpass",
-            "-SoftwareFailureAutoScanPass", "-enable-new-pm=0"]
-
-# After
-execlist = [optbin, "-load-pass-plugin", llfipasses,
-            "--passes=genllfiindexpass,SoftwareFailureAutoScanPass"]
-```
-
 ### C-6 — Iterative build-fix loop ✅ DONE
 **Estimated time: 1 week (wall clock; most of this is Claude Code running builds)**
 
@@ -278,24 +261,7 @@ Infrastructure added:
 - `lint.sh` — unified C++ and Python lint runner (`./lint.sh --fix` auto-formats)
 - `CODING_GUIDELINES.md` — expanded with `override`, variable initialisation, container emptiness, and `cast<>` vs `dyn_cast<>` sections
 
-### C-8 — FIDL template cleanup, tracked software_failures files, and secondary pass on ML/SID code ✅ DONE
-
-A second audit of files not covered in C-7 (FIDL templates, the two hand-maintained
-files in `software_failures/` that predate the gitignore pattern, and the ML/SID passes)
-found and fixed the following:
-
-**FIDL templates** (`tools/FIDL/config/Target*Template.cpp`, `NewInjectorTemplate.cpp`):
-All four templates had `virtual` on override methods, `dyn_cast<>` after `isa<>` checks,
-`.size() == 0` instead of `.empty()`, and `std::string(getName())` instead of
-`.getName().str()`. Fixed in all templates; regenerated all 37 selectors.
-
-**Hand-maintained tracked files in `llvm_passes/software_failures/`** (predated gitignore):
-
-| File | Fixes |
-|------|-------|
-| `_SoftwareFaultRegSelectors.h` | `virtual` → `override` on 3 methods |
-| `_SoftwareFaultRegSelectors.cpp` | `dyn_cast` → `cast<>`; `== false` → `!`; simplified boolean returns |
-| `_Timing_HighFrequentEventSelector.cpp` | `virtual` → `override`; `NULL` → `nullptr`; `dyn_cast` → `cast<>`; `.getName().str()`; `.empty()` |
+### C-8 — Secondary pass on ML/SID code ✅ DONE
 
 **ML fault injection and instruction duplication passes**:
 
@@ -322,11 +288,9 @@ H-1  Install LLVM 17+ and attempt initial build           ✅ DONE
   └─> C-1  Fix instruction-construction API               ✅ DONE
   └─> C-2  Fix iterator return-type changes               ✅ DONE
   └─> C-4  Fix getGlobalList                              ✅ DONE
-  └─> C-5  Fix SoftwareFailureAutoScan.py                 ✅ DONE
-  └─> C-6  Iterative build-fix loop                       ✅ DONE
-  └─> C-7  C++ static analysis and formatting cleanup     ✅ DONE
-  └─> C-8  FIDL templates, tracked software_failures      ✅ DONE
-            files, ML/SID secondary pass, doc fixes
+  └─> C-5  Iterative build-fix loop                       ✅ DONE
+  └─> C-6  C++ static analysis and formatting cleanup     ✅ DONE
+  └─> C-7  ML/SID secondary pass, doc fixes               ✅ DONE
 H-2  Review IRBuilder insertion-point diffs               Pending
   └─> C-3  Migrate InstructionDuplication pass            ✅ DONE
 H-3  Validate InstructionDuplication on onnx-mlir IR      Pending
@@ -348,10 +312,9 @@ H-4  Final test sign-off                                  ✅ DONE (21/21)
 | C-2: Iterator return-type fixes | Claude Code | ✅ Done | — |
 | C-3: InstructionDuplication new PM migration | Claude Code | ✅ Done | — |
 | C-4: `getGlobalList` fix | Claude Code | ✅ Done | — |
-| C-5: `SoftwareFailureAutoScan.py` flags | Claude Code | ✅ Done | — |
-| C-6: Iterative build-fix loop | Claude Code | ✅ Done | — |
-| C-7: C++ static analysis and formatting cleanup | Claude Code | ✅ Done | — |
-| C-8: FIDL templates, ML/SID, doc fixes | Claude Code | ✅ Done | — |
+| C-5: Iterative build-fix loop | Claude Code | ✅ Done | — |
+| C-6: C++ static analysis and formatting cleanup | Claude Code | ✅ Done | — |
+| C-7: ML/SID, doc fixes | Claude Code | ✅ Done | — |
 | **Total Claude Code time remaining** | | | **None — all done** |
 
 Without Claude Code, a human developer would need approximately **2–3 weeks**

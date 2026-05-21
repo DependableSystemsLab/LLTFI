@@ -16,7 +16,7 @@ List of options:
 --help(-h):                 Show help information
 
 Prerequisite:
-You need to have 'input.yaml' under the same directory as <source IR file>, which contains appropriate options for LLFI. Usually, this command is only applicable for input.yaml file with a list of software failure modes included, i.e. using customInstSelector in instSelMethod and including software fault instruction selector (e.g. BufferOverflow(API)).
+You need to have 'input.yaml' under the same directory as <source IR file>, which contains appropriate options for LLFI. Usually, this command is only applicable for input.yaml file with a list of software failure modes included, i.e. using customInstSelector in instSelMethod.
 """
 
 import sys, os, shutil

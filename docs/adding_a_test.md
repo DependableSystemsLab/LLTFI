@@ -16,8 +16,8 @@ test_suite/SCRIPTS/llfi_test
 ```
 
 Tests are split into categories invoked with flags such as `--all_hardware_faults`,
-`--all_software_faults`, `--all_trace_tools_tests`, etc.  The category for most
-new fault injection tests is either **HardwareFaults** or **SoftwareFaults**.
+`--all_trace_tools_tests`, etc.  The category for most new fault injection tests
+is **HardwareFaults**.
 
 ---
 
@@ -41,11 +41,6 @@ test_suite/
     funcname/
       ...
 
-  SoftwareFaults/        Same structure for software-fault test cases
-    wrong_api/
-      input.yaml
-      ...
-
   test_suite.yaml        Master registry — lists programs, their files, and
                          which test case uses which program
 
@@ -56,11 +51,9 @@ test_suite/
     inject_prog.py       Runs instrument → profile → injectfault for each case
     check_injection.py   Verifies the llfi/ output directory is well-formed
     test_trace_tools.py  Trace-tool specific tests
-    test_fidl_generation.py  FIDL selector count tests
     test_instruction_duplication.py  SID pass tests
     test_ml_models.py    ML fault injection tests
     test_ml_tools.py     ML tool unit tests
-    test_software_failure_autoscan.py  Auto-scan tests
 ```
 
 ---
@@ -89,7 +82,7 @@ When `llfi_test --all_hardware_faults` runs, it calls these scripts in order:
 
 ---
 
-## Adding a HardwareFaults or SoftwareFaults test
+## Adding a HardwareFaults test
 
 ### Step 1 — Decide which program to use
 
@@ -153,8 +146,6 @@ INPUTS:
 mkdir test_suite/HardwareFaults/my_new_test
 ```
 
-(Use `SoftwareFaults/` for software fault tests.)
-
 Write an `input.yaml` in that directory.  Example for a hardware fault test:
 
 ```yaml
@@ -181,7 +172,7 @@ See `docs/input_yaml_guide.md` for all available keys.
 
 ### Step 3 — Register the test case in `test_suite.yaml`
 
-Add an entry under `HardwareFaults:` (or `SoftwareFaults:`):
+Add an entry under `HardwareFaults:`:
 
 ```yaml
 HardwareFaults:
@@ -226,7 +217,7 @@ For tests that check something beyond "did injection produce a well-formed
 a specific stat value, or testing a tool that is not part of the injection
 pipeline — write a standalone Python test script in `test_suite/SCRIPTS/`.
 
-Look at `test_trace_tools.py` or `test_fidl_generation.py` for examples of
+Look at `test_trace_tools.py` for examples of
 the pattern:
 
 ```python
@@ -310,4 +301,3 @@ If it is an optional test (ML, ONNX), add it under the `--all_ml` branch.
 - [ ] Test case is registered under the correct category in `test_suite.yaml`
 - [ ] `python3 SCRIPTS/llfi_test --test_cases <category/name>` reports PASS
 - [ ] `python3 SCRIPTS/llfi_test --all` still reports 21/21 (or N/N) PASS
-- [ ] FIDL-generated `_*_*Selector.cpp` files are **not** staged for commit

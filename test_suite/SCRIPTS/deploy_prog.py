@@ -20,9 +20,6 @@ def deploy_prog(*prog_list):
             return -1
 
     work_dict = {}
-    for test in suite.get("SoftwareFaults", {}):
-        if len(prog_list) == 0 or test in prog_list or "SoftwareFaults" in prog_list:
-            work_dict["./SoftwareFaults/" + test] = suite["SoftwareFaults"][test]
     for test in suite.get("HardwareFaults", {}):
         if len(prog_list) == 0 or test in prog_list or "HardwareFaults" in prog_list:
             work_dict["./HardwareFaults/" + test] = suite["HardwareFaults"][test]

@@ -284,8 +284,6 @@ exactly the same point.
 
 - **Try a different selector**: change `insttype: include: [all]` to
   `insttype: include: [fadd, fmul]` to target only floating-point arithmetic.
-- **Try a software fault**: see `sample_programs/cpp_sample_programs/memcpy1/`
-  for a `BufferOverflow(API)` example.
 - **Try an ML model**: see `docs/tutorial_ml_experiment.md` for a complete
   walkthrough of layer-targeted fault injection on a TensorFlow/ONNX model.
 - **Add tracing**: set `tracingPropagation: True` and re-run to generate

@@ -76,7 +76,6 @@ and effort accounting are in `migration.md`.
 | `llvm_passes/core/FaultInjectionPass.cpp` | 3 sites: `new AllocaInst/StoreInst/LoadInst` constructors updated to LLVM 17+ API |
 | `llvm_passes/core/InstTracePass.cpp` | 6 sites: same; `getFirstNonPHIOrDbgOrLifetime()` now returns `BasicBlock::iterator` |
 | `llvm_passes/core/Utils.cpp` | `M.getGlobalList().push_back()` → `new GlobalVariable(M, ...)` (removed in LLVM 17) |
-| `bin/SoftwareFailureAutoScan.py` | `-load`/`-enable-new-pm=0` → `-load-pass-plugin`/`--passes=` (legacy PM removed in LLVM 17) |
 | All selector `.cpp` files | `getNumArgOperands()` → `arg_size()` (removed in LLVM 15); `#include "llvm/Support/CFG.h"` → `"llvm/IR/CFG.h"` |
 | `llvm_passes/instruction_duplication/InstructionDuplication.cpp` | `getNextNonDebugInstruction()` return type updated to `BasicBlock::iterator` |
 
@@ -86,23 +85,11 @@ and effort accounting are in `migration.md`.
 |----------|---------|
 | Bug fixes | Double-free in `Controller.cpp` destructor; file stream leak in `LLFIDotGraphPass.cpp`; unchecked `fopen` null in `GenLLFIIndexPass.cpp`; uninitialized `isChainDuplication` field |
 | Null safety | `getCalledFunction()` null checks in `ProfilingPass.cpp`, `InstructionDuplication.cpp`, `CustomTensorOperatorInstSelector.cpp` |
-| LLVM idioms | `dyn_cast<>` after `isa<>` → `cast<>` (asserting) across `Utils.cpp`, `_SoftwareFaultRegSelectors.cpp`, `_Timing_HighFrequentEventSelector.cpp`, `ProfilingPass.cpp`; `NULL` → `nullptr` throughout |
+| LLVM idioms | `dyn_cast<>` after `isa<>` → `cast<>` (asserting) across `Utils.cpp`, `ProfilingPass.cpp`; `NULL` → `nullptr` throughout |
 | Override safety | `virtual` on override methods → `override` keyword across all selector classes; `virtual ~Base() = default` added to abstract base classes |
 | Style | `.empty()` over `.size() == 0`; `const auto&` in range-for; `strncpy`/`strncat` over unbounded `strcpy`/`strcat`; `cl::opt<T>::getValue()` to avoid slicing |
 | Dead code | Removed unreachable `return false` after exhaustive if/else in `InstructionDuplication.cpp:runOnMainGraph()` |
 | Copies | `for (auto insVector : arithInst)` → `for (const auto& insVector : ...)` to avoid copying inner vectors |
-
-#### FIDL templates (`tools/FIDL/config/`)
-
-All four templates (`TargetSingleTemplate.cpp`, `TargetMultiSourceTemplate.cpp`,
-`TargetAllTemplate.cpp`, `NewInjectorTemplate.cpp`) updated:
-
-- `virtual` on override methods → `override`
-- `dyn_cast<>` after `isa<>` → `cast<>`
-- `.size() == 0` → `.empty()`
-- `std::string(getName())` → `.getName().str()`
-
-All 37 FIDL-generated selectors were regenerated from the updated templates.
 
 #### Code quality (Python — found by flake8/bugbear)
 
@@ -138,10 +125,6 @@ All 37 FIDL-generated selectors were regenerated from the updated templates.
   `char *opcode`, not `unsigned`; last param is `int`, not `long`);
   `lltfiMLLayer` parameter types (`int64_t`); removed non-existent `random`
   and `data_corruption` `fi_type` entries; corrected claim that
-  `_FIDLSoftwareFaultInjectors.cpp` is generated/not-in-git (it is tracked);
-  added missing `bin/` scripts, `LLFIDotGraphPass`, and memmove/memcpy
-  intrinsic limitation; added design decisions for new-PM-only and separate
-  `SEDPasses.so`.
 
 ---
 
@@ -170,8 +153,6 @@ the following improvements over the original LLFI fork:
 - `InstructionDuplication` pass (`SEDPasses.so`) for soft-error detection
 - Batch fault injection scripts (`batchInstrument.py`, `batchProfile.py`,
   `batchInjectfault.py`)
-- FIDL software fault mode generator (37 modes across 6 failure classes)
-- `SoftwareFailureAutoScan.py` for automatic software fault scanning
 - Trace analysis tools (`tracediff.py`, `traceontograph.py`, `traceunion.py`,
   `tracetodot.py`)
 - Makefile generation tool (`GenerateMakefile`)

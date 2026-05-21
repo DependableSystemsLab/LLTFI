@@ -70,8 +70,7 @@ if [[ $RUN_CPP -eq 1 ]]; then
   # clang-format
   section "clang-format (C++ formatting)"
   if CFMT=$(find_tool clang-format-20 clang-format); then
-    CPP_FILES=$(find "${REPO_ROOT}/llvm_passes" -name '*.cpp' -o -name '*.h' \
-      | grep -v 'software_failures/_' )
+    CPP_FILES=$(find "${REPO_ROOT}/llvm_passes" -name '*.cpp' -o -name '*.h' )
     FMT_ISSUES=0
     for f in $CPP_FILES; do
       if [[ $FIX -eq 1 ]]; then
@@ -104,8 +103,7 @@ if [[ $RUN_CPP -eq 1 ]]; then
            "Rebuild with: cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..."
     else
       TIDY_ISSUES=0
-      CPP_SOURCES=$(find "${REPO_ROOT}/llvm_passes" -name '*.cpp' \
-        | grep -v 'software_failures/_')
+      CPP_SOURCES=$(find "${REPO_ROOT}/llvm_passes" -name '*.cpp')
       for f in $CPP_SOURCES; do
         result=$("$CTIDY" -p "$BUILD_DIR" --quiet "$f" 2>&1 \
           | grep -v "^[0-9]* warnings generated\.$" || true)

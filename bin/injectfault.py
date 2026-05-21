@@ -445,8 +445,7 @@ def main(args):
             if "fi_type" in run["run"]:
                 fi_type = run["run"]["fi_type"]
                 if (
-                    fi_type == "SoftwareFault"
-                    or fi_type == "AutoInjection"
+                    fi_type == "AutoInjection"
                     or fi_type == "Automated"
                 ):
                     try:

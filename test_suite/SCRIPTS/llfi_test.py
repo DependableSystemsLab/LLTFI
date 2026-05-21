@@ -10,12 +10,12 @@ List of options:
 
 --threads <number of threads to use>: number of threads to be used for fault injections, default value: 1.
 --all: Test all the test cases of LLFI test suite, including fault injection tests, trace analysis tests and make file generation tests.
---all_fault_injections: Test all the test cases of fault injections, including HardwareFaults, SoftwareFaults and BatchMode tests.
+--all_fault_injections: Test all the test cases of fault injections, including HardwareFaults and BatchMode tests.
 --all_hardware_faults: Test all the test cases of HardwareFaults.
 --all_batchmode: Test all the test cases of BatchMode fault injections.
 --all_trace_tools_tests: Test all the tests for trace analysis tools.
 --all_makefile_generation: Test all the tests for makefile generation script.
---all_ml: Test ML/ONNX tools (CompareLayerOutputs, ExtendONNXModel, outputONNXGraph), SoftwareFailureAutoScan, TensorFlow/PyTorch ONNX pipelines, ONNX-to-LLVM-IR compilation, and ML fault injection. Tests that require optional dependencies (onnx, pygraphviz, pydot, tensorflow, tf2onnx, torch, onnx-mlir) are reported as SKIP when those packages are absent.
+--all_ml: Test ML/ONNX tools (CompareLayerOutputs, ExtendONNXModel, outputONNXGraph), TensorFlow/PyTorch ONNX pipelines, ONNX-to-LLVM-IR compilation, and ML fault injection. Tests that require optional dependencies (onnx, pygraphviz, pydot, tensorflow, tf2onnx, torch, onnx-mlir) are reported as SKIP when those packages are absent.
 --test_cases [test case names]: Test only specified test case.
 --clean_after_test: Clean all the generate files after testing.
 
@@ -223,25 +223,18 @@ def startTestRoutine():
     ## run ML/ONNX tools tests (not part of --all; requires optional deps)
     if options["all_ml"]:
         import test_ml_tools
-        import test_software_failure_autoscan
         import test_ml_models
         import test_instruction_duplication
 
         verbosePrint("Calling: test_ml_tools.test_ml_tools()")
         _, ml_tools_list = test_ml_tools.test_ml_tools()
-        verbosePrint(
-            "Calling: test_software_failure_autoscan.test_software_failure_autoscan()"
-        )
-        _, autoscan_list = (
-            test_software_failure_autoscan.test_software_failure_autoscan()
-        )
         verbosePrint("Calling: test_ml_models.test_ml_models()")
         _, ml_models_list = test_ml_models.test_ml_models()
         verbosePrint(
             "Calling: test_instruction_duplication.test_instruction_duplication()"
         )
         _, sid_list = test_instruction_duplication.test_instruction_duplication()
-        ml_result_list = ml_tools_list + autoscan_list + ml_models_list + sid_list
+        ml_result_list = ml_tools_list + ml_models_list + sid_list
 
     ## run MakefileGeneration tests
     if (

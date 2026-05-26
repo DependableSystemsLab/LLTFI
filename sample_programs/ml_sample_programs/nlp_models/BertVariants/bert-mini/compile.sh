@@ -2,7 +2,7 @@ printf "\n[Compile Script]: Getting the ONNX model\n"
 FILE=model.onnx
 
 printf "\n[Compile Script]: Convert TF model to LLVM IR\n"
-onnx-mlir --EmitLLVMIR  --instrument-onnx-ops="ALL" --InstrumentBeforeAndAfterOp model.onnx
+onnx-mlir --EmitLLVMIR  --instrument-stage=Onnx --instrument-ops=onnx.* --InstrumentBeforeOp --InstrumentAfterOp --InstrumentBeforeAndAfterOp model.onnx
 mlir-translate -mlir-to-llvmir model.onnx.mlir > model.mlir.ll
 
 printf "\n[Compile Script]: Compile main driver program and link to TF model in LLVM IR\n"

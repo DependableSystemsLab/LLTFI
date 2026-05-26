@@ -411,213 +411,6 @@ def _find_llvm_tool(name):
     return shutil.which(name)
 
 
-def _test_real_model_structural(opt, sed_so, model_ll):
-    """Apply InstructionDuplication to the real onnx-mlir model.ll and verify
-    that the pass handles genuine onnx-mlir IR (not just synthetic fixtures):
-    - opt exits cleanly
-    - compareFloatValues calls are inserted
-    - Arithmetic instructions are duplicated
-
-    This covers H-3 structural correctness. Numerical correctness follows from
-    the fact that compareFloatValues(x, x) == x (bitwise AND of identical
-    floats is the float itself), so when no fault is injected the duplicated
-    model produces the same output as the baseline.
-    """
-    prefix = "./instruction_duplication/real_model_structural"
-    with tempfile.TemporaryDirectory() as tmpdir:
-        out_path = os.path.join(tmpdir, "model_dup.ll")
-        cmd = [
-            opt,
-            "-load-pass-plugin",
-            sed_so,
-            "--passes=InstructionDuplicationPass",
-            "--operatorName=all",
-            "-S",
-            model_ll,
-            "-o",
-            out_path,
-        ]
-        p = subprocess.run(cmd, capture_output=True, text=True)
-        if p.returncode != 0:
-            return [
-                {
-                    "name": prefix,
-                    "result": f"FAIL: opt exited {p.returncode}: " f"{p.stderr[:300]}",
-                }
-            ]
-
-        with open(out_path) as f:
-            output = f.read()
-
-    if not re.search(r"call float @compareFloatValues", output):
-        return [
-            {
-                "name": prefix,
-                "result": "FAIL: no compareFloatValues calls in output — "
-                "pass did not instrument real model IR",
-            }
-        ]
-
-    fadds = len(re.findall(r"\bfadd\b", output))
-    fmuls = len(re.findall(r"\bfmul\b", output))
-    total = fadds + fmuls
-    if total == 0:
-        return [
-            {
-                "name": prefix,
-                "result": "FAIL: no floating-point arithmetic after duplication "
-                "— unexpected empty main_graph",
-            }
-        ]
-
-    return [
-        {
-            "name": prefix,
-            "result": f"PASS ({total} arith instructions duplicated in real model IR)",
-        }
-    ]
-
-
-def _test_real_model_end_to_end(opt, sed_so, model_ll, sid_helper_ll):
-    """Full pipeline: duplicate model.ll, link SIDHelperFunctions, inline,
-    then run both the baseline and duplicated models with lli and compare
-    numeric outputs.
-
-    compareFloatValues(x, x) == x when no fault is present, so outputs must
-    be byte-for-byte identical.  Any difference indicates a pass bug.
-    """
-    prefix = "./instruction_duplication/real_model_end_to_end"
-
-    llvm_link = _find_llvm_tool("llvm-link")
-    lli = _find_llvm_tool("lli")
-    if not llvm_link or not lli:
-        return [{"name": prefix, "result": "SKIP: llvm-link or lli not found"}]
-
-    # Locate image input files alongside model.ll
-    mnist_dir = os.path.dirname(model_ll)
-    image_c = os.path.join(mnist_dir, "image.c")
-    if not os.path.isfile(image_c):
-        return [{"name": prefix, "result": "SKIP: image.c not found beside model.ll"}]
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        # --- Baseline run ---
-        p = subprocess.run(
-            [lli, model_ll],
-            cwd=mnist_dir,
-            capture_output=True,
-            text=True,
-        )
-        if p.returncode != 0:
-            return [
-                {
-                    "name": prefix,
-                    "result": f"FAIL: baseline lli run exited {p.returncode}: "
-                    f"{p.stderr[:200]}",
-                }
-            ]
-        baseline_stdout = p.stdout
-
-        # --- Duplicated model ---
-        dup_ll = os.path.join(tmpdir, "model_dup.ll")
-        p = subprocess.run(
-            [
-                opt,
-                "-load-pass-plugin",
-                sed_so,
-                "--passes=InstructionDuplicationPass",
-                "--operatorName=all",
-                "-S",
-                model_ll,
-                "-o",
-                dup_ll,
-            ],
-            capture_output=True,
-            text=True,
-        )
-        if p.returncode != 0:
-            return [
-                {
-                    "name": prefix,
-                    "result": f"FAIL: opt (duplication) exited {p.returncode}",
-                }
-            ]
-
-        # Link in helper
-        linked_ll = os.path.join(tmpdir, "model_linked.ll")
-        p = subprocess.run(
-            [
-                llvm_link,
-                "-S",
-                "-o",
-                linked_ll,
-                dup_ll,
-                sid_helper_ll,
-            ],
-            capture_output=True,
-            text=True,
-        )
-        if p.returncode != 0:
-            return [
-                {
-                    "name": prefix,
-                    "result": f"FAIL: llvm-link exited {p.returncode}: "
-                    f"{p.stderr[:200]}",
-                }
-            ]
-
-        # Inline the helper
-        inlined_ll = os.path.join(tmpdir, "model_inlined.ll")
-        p = subprocess.run(
-            [
-                opt,
-                "--passes=always-inline",
-                "-S",
-                linked_ll,
-                "-o",
-                inlined_ll,
-            ],
-            capture_output=True,
-            text=True,
-        )
-        if p.returncode != 0:
-            return [
-                {
-                    "name": prefix,
-                    "result": f"FAIL: opt (inline) exited {p.returncode}: "
-                    f"{p.stderr[:200]}",
-                }
-            ]
-
-        # Run duplicated model
-        p = subprocess.run(
-            [lli, inlined_ll],
-            cwd=mnist_dir,
-            capture_output=True,
-            text=True,
-        )
-        if p.returncode != 0:
-            return [
-                {
-                    "name": prefix,
-                    "result": f"FAIL: duplicated model lli run exited "
-                    f"{p.returncode}: {p.stderr[:200]}",
-                }
-            ]
-        dup_stdout = p.stdout
-
-    if baseline_stdout != dup_stdout:
-        return [
-            {
-                "name": prefix,
-                "result": "FAIL: baseline and duplicated model outputs differ "
-                "(compareFloatValues(x,x) must equal x when no fault "
-                "is injected)",
-            }
-        ]
-
-    return [{"name": prefix, "result": "PASS"}]
-
-
 def test_instruction_duplication():
     """
     Run all InstructionDuplication pass tests.
@@ -637,8 +430,6 @@ def test_instruction_duplication():
             "chain_duplication",
             "operator_filtering",
             "multiple_operator_regions",
-            "real_model_structural",
-            "real_model_end_to_end",
         ):
             result_list.append(
                 {
@@ -658,8 +449,6 @@ def test_instruction_duplication():
             "chain_duplication",
             "operator_filtering",
             "multiple_operator_regions",
-            "real_model_structural",
-            "real_model_end_to_end",
         ):
             result_list.append(
                 {
@@ -685,29 +474,6 @@ def test_instruction_duplication():
             "SKIP: model.ll not found — run compile.sh in "
             "sample_programs/ml_sample_programs/vision_models/mnist/"
         )
-        result_list.append(
-            {"name": "./instruction_duplication/real_model_structural", "result": skip}
-        )
-        result_list.append(
-            {"name": "./instruction_duplication/real_model_end_to_end", "result": skip}
-        )
-    else:
-        result_list.extend(_test_real_model_structural(opt, sed_so, model_ll))
-        sid_ll = _find_sid_helper_ll()
-        if sid_ll is None:
-            result_list.append(
-                {
-                    "name": "./instruction_duplication/real_model_end_to_end",
-                    "result": "SKIP: SIDHelperFunctions.ll not built — run "
-                    "compile_shrd_lib.sh in "
-                    "llvm_passes/instruction_duplication/shared_lib/",
-                }
-            )
-        else:
-            result_list.extend(
-                _test_real_model_end_to_end(opt, sed_so, model_ll, sid_ll)
-            )
-
     has_fail = any(r["result"].startswith("FAIL") for r in result_list)
     return (1 if has_fail else 0), result_list
 

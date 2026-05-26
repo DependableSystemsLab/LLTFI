@@ -2,6 +2,8 @@
 #include "FIInstSelector.h"
 #include "Utils.h"
 
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/GlobalVariable.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/Support/CommandLine.h"
 
@@ -46,6 +48,30 @@ std::vector<std::string> getCommaSeperateVals(std::string inp) {
   return retval;
 }
 
+// Return the ONNX operator name as a string.
+std::string extractONNXOperatorName(Value *V) {
+  auto *GV = dyn_cast<GlobalVariable>(V);
+  Constant *Init = GV->getInitializer();
+
+  auto *CDA = dyn_cast<ConstantDataArray>(Init);
+  if (!CDA || !CDA->isString()) {
+    return "";
+  }
+
+  StringRef onnxOpNameStrRef = CDA->getAsString();
+  std::string onnxOpNameStr = onnxOpNameStrRef.str();
+
+  std::transform(onnxOpNameStr.begin(), onnxOpNameStr.end(),
+    onnxOpNameStr.begin(),
+    [](unsigned char c){ return std::tolower(c); });
+
+  std::string onnxOpPrefix = "onnx.";
+  size_t pos = onnxOpNameStr.find(onnxOpPrefix);
+  std::string result = onnxOpNameStr.substr(pos + onnxOpPrefix.length());
+  return result;
+}
+
+
 /**
  * This sample instruction selector only selects instructions in function
  *   main_graph and belonging to the specified tensor operator.
@@ -57,42 +83,21 @@ public:
   struct Operator {
 
     std::string OperatorName;
-    // ONNX mlir assigns a unique ID to every operator.
-    int64_t OperatorNumber;
     // Number of times we have seen this operator.
     int OperatorCount;
     // Operator number to do FI
     int FIOperatorCount;
 
-    // Get unique Id corresponding to the ONNX operator.
-    static int64_t getOperatorNumber(std::string name) {
+    // Check if provided ONNX operator is valid and supported.
+    bool isValidOperator(std::string name) {
 
-      char opname[100];
-      std::transform(name.begin(), name.end(), name.begin(),
-                     [](unsigned char c) { return std::tolower(c); });
+      std::vector<std::string> ONNXOperators = {
+          "conv", "relu", "maxpool", "matmul",
+          "add", "avgpool", "softmax", "loop",
+          "nonmaxs", "unsqueeze"};
 
-      strncpy(opname, name.c_str(), sizeof(opname) - 1);
-      opname[sizeof(opname) - 1] = '\0';
-
-      std::cout << "OperatorName: " << opname << "\n";
-
-      // ONNX assigns unique IDs to each tensor operator.
-      std::map<std::string, int64_t> ONNXOperatorId = {
-          {"conv", 1986948931},
-          {"relu", 1970038098},
-          {"maxpool", 30521821366870349},
-          {"matmul", 119251066446157},
-          {"add", 6579265},
-          {"avgpool", 30521821365761601},
-          {"softmax", 33884119937478483},
-          {"loop", 1886351180},
-          {"nonmaxs", 23494782373228366},
-          {"unsqueeze", 28540527736745557}};
-
-      if (ONNXOperatorId.find(opname) == ONNXOperatorId.end())
-        return -1;
-
-      return ONNXOperatorId[opname];
+      return (std::find(ONNXOperators.begin(), ONNXOperators.end(), name)
+                 != ONNXOperators.end());
     }
 
     Operator(std::string name, std::string count) {
@@ -100,10 +105,9 @@ public:
       OperatorName = name;
       FIOperatorCount = (int)atoll(count.c_str());
       OperatorCount = 0;
-      OperatorNumber = getOperatorNumber(name);
 
-      if (OperatorNumber == -1) {
-        std::cout << "Operator name " << OperatorName.c_str()
+      if (!isValidOperator(OperatorName)) {
+        std::cout << "Operator name " << OperatorName
                   << " not found.\n";
         std::cout << "Please use the following operator name(s):\
                 conv, relu, maxpool, matmul, add, avgpool, all, and softmax.";
@@ -127,8 +131,9 @@ public:
 
 private:
   bool isCustomTensorOperator;
-  std::unordered_map<int64_t, std::vector<Operator*>> map;
+  std::unordered_map<std::string, std::vector<Operator*>> map;
   bool injectInAll;
+  int64_t instrumentPoint;
 
   // Add Metadata to LLVM instructions; Only for debugging purposes!
   void addMetadata(llvm::Instruction* ins, const char* st = nullptr) {
@@ -159,34 +164,32 @@ private:
         break;
       }
 
-      int64_t code = Operator::getOperatorNumber(name);
-
       // if this operator is already in the map
-      if (map.find(code) != map.end()) {
+      if (map.find(name) != map.end()) {
 
         Operator* temp = new Operator(name, number);
-        map[code].push_back(temp);
+        map[name].push_back(temp);
       } else {
 
         std::vector<Operator*> OpArr;
         Operator* temp = new Operator(name, number);
         OpArr.push_back(temp);
-        map.insert(make_pair(code, OpArr));
+        map.insert(make_pair(name, OpArr));
       }
     }
   }
 
-  bool shouldInjectFault(int64_t number) {
+  bool shouldInjectFault(std::string opName) {
 
     if (injectInAll)
       return true;
 
     // If the operator isn't present in the map.
-    if (map.find(number) == map.end())
+    if (map.find(opName) == map.end())
       return false;
     else {
 
-      std::vector<Operator*> temp = map[number];
+      std::vector<Operator*> temp = map[opName];
       bool result = false;
 
       for (auto it : temp) {
@@ -198,7 +201,7 @@ private:
   }
 
   bool isInstFITarget(Instruction* inst) override {
-    if (inst->getParent()->getParent()->getName() == "main_graph") {
+    if (inst->getParent()->getParent()->getName().starts_with("main_graph")) {
 
       if (map.empty() && !injectInAll) {
         initializeLayerNameAndNumber(layerNo[0], layerName[0]);
@@ -212,26 +215,28 @@ private:
             callinst->getCalledFunction()->getName() == "OMInstrumentPoint") {
 
           Value* arg1 = callinst->getArgOperand(0);
+          std::string onnxOpName = extractONNXOperatorName(arg1);
+
           Value* arg2 = callinst->getArgOperand(1);
 
-          ConstantInt* ci1 = dyn_cast<ConstantInt>(arg1);
-          ConstantInt* ci2 = dyn_cast<ConstantInt>(arg2);
-          if (!ci1 || !ci2)
+          ConstantInt* ci = dyn_cast<ConstantInt>(arg2);
+          if (onnxOpName == "" || !ci)
             return false;
 
-          int64_t argValue1 = ci1->getSExtValue();
-          int64_t argValue2 = ci2->getSExtValue();
+          int64_t argValue2 = ci->getSExtValue();
 
-          if (argValue2 == 1 && shouldInjectFault(argValue1)) {
+          if (instrumentPoint == 0 && shouldInjectFault(onnxOpName)) {
 
             // Inject fault!
             isCustomTensorOperator = true;
+            instrumentPoint = argValue2;
           }
 
-          if (argValue2 == 2) {
+          if (argValue2 == instrumentPoint + 1) {
 
             // Set this to false after the operator ends.
             isCustomTensorOperator = false;
+            instrumentPoint = 0;
           }
         }
       }

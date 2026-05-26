@@ -4,7 +4,7 @@
 
 rm -rf ./llfi*
 
-fname=$1
+fname="factorial"
 
 # Generate Makefile
 $LLFI_BUILD_ROOT/tools/GenerateMakefile --readable --all -o "$fname.ll"
@@ -14,10 +14,9 @@ make
 $LLFI_BUILD_ROOT/bin/instrument --readable "$fname.ll"
 
 # Call the profiling script
-shift
-$LLFI_BUILD_ROOT/bin/profile ./llfi/"$fname-profiling.exe" $@
+$LLFI_BUILD_ROOT/bin/profile ./llfi/"$fname-profiling.exe" $1
 
 # Inject the faults
-$LLFI_BUILD_ROOT/bin/injectfault ./llfi/"$fname-faultinjection.exe" $@
+$LLFI_BUILD_ROOT/bin/injectfault ./llfi/"$fname-faultinjection.exe" $1
 
 echo "Done injecting faults"

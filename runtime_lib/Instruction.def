@@ -18,7 +18,7 @@ HANDLE_INST ( 7, Unreachable  , UnreachableInst,   1)
 HANDLE_INST ( 8, CleanupRet   , CleanupReturnInst, 1)
 HANDLE_INST ( 9, CatchRet     , CatchReturnInst,   1)
 HANDLE_INST ( 10, CatchSwitch , CatchSwitchInst,   1)
-HANDLE_INST ( 11, CallBr      , CallBr,            1)
+HANDLE_INST ( 11, CallBr      , CallBrInst,        1)
 
 // Standard unary operators...
 HANDLE_INST( 12, FNeg         , UnaryOperator,     1)

@@ -450,7 +450,7 @@ def test_fault_injection():
 
         # --- Test 1: instrument ---
         p = subprocess.run(
-            [instrument_bin, "--readable", local_ll],
+            [instrument_bin, "--readable", "-L", "$ONNX_MLIR_BUILD/Debug/lib", "-lcruntime", "-ljson-c", "-lprotobuf", local_ll],
             capture_output=True,
             text=True,
             cwd=tmpdir,

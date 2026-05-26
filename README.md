@@ -161,7 +161,7 @@ Individual test categories can be run separately:
 ```bash
 cd <LLFI_BUILD_ROOT>/test_suite
 
-python3 SCRIPTS/llfi_test --all                    # 21 core tests (expected: 21/21 PASS)
+python3 SCRIPTS/llfi_test --all_cpp                # 21 core tests (expected: 21/21 PASS)
 python3 SCRIPTS/llfi_test --all_hardware_faults    # hardware fault injection (8 tests)
 python3 SCRIPTS/llfi_test --all_trace_tools_tests  # trace analysis tools (3 tests)
 python3 SCRIPTS/llfi_test --all_makefile_generation # Makefile generation (2 tests)
@@ -243,7 +243,7 @@ Example — `factorial`:
    ```
 3. Compile and run:
    ```bash
-   bash compileAndRun.sh factorial 6
+   bash compileAndRun.sh 6
    ```
 
 Output from LLFI is written to the `llfi/` directory.  See

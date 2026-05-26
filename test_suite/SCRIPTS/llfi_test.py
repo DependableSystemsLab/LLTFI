@@ -9,7 +9,7 @@ Usage: %(prog)s [OPTIONS]
 List of options:
 
 --threads <number of threads to use>: number of threads to be used for fault injections, default value: 1.
---all: Test all the test cases of LLFI test suite, including fault injection tests, trace analysis tests and make file generation tests.
+--all_cpp: Test all the test cases of LLFI test suite, including fault injection tests, trace analysis tests and make file generation tests.
 --all_fault_injections: Test all the test cases of fault injections, including HardwareFaults and BatchMode tests.
 --all_hardware_faults: Test all the test cases of HardwareFaults.
 --all_batchmode: Test all the test cases of BatchMode fault injections.
@@ -30,7 +30,7 @@ import subprocess
 import time
 
 options = {
-    "all": False,
+    "all_cpp": False,
     "all_fault_injections": False,
     "all_hardware_faults": False,
     "all_batchmode": False,
@@ -67,8 +67,8 @@ def parseArgs(args):
     while argid < len(args):
         arg = args[argid]
 
-        if arg == "--all":
-            options["all"] = True
+        if arg == "--all_cpp":
+            options["all_cpp"] = True
 
         elif arg == "--all_fault_injections":
             options["all_fault_injections"] = True
@@ -124,7 +124,7 @@ def startTestRoutine():
     ml_result_list = []
 
     if (
-        options["all"]
+        options["all_cpp"]
         or options["all_batchmode"]
         or options["all_hardware_faults"]
         or options["all_fault_injections"]
@@ -150,7 +150,7 @@ def startTestRoutine():
             execlist.append("HardwareFaults")
         elif options["test_cases"] != []:
             execlist.extend(options["test_cases"])
-        elif options["all"] or options["all_fault_injections"]:
+        elif options["all_cpp"] or options["all_fault_injections"]:
             pass
         verbosePrint(" ".join(execlist))
         p = subprocess.Popen(execlist, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -170,7 +170,7 @@ def startTestRoutine():
             execlist.append("HardwareFaults")
         elif options["test_cases"] != []:
             execlist.extend(options["test_cases"])
-        elif options["all"] or options["all_fault_injections"]:
+        elif options["all_cpp"] or options["all_fault_injections"]:
             pass
         verbosePrint(" ".join(execlist))
         p = subprocess.Popen(execlist, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -191,7 +191,7 @@ def startTestRoutine():
             prog_list.append("HardwareFaults")
         elif options["test_cases"] != []:
             prog_list.extend(options["test_cases"])
-        elif options["all"] or options["all_fault_injections"]:
+        elif options["all_cpp"] or options["all_fault_injections"]:
             pass
         verbosePrint(
             "Calling: check_injection.check_injection(" + " ".join(prog_list) + ")"
@@ -203,7 +203,7 @@ def startTestRoutine():
     ## run trace tools's tests
     if (
         options["all_trace_tools_tests"]
-        or options["all"]
+        or options["all_cpp"]
         or options["test_cases"] != []
     ):
         import test_trace_tools
@@ -211,7 +211,7 @@ def startTestRoutine():
         prog_list = []
         if options["test_cases"] != []:
             prog_list.extend(options["test_cases"])
-        elif options["all_trace_tools_tests"] or options["all"]:
+        elif options["all_trace_tools_tests"] or options["all_cpp"]:
             pass
         verbosePrint(
             "Calling: test_trace_tools.test_trace_tools(" + " ".join(prog_list) + ")"
@@ -239,7 +239,7 @@ def startTestRoutine():
     ## run MakefileGeneration tests
     if (
         options["all_makefile_generation"]
-        or options["all"]
+        or options["all_cpp"]
         or options["test_cases"] != []
     ):
         import test_generate_makefile
@@ -247,7 +247,7 @@ def startTestRoutine():
         prog_list = []
         if options["test_cases"] != []:
             prog_list.extend(options["test_cases"])
-        elif options["all_makefile_generation"] or options["all"]:
+        elif options["all_makefile_generation"] or options["all_cpp"]:
             pass
         verbosePrint(
             "Calling: test_generate_makefile.test_generate_makefile("

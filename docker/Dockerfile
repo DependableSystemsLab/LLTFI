@@ -92,8 +92,6 @@ RUN make install
 RUN ldconfig
 
 WORKDIR /home/
-RUN git clone https://github.com/DependableSystemsLab/LLTFI.git
-
 
 ### ONNX_MLIR
 RUN git clone --recursive https://github.com/DependableSystemsLab/onnx-mlir-lltfi.git && \
@@ -111,6 +109,7 @@ RUN git clone --recursive https://github.com/DependableSystemsLab/onnx-mlir-lltf
     cmake --build . -j${NPROC} && \
     ninja install
 
+RUN git clone https://github.com/DependableSystemsLab/LLTFI.git
 WORKDIR /home/LLTFI
 
 ### LLTFI

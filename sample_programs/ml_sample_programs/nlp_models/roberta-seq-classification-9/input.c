@@ -180,7 +180,7 @@ void export_layer_output_to_json(OMTensorList *outputList, char* savefile, char*
 
 		// Get properties of the tensor that you want to export to the JSON file
 		int64_t rank = omTensorGetRank(omt);
-		int64_t *shape = omTensorGetShape(omt);
+		const int64_t *shape = omTensorGetShape(omt);
 		int64_t numElements = (int64_t) (omTensorGetNumElems(omt) / shape[0]);
 		float *dataBuf = (float *)omTensorGetDataPtr(omt);
 		int64_t bufferSize = omTensorGetBufferSize(omt);

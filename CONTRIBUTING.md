@@ -52,7 +52,7 @@ From the build directory:
 
 ```bash
 # All core tests (must pass before any PR)
-./test_suite/SCRIPTS/llfi_test --all
+./test_suite/SCRIPTS/llfi_test --all_cpp
 
 # Specific subsets
 ./test_suite/SCRIPTS/llfi_test --all_hardware_faults
@@ -79,11 +79,11 @@ Tests with missing deps report **SKIP**, not FAIL, and don't affect the pass/fai
 | ONNX → LLVM IR | onnx-mlir binary (`ONNX_MLIR_BUILD` env var) |
 | Fault injection (ML) | LLTFI build + `model.ll` from `sample_programs/.../mnist/compile.sh` |
 
-All core tests (`--all`) must pass before submitting a pull request. ML tests (`--all_ml`) should pass for any change that touches ML-related code.
+All core tests (`--all_cpp`) must pass before submitting a pull request. ML tests (`--all_ml`) should pass for any change that touches ML-related code.
 
 ## Pull Request Checklist
 
-- [ ] All tests pass (`llfi_test --all`)
+- [ ] All tests pass (`llfi_test --all_cpp`)
 - [ ] Code follows CODING_GUIDELINES.md
 - [ ] If changing a public API or behavior: README.md is updated
 - [ ] New functionality has a corresponding test case

@@ -119,7 +119,7 @@ python3 SCRIPTS/test_instruction_duplication.py
 Run the full test suite against the new LLVM version and confirm no regressions:
 ```bash
 cd /path/to/LLTFI-build/test_suite
-python3 SCRIPTS/llfi_test --all        # expect 21/21
+python3 SCRIPTS/llfi_test --all_cpp    # expect 21/21
 python3 SCRIPTS/llfi_test --all_ml     # expect all non-SKIP to pass
 ```
 **Result: 21/21 PASS.** All hardware fault, trace tool, makefile

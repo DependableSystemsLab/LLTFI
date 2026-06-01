@@ -38,7 +38,7 @@ cd /home/karthik/Programs/LLTFI-build && make
 From the **build** directory:
 ```bash
 cd /home/karthik/Programs/LLTFI-build/test_suite
-python3 SCRIPTS/llfi_test --all                      # all 21 tests
+python3 SCRIPTS/llfi_test --all_cpp                  # all 21 tests
 python3 SCRIPTS/llfi_test --all_hardware_faults      # 8 tests
 python3 SCRIPTS/llfi_test --all_trace_tools_tests    # 3 tests
 python3 SCRIPTS/llfi_test --all_makefile_generation  # 2 tests

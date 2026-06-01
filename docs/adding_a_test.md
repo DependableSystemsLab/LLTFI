@@ -203,7 +203,7 @@ sense for your test case.
 ### Step 5 — Verify it does not break the full suite
 
 ```bash
-python3 SCRIPTS/llfi_test --all
+python3 SCRIPTS/llfi_test --all_cpp
 ```
 
 Expected: 21/21 (or 22/22 if your test adds to the count) PASS.

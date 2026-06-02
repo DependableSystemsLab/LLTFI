@@ -6,8 +6,7 @@
  *cr
  ***************************************************************************/
 
-struct image_i16
-{
+struct image_i16 {
   int width;
   int height;
   short *data;
@@ -17,7 +16,7 @@ struct image_i16
 extern "C" {
 #endif
 
-struct image_i16 * load_image(char *filename);
+struct image_i16 *load_image(char *filename);
 void free_image(struct image_i16 *);
 
 #ifdef __cplusplus

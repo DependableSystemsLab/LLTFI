@@ -13,14 +13,14 @@ struct llfiDotGraph : public FunctionPass {
   std::ofstream outfs;
   llfiDotGraph() : FunctionPass(ID) {}
 
-  bool doInitialization(Module& M) override {
+  bool doInitialization(Module &M) override {
     outfs.open("llfi.stat.graph.dot", std::ios::trunc);
     outfs << "digraph \"LLFI Program Graph\" {\n";
 
     return false;
   }
 
-  bool doFinalization(Module& M) override {
+  bool doFinalization(Module &M) override {
     outfs << "{ rank = sink;"
              "Legend [shape=none, margin=0, label=<"
              "<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" "
@@ -56,7 +56,7 @@ struct llfiDotGraph : public FunctionPass {
     return false;
   }
 
-  bool runOnFunction(Function& F) override;
+  bool runOnFunction(Function &F) override;
 };
 
 struct NewLLFIDotGraph : llvm::PassInfoMixin<NewLLFIDotGraph> {
@@ -68,11 +68,11 @@ struct NewLLFIDotGraph : llvm::PassInfoMixin<NewLLFIDotGraph> {
 
   // Main entry point, takes IR unit to run the pass on (&F) and the
   // corresponding pass manager (to be queried if need be)
-  PreservedAnalyses run(Module& M, ModuleAnalysisManager&) {
+  PreservedAnalyses run(Module &M, ModuleAnalysisManager &) {
     llfiDotGraph tempObj;
     tempObj.doInitialization(M);
 
-    for (Function& F : M) {
+    for (Function &F : M) {
       tempObj.runOnFunction(F);
     }
 

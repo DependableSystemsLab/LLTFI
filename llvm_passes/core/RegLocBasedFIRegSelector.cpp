@@ -2,8 +2,8 @@
 
 namespace llfi {
 
-bool RegLocBasedFIRegSelector::isRegofInstFITarget(Value* reg,
-                                                   Instruction* inst) {
+bool RegLocBasedFIRegSelector::isRegofInstFITarget(Value *reg,
+                                                   Instruction *inst) {
   if (firegloc == dstreg) {
     return reg == inst;
   } else if (firegloc == allsrcreg) {
@@ -33,8 +33,8 @@ bool RegLocBasedFIRegSelector::isRegofInstFITarget(Value* reg,
   }
 }
 
-bool RegLocBasedFIRegSelector::isRegofInstFITarget(Value* reg,
-                                                   Instruction* inst, int pos) {
+bool RegLocBasedFIRegSelector::isRegofInstFITarget(Value *reg,
+                                                   Instruction *inst, int pos) {
   bool result = isRegofInstFITarget(reg, inst);
   // Only check position if it's not allsrcreg, dstreg or all reg
   if (!(firegloc == allsrcreg || firegloc == dstreg || firegloc == allreg))

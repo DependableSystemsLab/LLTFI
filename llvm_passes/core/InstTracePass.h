@@ -15,24 +15,24 @@ struct InstTrace : public FunctionPass {
 
   InstTrace() : FunctionPass(ID) {}
 
-  bool doInitialization(Module& M) override { return false; }
+  bool doInitialization(Module &M) override { return false; }
 
-  bool doFinalization(Module& M) override;
+  bool doFinalization(Module &M) override;
 
-  long fetchLLFIInstructionID(Instruction* targetInst);
+  long fetchLLFIInstructionID(Instruction *targetInst);
 
-  Instruction* getInsertPoint(Instruction* llfiIndexedInst);
+  Instruction *getInsertPoint(Instruction *llfiIndexedInst);
 
-  bool runOnFunction(Function& F) override;
+  bool runOnFunction(Function &F) override;
 };
 
 struct NewInstTrace : llvm::PassInfoMixin<NewInstTrace> {
-  llvm::PreservedAnalyses run(llvm::Module& M, llvm::ModuleAnalysisManager&) {
+  llvm::PreservedAnalyses run(llvm::Module &M, llvm::ModuleAnalysisManager &) {
 
     InstTrace tempObj;
     tempObj.doInitialization(M);
 
-    for (Function& F : M) {
+    for (Function &F : M) {
       tempObj.runOnFunction(F);
     }
 

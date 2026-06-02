@@ -1,11 +1,10 @@
+#include <assert.h>
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
-
-#include <iostream>
-#include <vector>
 #include <string>
+#include <vector>
 
 struct layerProfCycle {
   int layerNo;
@@ -20,7 +19,7 @@ struct layerProfCycle {
     this->cycleEnd = -1;
   }
 
-  void registerCycle (long long unsigned cycle) {
+  void registerCycle(long long unsigned cycle) {
     if (this->cycleStart == -1) {
       this->cycleStart = cycle;
     }
@@ -33,7 +32,6 @@ static std::vector<layerProfCycle> layerProfileInfo;
 static int64_t globalLayerNo = 0;
 static layerProfCycle *currentLayer = nullptr;
 
-
 // Export these functions in C dilect.
 extern "C" {
 #include "Utils.h"
@@ -43,16 +41,16 @@ static long long unsigned globalCycle = 0;
 
 void lltfiMLLayer(int64_t layerName, int64_t start) {
 
-  assert(start == 1 || start == 2 && "Layer start is denoted by 1 and end by 2");
+  assert(start == 1 ||
+         start == 2 && "Layer start is denoted by 1 and end by 2");
 
   int64_t *layerNamePtr = &layerName;
-  char* layerNameStr = (char*)layerNamePtr;
+  char *layerNameStr = (char *)layerNamePtr;
 
   if (start == 1) { /* Layer started. */
     globalLayerNo++;
     currentLayer = new layerProfCycle(globalLayerNo, std::string(layerNameStr));
-  }
-  else {
+  } else {
 
     layerProfileInfo.push_back(*currentLayer);
     delete currentLayer;
@@ -86,10 +84,10 @@ void endProfiling() {
   long long unsigned total_cycle = 0;
   for (i = 0; i < 100; ++i) {
     assert(total_cycle >= 0 &&
-            "total dynamic instruction cycle too large to be handled by llfi");
+           "total dynamic instruction cycle too large to be handled by llfi");
     if (opcodecount[i] > 0) {
       assert(opcode_cycle_arr[i] >= 0 &&
-          "opcode does not exist, need to update instructions.def");
+             "opcode does not exist, need to update instructions.def");
       total_cycle += opcodecount[i] * opcode_cycle_arr[i];
     }
   }
@@ -104,6 +102,6 @@ void endProfiling() {
             layer.layerName.c_str(), layer.cycleStart, layer.cycleEnd);
   }
 
-	fclose(profileFile);
+  fclose(profileFile);
 }
 } // End of extern "C"

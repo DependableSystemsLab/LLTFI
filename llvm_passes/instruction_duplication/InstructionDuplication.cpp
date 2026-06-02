@@ -96,32 +96,32 @@ static int64_t getOperatorNumber(string name) {
 }
 
 // Add Metadata to LLVM instructions; Only for debugging purposes!
-void addMetadata(Instruction* ins, const char* st = nullptr) {
-  LLVMContext& C = ins->getContext();
-  MDNode* N = MDNode::get(C, MDString::get(C, (!st) ? "t" : st));
+void addMetadata(Instruction *ins, const char *st = nullptr) {
+  LLVMContext &C = ins->getContext();
+  MDNode *N = MDNode::get(C, MDString::get(C, (!st) ? "t" : st));
 
   char finalMD[1000] = "Debug.";
   strncat(finalMD, st ? st : "t", sizeof(finalMD) - strlen(finalMD) - 1);
   ins->setMetadata(finalMD, N);
 }
 
-void printBB(BasicBlock* bb) {
+void printBB(BasicBlock *bb) {
 
   errs() << "------- Printing BB -------------\n";
   for (BasicBlock::const_iterator i = bb->begin(); i != bb->end(); ++i) {
 
-    Instruction* inst = const_cast<llvm::Instruction*>(&*i);
+    Instruction *inst = const_cast<llvm::Instruction *>(&*i);
     errs() << *inst << "\n";
   }
 }
 
-void printFunction(Function& F) {
+void printFunction(Function &F) {
   errs() << "------- Printing Function -------------\n";
 
-  for (BasicBlock& bb : F) {
+  for (BasicBlock &bb : F) {
     for (BasicBlock::const_iterator i = bb.begin(); i != bb.end(); ++i) {
 
-      Instruction* inst = const_cast<llvm::Instruction*>(&*i);
+      Instruction *inst = const_cast<llvm::Instruction *>(&*i);
       errs() << *inst << "\n";
     }
   }
@@ -149,7 +149,7 @@ private:
     // Parse operators.
     vector<string> OperatorNames = getCommaSeperateVals(layerName);
 
-    for (const string& name : OperatorNames) {
+    for (const string &name : OperatorNames) {
 
       if (name.find("all") != string::npos) {
         injectInAllOperators = true;
@@ -172,7 +172,7 @@ private:
     // Parse LLFIIndexes for FI.
     vector<string> LLFIIndexes = getCommaSeperateVals(llfiIndex);
 
-    for (const string& index : LLFIIndexes) {
+    for (const string &index : LLFIIndexes) {
 
       if (index.find("all") != string::npos) {
         injectInAllIndexes = true;
@@ -198,16 +198,16 @@ public:
   }
 
   // Duplicate a single arithmetic instruction
-  void duplicateInstruction(Instruction* inst) {
+  void duplicateInstruction(Instruction *inst) {
 
     // Clone the instruction and reassign the operands.
-    Instruction* duplicatedInst = inst->clone();
+    Instruction *duplicatedInst = inst->clone();
     for (unsigned int i = 0; i < duplicatedInst->getNumOperands(); i++) {
       duplicatedInst->setOperand(i, inst->getOperand(i));
     }
 
     // Copy metadata
-    MDNode* mdnode = inst->getMetadata("llfi_index");
+    MDNode *mdnode = inst->getMetadata("llfi_index");
     inst->setMetadata("llfi_index", nullptr);
     duplicatedInst->setMetadata("llfi_index", mdnode);
     addMetadata(duplicatedInst, "Duplicated_Instruction");
@@ -223,9 +223,9 @@ public:
         Type::getFloatTy(inst->getContext()),
         Type::getFloatTy(inst->getContext()));
 
-    Value* funret = IRB.CreateCall(Fn, {inst, duplicatedInst});
+    Value *funret = IRB.CreateCall(Fn, {inst, duplicatedInst});
 
-    auto myIf = [&](Use& operand) {
+    auto myIf = [&](Use &operand) {
       if (isa<CallInst>(operand.getUser()))
         return false;
       return true;
@@ -235,19 +235,19 @@ public:
   }
 
   // Duplicate a chain of arithmetic instructions.
-  void duplicateInstructionChain(vector<Instruction*> insVector) {
+  void duplicateInstructionChain(vector<Instruction *> insVector) {
 
     llvm::ValueToValueMapTy vmap;
-    vector<Instruction*> new_instructions;
+    vector<Instruction *> new_instructions;
 
     // Keep track of the last instructions of the instruction chain.
     Instruction *lastInst = nullptr, *lastInstDupl = nullptr;
 
     if (!insVector.empty()) {
-      for (auto* inst : insVector) {
+      for (auto *inst : insVector) {
 
         // Clone the instruction
-        Instruction* duplicatedInst = inst->clone();
+        Instruction *duplicatedInst = inst->clone();
 
         lastInst = inst;
         lastInstDupl = duplicatedInst;
@@ -257,7 +257,7 @@ public:
         }
 
         // Copy metadata
-        MDNode* mdnode = inst->getMetadata("llfi_index");
+        MDNode *mdnode = inst->getMetadata("llfi_index");
         inst->setMetadata("llfi_index", nullptr);
         duplicatedInst->setMetadata("llfi_index", mdnode);
         addMetadata(duplicatedInst, "Duplicated_Instruction_In_Chain");
@@ -270,7 +270,7 @@ public:
       }
     }
 
-    for (auto* i : new_instructions) {
+    for (auto *i : new_instructions) {
       llvm::RemapInstruction(i, vmap,
                              RF_NoModuleLevelChanges | RF_IgnoreMissingLocals);
     }
@@ -285,11 +285,11 @@ public:
         Type::getFloatTy(lastInst->getContext()),
         Type::getFloatTy(lastInst->getContext()));
 
-    Value* funret = IRB.CreateCall(Fn, {lastInst, lastInstDupl});
+    Value *funret = IRB.CreateCall(Fn, {lastInst, lastInstDupl});
 
     // Replace all use of the arithmatic instruction with the function
     // return value
-    auto myIf = [&](Use& operand) {
+    auto myIf = [&](Use &operand) {
       if (isa<CallInst>(operand.getUser()))
         return false;
       return true;
@@ -298,7 +298,7 @@ public:
     lastInst->replaceUsesWithIf(funret, myIf);
   }
 
-  bool isArithmeticInstruction(Instruction* inst) {
+  bool isArithmeticInstruction(Instruction *inst) {
     // Don't do instruction duplication in FCmp.
     if (inst != nullptr && (inst->getOpcode() == Instruction::FAdd ||
                             inst->getOpcode() == Instruction::FSub ||
@@ -309,15 +309,15 @@ public:
       return false;
   }
 
-  bool checkInstructionIndex(Instruction* inst) {
+  bool checkInstructionIndex(Instruction *inst) {
 
     if (injectInAllIndexes)
       return true;
 
-    MDNode* mdnode = inst->getMetadata("llfi_index");
+    MDNode *mdnode = inst->getMetadata("llfi_index");
     long vindex = 0;
     if (mdnode) {
-      ConstantInt* cns_index =
+      ConstantInt *cns_index =
           mdconst::dyn_extract<ConstantInt>(mdnode->getOperand(0));
       vindex = cns_index->getSExtValue();
     }
@@ -331,27 +331,27 @@ public:
     return false;
   }
 
-  bool doArithmeticInstructionDuplication(Function& F) {
-    vector<Instruction*> arithInst;
+  bool doArithmeticInstructionDuplication(Function &F) {
+    vector<Instruction *> arithInst;
     bool isCustomTensorOperator = false;
 
     // Find all the floating-point arithmetic instructions in this function
-    for (BasicBlock& bb : F) {
+    for (BasicBlock &bb : F) {
       for (BasicBlock::const_iterator i = bb.begin(); i != bb.end(); ++i) {
-        Instruction* inst = const_cast<llvm::Instruction*>(&*i);
+        Instruction *inst = const_cast<llvm::Instruction *>(&*i);
 
         if (inst->getOpcode() == Instruction::Call) {
-          CallInst* callinst = cast<CallInst>(inst);
+          CallInst *callinst = cast<CallInst>(inst);
 
           // If this is OMInstrument function?
           if (callinst->getCalledFunction() &&
               callinst->getCalledFunction()->getName() == "OMInstrumentPoint") {
 
-            Value* arg1 = callinst->getArgOperand(0);
-            Value* arg2 = callinst->getArgOperand(1);
+            Value *arg1 = callinst->getArgOperand(0);
+            Value *arg2 = callinst->getArgOperand(1);
 
-            ConstantInt* ci1 = dyn_cast<ConstantInt>(arg1);
-            ConstantInt* ci2 = dyn_cast<ConstantInt>(arg2);
+            ConstantInt *ci1 = dyn_cast<ConstantInt>(arg1);
+            ConstantInt *ci2 = dyn_cast<ConstantInt>(arg2);
             if (!ci1 || !ci2)
               continue;
 
@@ -389,27 +389,27 @@ public:
     return true;
   }
 
-  bool doArithmeticChainDuplication(Function& F) {
-    vector<vector<Instruction*>> arithInst;
+  bool doArithmeticChainDuplication(Function &F) {
+    vector<vector<Instruction *>> arithInst;
     bool isCustomTensorOperator = false;
 
     // Find all the floating-point arithmetic instructions in this function
-    for (BasicBlock& bb : F) {
+    for (BasicBlock &bb : F) {
       for (BasicBlock::const_iterator i = bb.begin(); i != bb.end(); ++i) {
-        Instruction* inst = const_cast<llvm::Instruction*>(&*i);
+        Instruction *inst = const_cast<llvm::Instruction *>(&*i);
 
         if (inst->getOpcode() == Instruction::Call) {
-          CallInst* callinst = cast<CallInst>(inst);
+          CallInst *callinst = cast<CallInst>(inst);
 
           // If this is OMInstrument function?
           if (callinst->getCalledFunction() &&
               callinst->getCalledFunction()->getName() == "OMInstrumentPoint") {
 
-            Value* arg1 = callinst->getArgOperand(0);
-            Value* arg2 = callinst->getArgOperand(1);
+            Value *arg1 = callinst->getArgOperand(0);
+            Value *arg2 = callinst->getArgOperand(1);
 
-            ConstantInt* ci1 = dyn_cast<ConstantInt>(arg1);
-            ConstantInt* ci2 = dyn_cast<ConstantInt>(arg2);
+            ConstantInt *ci1 = dyn_cast<ConstantInt>(arg1);
+            ConstantInt *ci2 = dyn_cast<ConstantInt>(arg2);
             if (!ci1 || !ci2)
               continue;
 
@@ -433,11 +433,11 @@ public:
         if (isCustomTensorOperator && isArithmeticInstruction(inst) &&
             checkInstructionIndex(inst)) {
 
-          vector<Instruction*> temp;
+          vector<Instruction *> temp;
           temp.push_back(inst);
 
           // Detects chain of arithmetic instructions
-          Instruction* currInst = inst;
+          Instruction *currInst = inst;
           while (true) {
             if (isArithmeticInstruction(
                     currInst->getNextNonDebugInstruction()) &&
@@ -455,7 +455,7 @@ public:
     }
 
     // Then duplicate the arithmetic instructions.
-    for (const auto& insVector : arithInst) {
+    for (const auto &insVector : arithInst) {
 
       if (insVector.size() == 1)
         duplicateInstruction(insVector[0]);
@@ -483,7 +483,7 @@ public:
     return false;
   }
 
-  bool runOnMainGraph(Function& F) {
+  bool runOnMainGraph(Function &F) {
     // Parse input options.
     if (!isInitialized) {
       isInitialized = true;
@@ -499,7 +499,7 @@ public:
     }
   }
 
-  bool runOnFunction(Function& F) override {
+  bool runOnFunction(Function &F) override {
 
     if (F.getName() == "main_graph") {
       return runOnMainGraph(F);
@@ -520,10 +520,10 @@ static RegisterPass<InstructionDuplicationPass>
 struct NewInstructionDuplicationPass
     : llvm::PassInfoMixin<NewInstructionDuplicationPass> {
 
-  llvm::PreservedAnalyses run(llvm::Module& M, llvm::ModuleAnalysisManager&) {
+  llvm::PreservedAnalyses run(llvm::Module &M, llvm::ModuleAnalysisManager &) {
     InstructionDuplicationPass legacy;
     bool changed = false;
-    for (Function& F : M)
+    for (Function &F : M)
       changed |= legacy.runOnFunction(F);
     return changed ? llvm::PreservedAnalyses::none()
                    : llvm::PreservedAnalyses::all();
@@ -539,9 +539,9 @@ struct NewInstructionDuplicationPass
 extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo
 llvmGetPassPluginInfo() {
   return {LLVM_PLUGIN_API_VERSION, "SEDPasses", LLVM_VERSION_STRING,
-          [](llvm::PassBuilder& PB) {
+          [](llvm::PassBuilder &PB) {
             PB.registerPipelineParsingCallback(
-                [](llvm::StringRef Name, llvm::ModulePassManager& MPM,
+                [](llvm::StringRef Name, llvm::ModulePassManager &MPM,
                    llvm::ArrayRef<llvm::PassBuilder::PipelineElement>) {
                   if (Name == "InstructionDuplicationPass") {
                     MPM.addPass(llfi::NewInstructionDuplicationPass());

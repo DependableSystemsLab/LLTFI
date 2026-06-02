@@ -13,15 +13,15 @@ namespace llfi {
 extern cl::opt<std::string> llfilogfile;
 
 void FIRegSelector::getFIInstRegMap(
-    const std::set<Instruction*>* instset,
-    std::map<Instruction*, std::list<int>*>* instregmap) {
+    const std::set<Instruction *> *instset,
+    std::map<Instruction *, std::list<int> *> *instregmap) {
   std::error_code err;
   raw_fd_ostream logFile(llfilogfile.c_str(), err, sys::fs::OF_Append);
 
-  for (std::set<Instruction*>::const_iterator inst_it = instset->begin();
+  for (std::set<Instruction *>::const_iterator inst_it = instset->begin();
        inst_it != instset->end(); ++inst_it) {
-    Instruction* inst = *inst_it;
-    std::list<int>* reglist = new std::list<int>();
+    Instruction *inst = *inst_it;
+    std::list<int> *reglist = new std::list<int>();
 
     // destination register
     if (isRegofInstFITarget(inst, inst)) {
@@ -37,7 +37,7 @@ void FIRegSelector::getFIInstRegMap(
     int pos = 0;
     for (User::op_iterator op_it = inst->op_begin(); op_it != inst->op_end();
          ++op_it, ++pos) {
-      Value* src = *op_it;
+      Value *src = *op_it;
       if (isRegofInstFITarget(src, inst, pos)) {
         if (isRegofInstInjectable(src, inst)) {
           reglist->push_back(pos);
@@ -59,7 +59,7 @@ void FIRegSelector::getFIInstRegMap(
       // dbgs() << "Inserting FI function for instruction " << *inst << " " <<
       // reglist->size() << "\n";
       instregmap->insert(
-          std::pair<Instruction*, std::list<int>*>(inst, reglist));
+          std::pair<Instruction *, std::list<int> *>(inst, reglist));
     } else if (!err) {
       logFile << "The selected instruction " << *inst
               << "does not have any valid registers for fault injection\n";
@@ -68,7 +68,7 @@ void FIRegSelector::getFIInstRegMap(
   logFile.close();
 }
 
-bool FIRegSelector::isRegofInstInjectable(Value* reg, Instruction* inst) {
+bool FIRegSelector::isRegofInstInjectable(Value *reg, Instruction *inst) {
   // TODO: keep updating
   // if we find anything that can be covered, remove them from the checks
   // if we find new cases that we cannot handle, add them to the checks
@@ -83,7 +83,7 @@ bool FIRegSelector::isRegofInstInjectable(Value* reg, Instruction* inst) {
   return true;
 }
 
-bool FIRegSelector::isRegofInstFITarget(Value* reg, Instruction* inst,
+bool FIRegSelector::isRegofInstFITarget(Value *reg, Instruction *inst,
                                         int pos) {
   return isRegofInstFITarget(reg, inst);
 }

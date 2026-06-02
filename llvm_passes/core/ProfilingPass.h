@@ -20,20 +20,20 @@ namespace llfi {
 class LegacyProfilingPass : public ModulePass {
 public:
   LegacyProfilingPass() : ModulePass(ID) {}
-  bool runOnModule(Module& M) override;
+  bool runOnModule(Module &M) override;
   static char ID;
 
 private:
-  void addEndProfilingFuncCall(Module& M);
+  void addEndProfilingFuncCall(Module &M);
 
 private:
-  FunctionCallee getLLFILibProfilingFunc(Module& M);
-  FunctionCallee getLLFILibEndProfilingFunc(Module& M);
+  FunctionCallee getLLFILibProfilingFunc(Module &M);
+  FunctionCallee getLLFILibEndProfilingFunc(Module &M);
 };
 
 // For new PM
 struct ProfilingPass : llvm::PassInfoMixin<ProfilingPass> {
-  llvm::PreservedAnalyses run(llvm::Module& M, llvm::ModuleAnalysisManager&) {
+  llvm::PreservedAnalyses run(llvm::Module &M, llvm::ModuleAnalysisManager &) {
 
     LegacyProfilingPass obj;
     bool isChanged = obj.runOnModule(M);

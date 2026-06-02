@@ -50,10 +50,10 @@ static cl::opt<bool> mlfistats(
 // lltfiMLLayer function before each call to OMInstrumentPoint.
 // lltfiMLLayer function used for announcing the ML layer type during profiling
 // runtime.
-void insertCallForMLFIStats(Module& M) {
+void insertCallForMLFIStats(Module &M) {
 
   // Find main_graph function in this module.
-  Function* main_graph = M.getFunction("main_graph");
+  Function *main_graph = M.getFunction("main_graph");
   if (!main_graph)
     return;
 
@@ -64,12 +64,12 @@ void insertCallForMLFIStats(Module& M) {
       // If the instruction is a call instruction, check if it is a call to
       // the OMInstrumentPoint function.
       if (isa<CallInst>(inst)) {
-        CallInst* call_inst = cast<CallInst>(inst);
+        CallInst *call_inst = cast<CallInst>(inst);
         if (call_inst->getCalledFunction() &&
             call_inst->getCalledFunction()->getName() == "OMInstrumentPoint") {
 
           // Clone the instruction and reassign the operands.
-          Instruction* duplicatedInst = inst->clone();
+          Instruction *duplicatedInst = inst->clone();
           for (unsigned int i = 0; i < duplicatedInst->getNumOperands(); i++) {
             duplicatedInst->setOperand(i, inst->getOperand(i));
           }
@@ -80,7 +80,7 @@ void insertCallForMLFIStats(Module& M) {
               Type::getInt64Ty(inst->getContext()));
 
           // Change name of the duplicate call instruction.
-          CallInst* duplicateCall = cast<CallInst>(duplicatedInst);
+          CallInst *duplicateCall = cast<CallInst>(duplicatedInst);
           duplicateCall->setCalledFunction(Fn);
 
           // Insert the duplicate instruction
@@ -91,20 +91,20 @@ void insertCallForMLFIStats(Module& M) {
   }
 }
 
-bool LegacyProfilingPass::runOnModule(Module& M) {
-  LLVMContext& context = M.getContext();
+bool LegacyProfilingPass::runOnModule(Module &M) {
+  LLVMContext &context = M.getContext();
 
-  std::map<Instruction*, std::list<int>*>* fi_inst_regs_map = nullptr;
-  Controller* ctrl = Controller::getInstance(M);
+  std::map<Instruction *, std::list<int> *> *fi_inst_regs_map = nullptr;
+  Controller *ctrl = Controller::getInstance(M);
   ctrl->getFIInstRegsMap(&fi_inst_regs_map);
   std::error_code err;
   raw_fd_ostream logFile(llfilogfile.c_str(), err, sys::fs::OF_Append);
 
-  for (std::map<Instruction*, std::list<int>*>::const_iterator inst_reg_it =
+  for (std::map<Instruction *, std::list<int> *>::const_iterator inst_reg_it =
            fi_inst_regs_map->begin();
        inst_reg_it != fi_inst_regs_map->end(); ++inst_reg_it) {
-    Instruction* fi_inst = inst_reg_it->first;
-    std::list<int>* fi_regs = inst_reg_it->second;
+    Instruction *fi_inst = inst_reg_it->first;
+    std::list<int> *fi_regs = inst_reg_it->second;
 
     // Skip intrinsic functions to avoid invalid instrumentation
     if (isa<CallInst>(fi_inst)) {
@@ -136,23 +136,23 @@ bool LegacyProfilingPass::runOnModule(Module& M) {
       continue;
     }
 
-    Value* fi_reg = *(fi_regs->begin()) == DST_REG_POS
+    Value *fi_reg = *(fi_regs->begin()) == DST_REG_POS
                         ? fi_inst
                         : (fi_inst->getOperand(*(fi_regs->begin())));
-    Instruction* insertptr = getInsertPtrforRegsofInst(fi_reg, fi_inst);
+    Instruction *insertptr = getInsertPtrforRegsofInst(fi_reg, fi_inst);
 
     // function declaration
     FunctionCallee profilingfunc = getLLFILibProfilingFunc(M);
 
     // prepare for the calling argument and call the profiling function
-    std::vector<Value*> profilingarg(1);
-    const IntegerType* itype = IntegerType::get(context, 32);
+    std::vector<Value *> profilingarg(1);
+    const IntegerType *itype = IntegerType::get(context, 32);
 
     // LLVM 3.3 Upgrading
-    IntegerType* itype_non_const = const_cast<IntegerType*>(itype);
-    Value* opcode = ConstantInt::get(itype_non_const, fi_inst->getOpcode());
+    IntegerType *itype_non_const = const_cast<IntegerType *>(itype);
+    Value *opcode = ConstantInt::get(itype_non_const, fi_inst->getOpcode());
     profilingarg[0] = opcode;
-    ArrayRef<Value*> profilingarg_array_ref(profilingarg);
+    ArrayRef<Value *> profilingarg_array_ref(profilingarg);
 
     CallInst::Create(profilingfunc, profilingarg_array_ref, "",
                      insertptr->getIterator());
@@ -167,42 +167,42 @@ bool LegacyProfilingPass::runOnModule(Module& M) {
   return true;
 }
 
-void LegacyProfilingPass::addEndProfilingFuncCall(Module& M) {
-  Function* mainfunc = M.getFunction("main");
+void LegacyProfilingPass::addEndProfilingFuncCall(Module &M) {
+  Function *mainfunc = M.getFunction("main");
   if (mainfunc != nullptr) {
     FunctionCallee endprofilefunc = getLLFILibEndProfilingFunc(M);
 
     // function call
-    std::set<Instruction*> exitinsts;
+    std::set<Instruction *> exitinsts;
     getProgramExitInsts(M, exitinsts);
     assert(!exitinsts.empty() && "Program does not have explicit exit point");
 
-    for (std::set<Instruction*>::iterator it = exitinsts.begin();
+    for (std::set<Instruction *>::iterator it = exitinsts.begin();
          it != exitinsts.end(); ++it) {
-      Instruction* term = *it;
+      Instruction *term = *it;
       CallInst::Create(endprofilefunc, "", term->getIterator());
     }
   }
 }
 
-FunctionCallee LegacyProfilingPass::getLLFILibProfilingFunc(Module& M) {
-  LLVMContext& context = M.getContext();
-  std::vector<Type*> paramtypes(1);
+FunctionCallee LegacyProfilingPass::getLLFILibProfilingFunc(Module &M) {
+  LLVMContext &context = M.getContext();
+  std::vector<Type *> paramtypes(1);
   paramtypes[0] = Type::getInt32Ty(context);
 
   // LLVM 3.3 Upgrading
-  ArrayRef<Type*> paramtypes_array_ref(paramtypes);
+  ArrayRef<Type *> paramtypes_array_ref(paramtypes);
 
-  FunctionType* profilingfunctype =
+  FunctionType *profilingfunctype =
       FunctionType::get(Type::getVoidTy(context), paramtypes_array_ref, false);
   FunctionCallee profilingfunc =
       M.getOrInsertFunction("doProfiling", profilingfunctype);
   return profilingfunc;
 }
 
-FunctionCallee LegacyProfilingPass::getLLFILibEndProfilingFunc(Module& M) {
-  LLVMContext& context = M.getContext();
-  FunctionType* endprofilingfunctype =
+FunctionCallee LegacyProfilingPass::getLLFILibEndProfilingFunc(Module &M) {
+  LLVMContext &context = M.getContext();
+  FunctionType *endprofilingfunctype =
       FunctionType::get(Type::getVoidTy(context), false);
   FunctionCallee endprofilefunc =
       M.getOrInsertFunction("endProfiling", endprofilingfunctype);

@@ -9,11 +9,11 @@ namespace llfi {
 
 class InstTypeFIInstSelector : public HardwareFIInstSelector {
 public:
-  InstTypeFIInstSelector(std::set<unsigned>* opcodelist) {
+  InstTypeFIInstSelector(std::set<unsigned> *opcodelist) {
     this->opcodelist = opcodelist;
   }
   ~InstTypeFIInstSelector() override { delete opcodelist; }
-  void getCompileTimeInfo(std::map<std::string, std::string>& info) override {
+  void getCompileTimeInfo(std::map<std::string, std::string> &info) override {
     info["failure_class"] = "HardwareFault";
     info["failure_mode"] = "SpecifiedInstructionTypes";
     info["targets"] = "<include list in yaml>";
@@ -21,10 +21,10 @@ public:
   }
 
 private:
-  bool isInstFITarget(Instruction* inst) override;
+  bool isInstFITarget(Instruction *inst) override;
 
 private:
-  std::set<unsigned>* opcodelist;
+  std::set<unsigned> *opcodelist;
 };
 
 } // namespace llfi

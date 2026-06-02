@@ -14,17 +14,17 @@ class FIInstSelectorManager {
 public:
   FIInstSelectorManager();
   ~FIInstSelectorManager();
-  void addSelector(FIInstSelector* s);
-  void getFIInsts(Module& M, std::set<Instruction*>* fiinsts);
+  void addSelector(FIInstSelector *s);
+  void getFIInsts(Module &M, std::set<Instruction *> *fiinsts);
 
   void setIncludeBackwardTrace(bool includebt);
   void setIncludeForwardTrace(bool includeft);
 
 private:
-  std::vector<FIInstSelector*> selectors;
-  std::vector<FIInstSelector*>::iterator it;
+  std::vector<FIInstSelector *> selectors;
+  std::vector<FIInstSelector *>::iterator it;
 
-  int printCompileTimeInfo(std::map<std::string, std::string>& info);
+  int printCompileTimeInfo(std::map<std::string, std::string> &info);
 };
 
 } // namespace llfi

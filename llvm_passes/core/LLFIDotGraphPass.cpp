@@ -32,17 +32,17 @@ namespace llfi {
 
 struct instNode {
   std::string name, label;
-  Instruction* raw;
+  Instruction *raw;
   std::string dotNode();
-  instNode(Instruction* target);
+  instNode(Instruction *target);
 };
 
-instNode::instNode(Instruction* target) {
+instNode::instNode(Instruction *target) {
   raw = target;
 
   long llfiID = llfi::getLLFIIndexofInst(target);
   name = "llfiID_" + longToString(llfiID);
-  FILE* outputFile = fopen("llfi.index.map.txt", "a");
+  FILE *outputFile = fopen("llfi.index.map.txt", "a");
 
   label = std::string(" [shape=record,label=\"") + longToString(llfiID);
   label += std::string("\\n") + target->getOpcodeName() + "\\n";
@@ -71,18 +71,18 @@ std::string instNode::dotNode() {
 }
 
 struct bBlockGraph {
-  BasicBlock* raw;
+  BasicBlock *raw;
   std::string name;
   std::string funcName;
   std::vector<instNode> instNodes;
-  Instruction* entryInst;
-  Instruction* exitInst;
-  bBlockGraph(BasicBlock* target);
-  bool addInstruction(Instruction* inst);
-  bool writeToStream(std::ofstream& target);
+  Instruction *entryInst;
+  Instruction *exitInst;
+  bBlockGraph(BasicBlock *target);
+  bool addInstruction(Instruction *inst);
+  bool writeToStream(std::ofstream &target);
 };
 
-bBlockGraph::bBlockGraph(BasicBlock* BB) {
+bBlockGraph::bBlockGraph(BasicBlock *BB) {
   raw = BB;
   name = BB->getName().str();
   funcName = BB->getParent()->getName().str();
@@ -90,20 +90,20 @@ bBlockGraph::bBlockGraph(BasicBlock* BB) {
   for (BasicBlock::iterator instIterator = BB->begin(), lastInst = BB->end();
        instIterator != lastInst; ++instIterator) {
 
-    Instruction* inst = &*instIterator;
+    Instruction *inst = &*instIterator;
 
     addInstruction(inst);
   }
   entryInst = &(BB->front());
   exitInst = &(BB->back());
 }
-bool bBlockGraph::addInstruction(Instruction* inst) {
+bool bBlockGraph::addInstruction(Instruction *inst) {
   instNodes.push_back(instNode(inst));
 
   return true;
 }
 
-bool bBlockGraph::writeToStream(std::ofstream& target) {
+bool bBlockGraph::writeToStream(std::ofstream &target) {
   target << "subgraph \"cluster_" << funcName << "_" << name << "\" {\n";
   target << "label = \"" << funcName << "_" << name << "\";\n";
   for (unsigned int i = 0; i < instNodes.size(); i++) {
@@ -117,9 +117,9 @@ bool bBlockGraph::writeToStream(std::ofstream& target) {
   return true;
 }
 
-bool llfiDotGraph::runOnFunction(Function& F) {
+bool llfiDotGraph::runOnFunction(Function &F) {
   // Create handles to the functions parent module and context
-  LLVMContext& context = F.getContext();
+  LLVMContext &context = F.getContext();
 
   std::vector<bBlockGraph> blocks;
 
@@ -128,15 +128,15 @@ bool llfiDotGraph::runOnFunction(Function& F) {
   for (Function::iterator blockIterator = F.begin(), lastBlock = F.end();
        blockIterator != lastBlock; ++blockIterator) {
 
-    BasicBlock* block = &*blockIterator;
+    BasicBlock *block = &*blockIterator;
 
     bBlockGraph b(block);
     blocks.push_back(b);
   }
   for (unsigned int i = 0; i < blocks.size(); i++) {
-    const bBlockGraph& currBlock = blocks.at(i);
+    const bBlockGraph &currBlock = blocks.at(i);
     for (unsigned int i = 0; i < currBlock.instNodes.size(); i++) {
-      Instruction* inst = currBlock.instNodes.at(i).raw;
+      Instruction *inst = currBlock.instNodes.at(i).raw;
       std::string nodeName = currBlock.instNodes.at(i).name;
       instNode node = currBlock.instNodes.at(i);
       if (!inst->use_empty()) {
@@ -145,11 +145,11 @@ bool llfiDotGraph::runOnFunction(Function& F) {
         // and annotates them
         for (Value::use_iterator useIter = inst->use_begin();
              useIter != inst->use_end(); useIter++) {
-          Value* userValue = *useIter;
+          Value *userValue = *useIter;
           for (unsigned int f = 0; f < blocks.size(); f++) {
-            const bBlockGraph& searchBlock = blocks.at(f);
+            const bBlockGraph &searchBlock = blocks.at(f);
             for (unsigned int d = 0; d < searchBlock.instNodes.size(); d++) {
-              Instruction* targetInst = searchBlock.instNodes.at(d).raw;
+              Instruction *targetInst = searchBlock.instNodes.at(d).raw;
               if (userValue == targetInst) {
                 instNode targetNode = searchBlock.instNodes.at(d);
                 outfs << nodeName << " -> " << targetNode.name;
@@ -166,9 +166,9 @@ bool llfiDotGraph::runOnFunction(Function& F) {
     bBlockGraph block = blocks.at(i);
     block.writeToStream(outfs);
     if (block.exitInst->getOpcode() == Instruction::Br) {
-      BranchInst* exitInst = dyn_cast<BranchInst>(block.exitInst);
+      BranchInst *exitInst = dyn_cast<BranchInst>(block.exitInst);
       for (unsigned int s = 0; s < exitInst->getNumSuccessors(); s++) {
-        BasicBlock* succ = exitInst->getSuccessor(s);
+        BasicBlock *succ = exitInst->getSuccessor(s);
         for (unsigned int d = 0; d < blocks.size(); d++) {
           if (blocks.at(d).raw == succ) {
             std::string from = block.instNodes.back().name;

@@ -19,7 +19,9 @@ bool isLittleEndian();
 
 #define DEBUG
 #ifdef DEBUG
-#define debug(x) printf x; fflush(stdout);
+#define debug(x)                                                               \
+  printf x;                                                                    \
+  fflush(stdout);
 #else
 #define debug(x)
 #endif

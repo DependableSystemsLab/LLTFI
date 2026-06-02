@@ -10,11 +10,11 @@ namespace llfi {
 
 class FuncNameFIInstSelector : public HardwareFIInstSelector {
 public:
-  FuncNameFIInstSelector(std::set<std::string>* funclist) {
+  FuncNameFIInstSelector(std::set<std::string> *funclist) {
     this->funclist = funclist;
   }
   FuncNameFIInstSelector() { delete funclist; }
-  void getCompileTimeInfo(std::map<std::string, std::string>& info) override {
+  void getCompileTimeInfo(std::map<std::string, std::string> &info) override {
     info["failure_class"] = "HardwareFault";
     info["failure_mode"] = "SpecifiedFunctions";
     for (std::set<std::string>::iterator SI = funclist->begin();
@@ -27,10 +27,10 @@ public:
   }
 
 private:
-  bool isInstFITarget(Instruction* inst) override;
+  bool isInstFITarget(Instruction *inst) override;
 
 private:
-  std::set<std::string>* funclist;
+  std::set<std::string> *funclist;
 };
 
 } // namespace llfi

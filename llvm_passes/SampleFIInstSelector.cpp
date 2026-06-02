@@ -14,7 +14,7 @@ namespace llfi {
 // config file
 class SampleFIInstSelector : public HardwareFIInstSelector {
 private:
-  bool isInstFITarget(Instruction* inst) override {
+  bool isInstFITarget(Instruction *inst) override {
     if (inst->getParent()->getParent()->getName() == "main")
       return true;
     else
@@ -22,7 +22,7 @@ private:
   }
 
 public:
-  void getCompileTimeInfo(std::map<std::string, std::string>& info) override {
+  void getCompileTimeInfo(std::map<std::string, std::string> &info) override {
     info["failure_class"] = "HardwareFault";
     info["failure_mode"] = "OnlyMain";
     info["targets"] = "<instructions in main() function>";

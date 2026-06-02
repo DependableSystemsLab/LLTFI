@@ -20,6 +20,9 @@ IndentPPDirectives:     None
 # Line length
 ColumnLimit:  80
 
+# Line break
+LineEnding: LF
+
 # Braces — attach (K&R / LLVM style)
 BreakBeforeBraces: Attach
 
@@ -37,8 +40,8 @@ IncludeCategories:
   - Regex:    '^<'
     Priority: 3
 
-# Pointer alignment: left (int *p, not int* p)
-PointerAlignment: Left
+# Pointer alignment: right (int *p, not int* p)
+PointerAlignment: Right
 
 # Function arguments
 AllowAllArgumentsOnNextLine:           true

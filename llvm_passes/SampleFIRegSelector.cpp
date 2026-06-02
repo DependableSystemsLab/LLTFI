@@ -12,7 +12,7 @@ namespace llfi {
  */
 class SampleFIRegSelector : public HardwareFIRegSelector {
 private:
-  bool isRegofInstFITarget(Value* reg, Instruction* inst) override {
+  bool isRegofInstFITarget(Value *reg, Instruction *inst) override {
     if (isa<ConstantInt>(reg))
       return true;
     else

@@ -19,7 +19,7 @@ static cl::list<std::string>
  */
 class LLFIIndexFIInstSelector : public HardwareFIInstSelector {
 private:
-  bool isInstFITarget(Instruction* inst) override {
+  bool isInstFITarget(Instruction *inst) override {
     long llfiindex = getLLFIIndexofInst(inst);
     for (unsigned i = 0; i != injecttoindex.size(); ++i)
       if (atol(injecttoindex[i].c_str()) == llfiindex)
@@ -28,7 +28,7 @@ private:
   }
 
 public:
-  void getCompileTimeInfo(std::map<std::string, std::string>& info) override {
+  void getCompileTimeInfo(std::map<std::string, std::string> &info) override {
     info["failure_class"] = "HardwareFault";
     info["failure_mode"] = "SpecifiedLLFIIndex";
     info["targets"] = "<include list in yaml>";

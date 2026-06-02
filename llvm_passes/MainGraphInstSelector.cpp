@@ -15,7 +15,7 @@ namespace llfi {
 // config file
 class MainGraphInstSelector : public HardwareFIInstSelector {
 private:
-  bool isInstFITarget(Instruction* inst) override {
+  bool isInstFITarget(Instruction *inst) override {
     if (inst->getParent()->getParent()->getName() == "main_graph") {
       if (inst->getOpcode() == Instruction::FAdd ||
           inst->getOpcode() == Instruction::FMul ||
@@ -27,7 +27,7 @@ private:
   }
 
 public:
-  void getCompileTimeInfo(std::map<std::string, std::string>& info) override {
+  void getCompileTimeInfo(std::map<std::string, std::string> &info) override {
     info["failure_class"] = "HardwareFault";
     info["failure_mode"] = "MainGraph";
     info["targets"] = "<instructions in main_graph() function>";

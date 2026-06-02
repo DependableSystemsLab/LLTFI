@@ -62,15 +62,14 @@ std::string extractONNXOperatorName(Value *V) {
   std::string onnxOpNameStr = onnxOpNameStrRef.str();
 
   std::transform(onnxOpNameStr.begin(), onnxOpNameStr.end(),
-    onnxOpNameStr.begin(),
-    [](unsigned char c){ return std::tolower(c); });
+                 onnxOpNameStr.begin(),
+                 [](unsigned char c) { return std::tolower(c); });
 
   std::string onnxOpPrefix = "onnx.";
   size_t pos = onnxOpNameStr.find(onnxOpPrefix);
   std::string result = onnxOpNameStr.substr(pos + onnxOpPrefix.length());
   return result;
 }
-
 
 /**
  * This sample instruction selector only selects instructions in function
@@ -92,12 +91,11 @@ public:
     bool isValidOperator(std::string name) {
 
       std::vector<std::string> ONNXOperators = {
-          "conv", "relu", "maxpool", "matmul",
-          "add", "avgpool", "softmax", "loop",
-          "nonmaxs", "unsqueeze"};
+          "conv",    "relu",    "maxpool", "matmul",  "add",
+          "avgpool", "softmax", "loop",    "nonmaxs", "unsqueeze"};
 
-      return (std::find(ONNXOperators.begin(), ONNXOperators.end(), name)
-                 != ONNXOperators.end());
+      return (std::find(ONNXOperators.begin(), ONNXOperators.end(), name) !=
+              ONNXOperators.end());
     }
 
     Operator(std::string name, std::string count) {
@@ -107,8 +105,7 @@ public:
       OperatorCount = 0;
 
       if (!isValidOperator(OperatorName)) {
-        std::cout << "Operator name " << OperatorName
-                  << " not found.\n";
+        std::cout << "Operator name " << OperatorName << " not found.\n";
         std::cout << "Please use the following operator name(s):\
                 conv, relu, maxpool, matmul, add, avgpool, all, and softmax.";
         assert(false && "Invalid input operator name");
@@ -131,14 +128,14 @@ public:
 
 private:
   bool isCustomTensorOperator;
-  std::unordered_map<std::string, std::vector<Operator*>> map;
+  std::unordered_map<std::string, std::vector<Operator *>> map;
   bool injectInAll;
   int64_t instrumentPoint;
 
   // Add Metadata to LLVM instructions; Only for debugging purposes!
-  void addMetadata(llvm::Instruction* ins, const char* st = nullptr) {
-    LLVMContext& C = ins->getContext();
-    MDNode* N = MDNode::get(C, MDString::get(C, (!st) ? "t" : st));
+  void addMetadata(llvm::Instruction *ins, const char *st = nullptr) {
+    LLVMContext &C = ins->getContext();
+    MDNode *N = MDNode::get(C, MDString::get(C, (!st) ? "t" : st));
     ins->setMetadata("Debug", N);
   }
 
@@ -154,8 +151,8 @@ private:
 
     for (int i = 0; i < (int)OperatorNames.size(); i++) {
 
-      const std::string& name = OperatorNames[i];
-      const std::string& number = OperatorNumbers[i];
+      const std::string &name = OperatorNames[i];
+      const std::string &number = OperatorNumbers[i];
 
       // Inject in all operators.
       if (strcmp(name.c_str(), "all") == 0 ||
@@ -167,12 +164,12 @@ private:
       // if this operator is already in the map
       if (map.find(name) != map.end()) {
 
-        Operator* temp = new Operator(name, number);
+        Operator *temp = new Operator(name, number);
         map[name].push_back(temp);
       } else {
 
-        std::vector<Operator*> OpArr;
-        Operator* temp = new Operator(name, number);
+        std::vector<Operator *> OpArr;
+        Operator *temp = new Operator(name, number);
         OpArr.push_back(temp);
         map.insert(make_pair(name, OpArr));
       }
@@ -189,7 +186,7 @@ private:
       return false;
     else {
 
-      std::vector<Operator*> temp = map[opName];
+      std::vector<Operator *> temp = map[opName];
       bool result = false;
 
       for (auto it : temp) {
@@ -200,7 +197,7 @@ private:
     }
   }
 
-  bool isInstFITarget(Instruction* inst) override {
+  bool isInstFITarget(Instruction *inst) override {
     if (inst->getParent()->getParent()->getName().starts_with("main_graph")) {
 
       if (map.empty() && !injectInAll) {
@@ -208,18 +205,18 @@ private:
       }
 
       if (inst->getOpcode() == Instruction::Call) {
-        CallInst* callinst = cast<CallInst>(inst);
+        CallInst *callinst = cast<CallInst>(inst);
 
         // If this is OMInstrument function?
         if (callinst->getCalledFunction() &&
             callinst->getCalledFunction()->getName() == "OMInstrumentPoint") {
 
-          Value* arg1 = callinst->getArgOperand(0);
+          Value *arg1 = callinst->getArgOperand(0);
           std::string onnxOpName = extractONNXOperatorName(arg1);
 
-          Value* arg2 = callinst->getArgOperand(1);
+          Value *arg2 = callinst->getArgOperand(1);
 
-          ConstantInt* ci = dyn_cast<ConstantInt>(arg2);
+          ConstantInt *ci = dyn_cast<ConstantInt>(arg2);
           if (onnxOpName == "" || !ci)
             return false;
 
@@ -266,7 +263,7 @@ public:
     injectInAll = false;
   }
 
-  void getCompileTimeInfo(std::map<std::string, std::string>& info) override {
+  void getCompileTimeInfo(std::map<std::string, std::string> &info) override {
     info["failure_class"] = "HardwareFault";
     info["failure_mode"] = "CustomTensorOperator";
     info["targets"] = "<instructions in main_graph() function and within \

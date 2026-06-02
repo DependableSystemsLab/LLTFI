@@ -21,35 +21,35 @@ namespace llfi {
 class FaultInjectionPass : public ModulePass {
 public:
   FaultInjectionPass() : ModulePass(ID) {}
-  bool runOnModule(Module& M) override;
+  bool runOnModule(Module &M) override;
   static char ID;
 
 private:
-  void checkforMainFunc(Module& M);
-  void finalize(Module& M);
+  void checkforMainFunc(Module &M);
+  void finalize(Module &M);
 
   void insertInjectionFuncCall(
-      std::map<Instruction*, std::list<int>*>* inst_regs_map, Module& M);
-  void createInjectionFuncforType(Module& M, Type* functype,
-                                  std::string& funcname, FunctionCallee fi_func,
+      std::map<Instruction *, std::list<int> *> *inst_regs_map, Module &M);
+  void createInjectionFuncforType(Module &M, Type *functype,
+                                  std::string &funcname, FunctionCallee fi_func,
                                   FunctionCallee pre_func);
-  void createInjectionFunctions(Module& M);
+  void createInjectionFunctions(Module &M);
 
 private:
-  std::string getFIFuncNameforType(const Type* type);
+  std::string getFIFuncNameforType(const Type *type);
 
-  FunctionCallee getLLFILibPreFIFunc(Module& M);
-  FunctionCallee getLLFILibFIFunc(Module& M);
-  FunctionCallee getLLFILibInitInjectionFunc(Module& M);
-  FunctionCallee getLLFILibPostInjectionFunc(Module& M);
+  FunctionCallee getLLFILibPreFIFunc(Module &M);
+  FunctionCallee getLLFILibFIFunc(Module &M);
+  FunctionCallee getLLFILibInitInjectionFunc(Module &M);
+  FunctionCallee getLLFILibPostInjectionFunc(Module &M);
 
 private:
-  std::map<const Type*, std::string> fi_rettype_funcname_map;
+  std::map<const Type *, std::string> fi_rettype_funcname_map;
 };
 
 // For New PM
 struct NewFaultInjectionPass : llvm::PassInfoMixin<NewFaultInjectionPass> {
-  llvm::PreservedAnalyses run(llvm::Module& M, llvm::ModuleAnalysisManager&) {
+  llvm::PreservedAnalyses run(llvm::Module &M, llvm::ModuleAnalysisManager &) {
 
     auto obj = new FaultInjectionPass();
     bool isChanged = obj->runOnModule(M);

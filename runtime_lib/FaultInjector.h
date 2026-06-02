@@ -5,19 +5,15 @@
 
 class FaultInjector {
   // TODO: need to change the interface when we inject multiple bits faults
- public:
+public:
   virtual void injectFault(long llfi_index, unsigned size, unsigned fi_bit,
-                      char *buf) = 0;
-  //virtual std::string getFaultInjectorType() = 0;
-  virtual std::string getFaultInjectorType(){
-		return std::string("Unknown");
-	}
+                           char *buf) = 0;
+  // virtual std::string getFaultInjectorType() = 0;
+  virtual std::string getFaultInjectorType() { return std::string("Unknown"); }
 };
 
-class HardwareFaultInjector: public FaultInjector {
-	std::string getFaultInjectorType(){
-		return std::string("HardwareFault");
-	}
+class HardwareFaultInjector : public FaultInjector {
+  std::string getFaultInjectorType() { return std::string("HardwareFault"); }
 };
 
 #endif

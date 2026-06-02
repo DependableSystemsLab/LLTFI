@@ -44,40 +44,40 @@ using namespace llvm;
 
 namespace llfi {
 
-bool InstTrace::doFinalization(Module& M) {
+bool InstTrace::doFinalization(Module &M) {
   // Dont forget to delete the output filename string!
-  Function* mainfunc = M.getFunction("main");
+  Function *mainfunc = M.getFunction("main");
   if (mainfunc == nullptr) {
     errs() << "ERROR: Function main does not exist, "
            << "which is required by LLFI\n";
     exit(1);
   }
 
-  LLVMContext& context = M.getContext();
-  FunctionType* postinjectfunctype =
+  LLVMContext &context = M.getContext();
+  FunctionType *postinjectfunctype =
       FunctionType::get(Type::getVoidTy(context), false);
   FunctionCallee postracingfunc =
       M.getOrInsertFunction("postTracing", postinjectfunctype);
 
-  std::set<Instruction*> exitinsts;
+  std::set<Instruction *> exitinsts;
   getProgramExitInsts(M, exitinsts);
   assert(!exitinsts.empty() && "Program does not have explicit exit point");
 
-  for (std::set<Instruction*>::iterator it = exitinsts.begin();
+  for (std::set<Instruction *>::iterator it = exitinsts.begin();
        it != exitinsts.end(); ++it) {
-    Instruction* term = *it;
+    Instruction *term = *it;
     CallInst::Create(postracingfunc, "", term->getIterator());
   }
 
   return true;
 }
 
-long InstTrace::fetchLLFIInstructionID(Instruction* targetInst) {
+long InstTrace::fetchLLFIInstructionID(Instruction *targetInst) {
   return llfi::getLLFIIndexofInst(targetInst);
 }
 
-Instruction* InstTrace::getInsertPoint(Instruction* llfiIndexedInst) {
-  Instruction* insertPoint = nullptr;
+Instruction *InstTrace::getInsertPoint(Instruction *llfiIndexedInst) {
+  Instruction *insertPoint = nullptr;
   if (!llfiIndexedInst->isTerminator()) {
     insertPoint =
         llfi::getInsertPtrforRegsofInst(llfiIndexedInst, llfiIndexedInst);
@@ -92,10 +92,10 @@ Instruction* InstTrace::getInsertPoint(Instruction* llfiIndexedInst) {
   return insertPoint;
 }
 
-bool InstTrace::runOnFunction(Function& F) {
+bool InstTrace::runOnFunction(Function &F) {
   // Create handles to the functions parent module and context
-  LLVMContext& context = F.getContext();
-  Module* M = F.getParent();
+  LLVMContext &context = F.getContext();
+  Module *M = F.getParent();
 
   // iterate through each instruction of the function
   inst_iterator lastInst;
@@ -103,7 +103,7 @@ bool InstTrace::runOnFunction(Function& F) {
        instIterator != lastInst; ++instIterator) {
 
     // Print some Debug Info as the pass is being run
-    Instruction* inst = &*instIterator;
+    Instruction *inst = &*instIterator;
 
     if (debugtrace) {
       if (!llfi::isLLFIIndexedInst(inst)) {
@@ -116,25 +116,24 @@ bool InstTrace::runOnFunction(Function& F) {
     if (llfi::isLLFIIndexedInst(inst)) {
 
       // Find instrumentation point for current instruction
-      Instruction* insertPoint = getInsertPoint(inst);
+      Instruction *insertPoint = getInsertPoint(inst);
 
       // Skip instrumentation for terminating instructions
       if (insertPoint->isTerminator()) {
         continue;
       }
 
-      Instruction *alloca_insertPoint =
-          inst->getParent()
-              ->getParent()
-              ->begin()
-              ->getFirstNonPHIOrDbgOrLifetime();
+      Instruction *alloca_insertPoint = inst->getParent()
+                                            ->getParent()
+                                            ->begin()
+                                            ->getFirstNonPHIOrDbgOrLifetime();
 
       // Fetch size of instruction value
       // The size must be rounded up before conversion to bytes because some
       // data in llvm can be like 1 bit if it only needs 1 bit out of an
       // 8bit/1byte data type
       float bitSize = 0.0f;
-      AllocaInst* ptrInst = nullptr;
+      AllocaInst *ptrInst = nullptr;
       if (inst->getType() != Type::getVoidTy(context)) {
         // insert an instruction Allocate stack memory to store/pass instruction
         // value
@@ -143,7 +142,7 @@ bool InstTrace::runOnFunction(Function& F) {
         // Insert an instruction to Store the instruction Value!
         new StoreInst(inst, ptrInst, insertPoint->getIterator());
 
-        const DataLayout& td = F.getParent()->getDataLayout();
+        const DataLayout &td = F.getParent()->getDataLayout();
         bitSize = (float)td.getTypeSizeInBits(inst->getType());
       } else {
         ptrInst = new AllocaInst(Type::getInt32Ty(context), 0, "llfi_trace",
@@ -155,22 +154,22 @@ bool InstTrace::runOnFunction(Function& F) {
       int byteSize = (int)ceil(bitSize / 8.0);
 
       // Insert instructions to allocate stack memory for opcode name
-      const char* opcodeNamePt = inst->getOpcodeName();
+      const char *opcodeNamePt = inst->getOpcodeName();
       const std::string str(inst->getOpcodeName());
       ArrayRef<uint8_t> opcode_name_array_ref(
-          reinterpret_cast<const uint8_t*>(opcodeNamePt), str.size() + 1);
+          reinterpret_cast<const uint8_t *>(opcodeNamePt), str.size() + 1);
       // llvm::Value* OPCodeName = llvm::ConstantArray::get(context,
       // opcode_name_array_ref);
-      llvm::Value* OPCodeName =
+      llvm::Value *OPCodeName =
           llvm::ConstantDataArray::get(context, opcode_name_array_ref);
       /********************************/
 
-      AllocaInst* OPCodePtr = new AllocaInst(OPCodeName->getType(), 0,
+      AllocaInst *OPCodePtr = new AllocaInst(OPCodeName->getType(), 0,
                                              "llfi_trace", alloca_insertPoint);
       new StoreInst(OPCodeName, OPCodePtr, insertPoint->getIterator());
 
       // Create the decleration of the printInstTracer Function
-      std::vector<Type*> parameterVector(5);
+      std::vector<Type *> parameterVector(5);
       parameterVector[0] = Type::getInt32Ty(context); // ID
       parameterVector[1] = OPCodePtr->getType();
       parameterVector[2] = Type::getInt32Ty(context); // Size of Inst Value
@@ -178,24 +177,24 @@ bool InstTrace::runOnFunction(Function& F) {
       parameterVector[4] = Type::getInt32Ty(context); // Int of max traces
 
       // LLVM 3.3 Upgrade
-      ArrayRef<Type*> parameterVector_array_ref(parameterVector);
+      ArrayRef<Type *> parameterVector_array_ref(parameterVector);
 
-      FunctionType* traceFuncType = FunctionType::get(
+      FunctionType *traceFuncType = FunctionType::get(
           Type::getVoidTy(context), parameterVector_array_ref, false);
       FunctionCallee traceFunc =
           M->getOrInsertFunction("printInstTracer", traceFuncType);
 
       // Insert the tracing function, passing it the proper arguments
-      std::vector<Value*> traceArgs;
+      std::vector<Value *> traceArgs;
       // Fetch the LLFI Instruction ID:
-      ConstantInt* IDConstInt = ConstantInt::get(IntegerType::get(context, 32),
+      ConstantInt *IDConstInt = ConstantInt::get(IntegerType::get(context, 32),
                                                  fetchLLFIInstructionID(inst));
 
-      ConstantInt* instValSize =
+      ConstantInt *instValSize =
           ConstantInt::get(IntegerType::get(context, 32), byteSize);
 
       // Fetch maxtrace number:
-      ConstantInt* maxTraceConstInt =
+      ConstantInt *maxTraceConstInt =
           ConstantInt::get(IntegerType::get(context, 32), maxtrace);
 
       // Load All Arguments
@@ -206,7 +205,7 @@ bool InstTrace::runOnFunction(Function& F) {
       traceArgs.push_back(maxTraceConstInt);
 
       // LLVM 3.3 Upgrade
-      ArrayRef<Value*> traceArgs_array_ref(traceArgs);
+      ArrayRef<Value *> traceArgs_array_ref(traceArgs);
 
       // Create the Function
       CallInst::Create(traceFunc, traceArgs_array_ref, "",

@@ -11,11 +11,11 @@ using namespace llvm;
 
 namespace llfi {
 
-bool runOnModuleMain(Module&);
+bool runOnModuleMain(Module &);
 
 // For new PM
 struct GenLLFIIndexPass : llvm::PassInfoMixin<GenLLFIIndexPass> {
-  PreservedAnalyses run(llvm::Module& M, llvm::ModuleAnalysisManager&) {
+  PreservedAnalyses run(llvm::Module &M, llvm::ModuleAnalysisManager &) {
     runOnModuleMain(M);
     return PreservedAnalyses::none();
   }
@@ -30,7 +30,7 @@ struct GenLLFIIndexPass : llvm::PassInfoMixin<GenLLFIIndexPass> {
 class LegacyGenLLFIIndexPass : public ModulePass {
 public:
   LegacyGenLLFIIndexPass() : ModulePass(ID) {}
-  bool runOnModule(Module& M) override;
+  bool runOnModule(Module &M) override;
   static char ID;
 };
 } // namespace llfi

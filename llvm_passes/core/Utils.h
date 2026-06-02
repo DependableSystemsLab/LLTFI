@@ -31,31 +31,31 @@ std::string longToString(long i);
 std::string demangleFuncName(std::string func);
 
 // return the terminate instruction of the function
-Instruction* getTermInstofFunction(Function* func);
+Instruction *getTermInstofFunction(Function *func);
 // return instumentation code insertion point for fi in reg of inst
-Instruction* getInsertPtrforRegsofInst(Value* reg, Instruction* inst);
+Instruction *getInsertPtrforRegsofInst(Value *reg, Instruction *inst);
 
-void getProgramExitInsts(Module& M, std::set<Instruction*>& exitinsts);
+void getProgramExitInsts(Module &M, std::set<Instruction *> &exitinsts);
 
 // get or set the LLFI index of the specified instruction. use metadata
-long getLLFIIndexofInst(Instruction* inst);
-void setLLFIIndexofInst(Instruction* inst);
+long getLLFIIndexofInst(Instruction *inst);
+void setLLFIIndexofInst(Instruction *inst);
 
 // get the map of opcode name and their opcode
-void genFullNameOpcodeMap(std::map<std::string, unsigned>& opcodenamemap);
+void genFullNameOpcodeMap(std::map<std::string, unsigned> &opcodenamemap);
 
 // Check metadata to see if instruction was generated/inserted by LLFI
-bool isLLFIIndexedInst(Instruction* inst);
+bool isLLFIIndexedInst(Instruction *inst);
 
 // sets the metadata on the injectFault call
-void setInjectFaultInst(Value* reg, Instruction* inst, Instruction* ficall);
+void setInjectFaultInst(Value *reg, Instruction *inst, Instruction *ficall);
 
 // checks if the instruction is a call to llfi's 'injectFault*', if it is,
 // return the next instruction iff injectFault occurs AFTER the targeted
 // instruction
-Instruction* changeInsertPtrIfInjectFaultInst(Instruction* inst);
+Instruction *changeInsertPtrIfInjectFaultInst(Instruction *inst);
 
-GlobalVariable* findOrCreateGlobalNameString(Module& M, std::string name);
+GlobalVariable *findOrCreateGlobalNameString(Module &M, std::string name);
 } // namespace llfi
 
 #endif

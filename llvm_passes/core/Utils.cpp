@@ -8,7 +8,7 @@ std::string demangleFuncName(std::string func) {
   // Check for name mangling. C++ functions will always start with _Z
   // Demangled form is processed to remove type information.
   if (func.length() >= 2 && (func[0] == '_' && func[1] == 'Z')) {
-    char* test = itaniumDemangle(func);
+    char *test = itaniumDemangle(func);
 
     // Check if the demangeled function name is null or not.
     // Thanks Allesio for bringing this up.
@@ -49,9 +49,9 @@ std::string longToString(long i) {
   return s.str();
 }
 
-Instruction* getTermInstofFunction(Function* func) {
-  BasicBlock& termbb = func->back();
-  Instruction* ret = termbb.getTerminator();
+Instruction *getTermInstofFunction(Function *func) {
+  BasicBlock &termbb = func->back();
+  Instruction *ret = termbb.getTerminator();
 
   assert(isa<ReturnInst>(ret) || isa<ResumeInst>(ret) ||
          isa<UnreachableInst>(ret) &&
@@ -59,11 +59,11 @@ Instruction* getTermInstofFunction(Function* func) {
   return ret;
 }
 
-void getAllTermInstofFunction(Function* func,
-                              std::set<Instruction*>& exitinsts) {
+void getAllTermInstofFunction(Function *func,
+                              std::set<Instruction *> &exitinsts) {
 
   for (auto i = inst_begin(func); i != inst_end(func); i++) {
-    Instruction* ret = &*i;
+    Instruction *ret = &*i;
 
     if (isa<ReturnInst>(ret) || isa<ResumeInst>(ret) ||
         isa<UnreachableInst>(ret))
@@ -71,15 +71,15 @@ void getAllTermInstofFunction(Function* func,
   }
 }
 
-void getProgramExitInsts(Module& M, std::set<Instruction*>& exitinsts) {
+void getProgramExitInsts(Module &M, std::set<Instruction *> &exitinsts) {
   for (Module::iterator m_it = M.begin(); m_it != M.end(); ++m_it) {
     if (!m_it->isDeclaration()) {
       // m_it is a function
       for (inst_iterator f_it = inst_begin(&*m_it); f_it != inst_end(&*m_it);
            ++f_it) {
-        Instruction* inst = &(*f_it);
-        if (CallInst* ci = dyn_cast<CallInst>(inst)) {
-          Function* calledFunc = ci->getCalledFunction();
+        Instruction *inst = &(*f_it);
+        if (CallInst *ci = dyn_cast<CallInst>(inst)) {
+          Function *calledFunc = ci->getCalledFunction();
           if (calledFunc && calledFunc->hasName() &&
               calledFunc->getName().str() == "exit") {
             exitinsts.insert(inst);
@@ -89,11 +89,11 @@ void getProgramExitInsts(Module& M, std::set<Instruction*>& exitinsts) {
     }
   }
 
-  Function* mainfunc = M.getFunction("main");
+  Function *mainfunc = M.getFunction("main");
   getAllTermInstofFunction(mainfunc, exitinsts);
 }
 
-Instruction* getInsertPtrforRegsofInst(Value* reg, Instruction* inst) {
+Instruction *getInsertPtrforRegsofInst(Value *reg, Instruction *inst) {
   // TODO: This insert points can be extended later
   // TODO: different checks may be needed for different versions of llvm
   if (reg == inst) {
@@ -119,8 +119,8 @@ Instruction* getInsertPtrforRegsofInst(Value* reg, Instruction* inst) {
   }
 }
 
-Instruction* changeInsertPtrIfInjectFaultInst(Instruction* inst) {
-  MDNode* mdnode = inst->getMetadata("llfi_injectfault");
+Instruction *changeInsertPtrIfInjectFaultInst(Instruction *inst) {
+  MDNode *mdnode = inst->getMetadata("llfi_injectfault");
   if (mdnode) {
     if (cast<MDString>(mdnode->getOperand(0).get())->getString() == "after") {
       return inst->getNextNonDebugInstruction();
@@ -132,26 +132,26 @@ Instruction* changeInsertPtrIfInjectFaultInst(Instruction* inst) {
   }
 }
 
-void setInjectFaultInst(Value* reg, Instruction* inst, Instruction* ficall) {
-  Function* func = inst->getParent()->getParent();
-  LLVMContext& context = func->getContext();
+void setInjectFaultInst(Value *reg, Instruction *inst, Instruction *ficall) {
+  Function *func = inst->getParent()->getParent();
+  LLVMContext &context = func->getContext();
 
-  MDString* s = nullptr;
+  MDString *s = nullptr;
   if (reg == inst) {
     s = MDString::get(context, "after");
   } else {
     s = MDString::get(context, "before");
   }
 
-  MDNode* node = MDNode::get(context, s);
+  MDNode *node = MDNode::get(context, s);
   ficall->setMetadata("llfi_injectfault", node);
 }
 
-long getLLFIIndexofInst(Instruction* inst) {
-  MDNode* mdnode = inst->getMetadata("llfi_index");
+long getLLFIIndexofInst(Instruction *inst) {
+  MDNode *mdnode = inst->getMetadata("llfi_index");
   if (mdnode) {
-    Constant* cns = cast<ConstantAsMetadata>(mdnode->getOperand(0))->getValue();
-    ConstantInt* cns_index = cast<ConstantInt>(cns);
+    Constant *cns = cast<ConstantAsMetadata>(mdnode->getOperand(0))->getValue();
+    ConstantInt *cns_index = cast<ConstantInt>(cns);
     return cns_index->getSExtValue();
   } else {
     errs() << "ERROR: LLFI indices for instructions are required for the pass, "
@@ -161,19 +161,19 @@ long getLLFIIndexofInst(Instruction* inst) {
 }
 
 static long fi_index = 1;
-void setLLFIIndexofInst(Instruction* inst) {
+void setLLFIIndexofInst(Instruction *inst) {
   assert(fi_index >= 0 && "static instruction number exceeds index max");
-  Function* func = inst->getParent()->getParent();
-  LLVMContext& context = func->getContext();
-  std::vector<Metadata*> llfiindex(1);
+  Function *func = inst->getParent()->getParent();
+  LLVMContext &context = func->getContext();
+  std::vector<Metadata *> llfiindex(1);
   llfiindex[0] = ConstantAsMetadata::get(
       ConstantInt::get(Type::getInt64Ty(context), fi_index++));
-  ArrayRef<Metadata*> llfiarr(llfiindex);
-  MDNode* mdnode = MDNode::get(context, llfiarr);
+  ArrayRef<Metadata *> llfiarr(llfiindex);
+  MDNode *mdnode = MDNode::get(context, llfiarr);
   inst->setMetadata("llfi_index", mdnode);
 }
 
-void genFullNameOpcodeMap(std::map<std::string, unsigned>& opcodenamemap) {
+void genFullNameOpcodeMap(std::map<std::string, unsigned> &opcodenamemap) {
 #define HANDLE_INST(N, OPC, CLASS)                                             \
   opcodenamemap[std::string(Instruction::getOpcodeName(N))] = N;
 #include "llvm/IR/Instruction.def"
@@ -181,8 +181,8 @@ void genFullNameOpcodeMap(std::map<std::string, unsigned>& opcodenamemap) {
 
 // Returns true if the function is indexed by llfi
 //(and therefore we should perform trace/fault injects on it)
-bool isLLFIIndexedInst(Instruction* inst) {
-  MDNode* mdnode = inst->getMetadata("llfi_index");
+bool isLLFIIndexedInst(Instruction *inst) {
+  MDNode *mdnode = inst->getMetadata("llfi_index");
   if (mdnode) {
     return true;
   } else {
@@ -190,15 +190,15 @@ bool isLLFIIndexedInst(Instruction* inst) {
   }
 }
 
-GlobalVariable* findOrCreateGlobalNameString(Module& M, std::string name) {
-  LLVMContext& context = M.getContext();
+GlobalVariable *findOrCreateGlobalNameString(Module &M, std::string name) {
+  LLVMContext &context = M.getContext();
   std::string str_suffix = std::string("_namestr");
-  GlobalVariable* nameStr = M.getGlobalVariable(name + str_suffix, true);
+  GlobalVariable *nameStr = M.getGlobalVariable(name + str_suffix, true);
   if (nameStr != nullptr) {
     return nameStr;
   }
   std::string gv_nameStr = name + str_suffix;
-  Constant* name_c = ConstantDataArray::getString(context, name);
+  Constant *name_c = ConstantDataArray::getString(context, name);
   nameStr = new GlobalVariable(M, name_c->getType(), true,
                                GlobalVariable::InternalLinkage, name_c,
                                gv_nameStr.c_str());

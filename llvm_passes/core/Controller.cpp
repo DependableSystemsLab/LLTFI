@@ -100,9 +100,9 @@ cl::opt<std::string>
     llfilogfile("llfilogfile", cl::init("llfi.log.compilation.txt"), cl::Hidden,
                 cl::desc("Name of compilation passes logging file"));
 
-Controller* Controller::ctrl = nullptr;
+Controller *Controller::ctrl = nullptr;
 
-void Controller::getOpcodeListofFIInsts(std::set<unsigned>* fi_opcode_set) {
+void Controller::getOpcodeListofFIInsts(std::set<unsigned> *fi_opcode_set) {
   NameOpcodeMap fullnameopcodemap;
   genFullNameOpcodeMap(fullnameopcodemap);
 
@@ -139,7 +139,7 @@ void Controller::getOpcodeListofFIInsts(std::set<unsigned>* fi_opcode_set) {
     }
   }
 }
-void Controller::getFuncList(std::set<std::string>* fi_func_set) {
+void Controller::getFuncList(std::set<std::string> *fi_func_set) {
   std::set<std::string>::iterator it;
   std::string func;
   for (size_t i = 0; i < includefunc.size(); ++i) {
@@ -169,9 +169,9 @@ void Controller::getFuncList(std::set<std::string>* fi_func_set) {
 
 void Controller::processInstSelArgs() {
   fiinstselector = new FIInstSelectorManager();
-  std::set<unsigned>* fi_opcode_set = nullptr;
-  std::set<std::string>* fi_func_set = nullptr;
-  FICustomInstSelectorManager* m = nullptr;
+  std::set<unsigned> *fi_opcode_set = nullptr;
+  std::set<std::string> *fi_func_set = nullptr;
+  FICustomInstSelectorManager *m = nullptr;
   for (size_t i = 0; i < fiinstselmethod.size(); ++i) {
     switch (fiinstselmethod[i]) {
     case insttype:
@@ -203,7 +203,7 @@ void Controller::processRegSelArgs() {
   if (firegselmethod == regloc) {
     firegselector = new RegLocBasedFIRegSelector(fireglocation);
   } else {
-    FICustomRegSelectorManager* m =
+    FICustomRegSelectorManager *m =
         FICustomRegSelectorManager::getCustomRegSelectorManager();
     firegselector = m->getCustomRegSelector(firegselectorname);
   }
@@ -227,7 +227,7 @@ void Controller::processCmdArgs() {
 
 // Create a list of functions present in M. Certain care must be taken when
 // compiling C++ due to name mangling.
-void Controller::getModuleFuncs(Module& M) {
+void Controller::getModuleFuncs(Module &M) {
   Module::iterator it;
   for (it = M.begin(); it != M.end(); ++it) {
     std::string func_name = it->getName().str();
@@ -237,13 +237,13 @@ void Controller::getModuleFuncs(Module& M) {
   }
 }
 
-void Controller::init(Module& M) {
+void Controller::init(Module &M) {
   // generate list of functions present in M
   getModuleFuncs(M);
   processCmdArgs();
 
   // select fault injection instructions
-  std::set<Instruction*> fiinstset;
+  std::set<Instruction *> fiinstset;
   fiinstselector->getFIInsts(M, &fiinstset);
 
   // select fault injection registers
@@ -255,7 +255,7 @@ Controller::~Controller() {
 }
 
 void Controller::dump() const {
-  for (std::map<Instruction*, std::list<int>*>::const_iterator inst_it =
+  for (std::map<Instruction *, std::list<int> *>::const_iterator inst_it =
            fi_inst_regs_map.begin();
        inst_it != fi_inst_regs_map.end(); ++inst_it) {
     errs() << "Selected instruction " << *(inst_it->first) << "\nRegs:\n";
@@ -270,7 +270,7 @@ void Controller::dump() const {
   }
 }
 
-Controller* Controller::getInstance(Module& M) {
+Controller *Controller::getInstance(Module &M) {
   if (ctrl == nullptr)
     ctrl = new Controller(M);
   return ctrl;

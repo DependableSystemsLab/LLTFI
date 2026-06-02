@@ -5,13 +5,13 @@
 
 namespace llfi {
 
-void FIInstSelectorManager::getFIInsts(Module& M,
-                                       std::set<Instruction*>* fiinsts) {
+void FIInstSelectorManager::getFIInsts(Module &M,
+                                       std::set<Instruction *> *fiinsts) {
 
   // Create a set for each selector and print compiletime info
-  std::vector<std::set<Instruction*>*> allInsts;
+  std::vector<std::set<Instruction *> *> allInsts;
   for (it = selectors.begin(); it != selectors.end(); ++it) {
-    allInsts.push_back(new std::set<Instruction*>);
+    allInsts.push_back(new std::set<Instruction *>);
     std::map<std::string, std::string> info;
     (*it)->getCompileTimeInfo(info);
     printCompileTimeInfo(info);
@@ -19,9 +19,9 @@ void FIInstSelectorManager::getFIInsts(Module& M,
   }
 
   // Merge allInsts into fiinsts
-  std::set<Instruction*> merge = *(allInsts[0]);
+  std::set<Instruction *> merge = *(allInsts[0]);
   for (size_t i = 1; i < allInsts.size(); ++i) {
-    std::set<Instruction*> tmp;
+    std::set<Instruction *> tmp;
     tmp.swap(merge);
     std::set_intersection(tmp.begin(), tmp.end(), allInsts[i]->begin(),
                           allInsts[i]->end(),
@@ -36,7 +36,7 @@ void FIInstSelectorManager::getFIInsts(Module& M,
 }
 
 int FIInstSelectorManager::printCompileTimeInfo(
-    std::map<std::string, std::string>& info) {
+    std::map<std::string, std::string> &info) {
   // print compiletime info returned from inst selector, called by getFIInsts()
   std::ofstream compiletimeinfo_file("llfi.config.compiletime.txt");
   if (compiletimeinfo_file.is_open() == false) {
@@ -52,7 +52,7 @@ int FIInstSelectorManager::printCompileTimeInfo(
   return 0;
 }
 
-void FIInstSelectorManager::addSelector(FIInstSelector* s) {
+void FIInstSelectorManager::addSelector(FIInstSelector *s) {
   selectors.push_back(s);
 }
 

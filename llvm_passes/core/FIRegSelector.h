@@ -14,15 +14,15 @@ using namespace llvm;
 namespace llfi {
 class FIRegSelector {
 public:
-  void getFIInstRegMap(const std::set<Instruction*>* instset,
-                       std::map<Instruction*, std::list<int>*>* instregmap);
+  void getFIInstRegMap(const std::set<Instruction *> *instset,
+                       std::map<Instruction *, std::list<int> *> *instregmap);
   virtual std::string getRegSelectorClass() { return std::string("Unknown"); }
 
 private:
-  virtual bool isRegofInstFITarget(Value* reg, Instruction* inst) = 0;
-  virtual bool isRegofInstFITarget(Value* reg, Instruction* inst, int pos);
+  virtual bool isRegofInstFITarget(Value *reg, Instruction *inst) = 0;
+  virtual bool isRegofInstFITarget(Value *reg, Instruction *inst, int pos);
   // determine whether LLFI is able to inject into the specified reg or not
-  bool isRegofInstInjectable(Value* reg, Instruction* inst);
+  bool isRegofInstInjectable(Value *reg, Instruction *inst);
 };
 
 class HardwareFIRegSelector : public FIRegSelector {

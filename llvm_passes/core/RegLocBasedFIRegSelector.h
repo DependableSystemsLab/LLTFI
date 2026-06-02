@@ -9,8 +9,8 @@ public:
   RegLocBasedFIRegSelector(FIRegLoc filoc) : firegloc(filoc) {}
 
 private:
-  bool isRegofInstFITarget(Value* reg, Instruction* inst) override;
-  bool isRegofInstFITarget(Value* reg, Instruction* inst, int pos) override;
+  bool isRegofInstFITarget(Value *reg, Instruction *inst) override;
+  bool isRegofInstFITarget(Value *reg, Instruction *inst, int pos) override;
 
 private:
   FIRegLoc firegloc;

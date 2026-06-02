@@ -10,8 +10,8 @@ using namespace llvm;
 namespace llfi {
 
 // Main functionality of this pass
-bool runOnModuleMain(Module& M) {
-  Instruction* currinst = nullptr;
+bool runOnModuleMain(Module &M) {
+  Instruction *currinst = nullptr;
 
   for (Module::iterator m_it = M.begin(); m_it != M.end(); ++m_it) {
     if (!m_it->isDeclaration()) {
@@ -26,7 +26,7 @@ bool runOnModuleMain(Module& M) {
 
   if (currinst) {
     long totalindex = getLLFIIndexofInst(currinst);
-    FILE* outputFile = fopen("llfi.stat.totalindex.txt", "w");
+    FILE *outputFile = fopen("llfi.stat.totalindex.txt", "w");
     if (outputFile) {
       fprintf(outputFile, "totalindex=%ld\n", totalindex);
       fclose(outputFile);
@@ -42,7 +42,7 @@ static RegisterPass<LegacyGenLLFIIndexPass>
     X("genllfiindexpass", "Generate a unique LLFI index for each instruction",
       false, false);
 
-bool LegacyGenLLFIIndexPass::runOnModule(Module& M) {
+bool LegacyGenLLFIIndexPass::runOnModule(Module &M) {
   return runOnModuleMain(M);
 }
 } // namespace llfi

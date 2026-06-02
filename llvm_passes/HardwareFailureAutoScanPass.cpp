@@ -35,13 +35,13 @@ private:
 public:
   static char ID;
   HardwareFailureAutoScanPass() : ModulePass(ID) {}
-  bool runOnModule(Module& M) override {
+  bool runOnModule(Module &M) override {
     selector_record_file.open(outputpath.getValue().c_str(),
                               std::ofstream::out);
 
-    FICustomInstSelectorManager* im =
+    FICustomInstSelectorManager *im =
         FICustomInstSelectorManager::getCustomInstSelectorManager();
-    FICustomRegSelectorManager* rm =
+    FICustomRegSelectorManager *rm =
         FICustomRegSelectorManager::getCustomRegSelectorManager();
     std::set<std::string> all_hardware_inst_selector_names;
     im->getAllHardwareSelectors(all_hardware_inst_selector_names);
@@ -95,7 +95,7 @@ static RegisterPass<HardwareFailureAutoScanPass>
 
 // Free function callable from RegisterPasses.cpp for the new PM wrapper.
 namespace llfi {
-void runHardwareFailureAutoScan(llvm::Module& M) {
+void runHardwareFailureAutoScan(llvm::Module &M) {
   HardwareFailureAutoScanPass().runOnModule(M);
 }
 } // namespace llfi

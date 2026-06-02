@@ -1,30 +1,30 @@
 #include "FaultInjector.h"
 #include "FaultInjectorManager.h"
 
-class BitFlipFI: public HardwareFaultInjector {
- public:
+class BitFlipFI : public HardwareFaultInjector {
+public:
   virtual void injectFault(long llfi_index, unsigned size, unsigned fi_bit,
-                      char *buf) {
+                           char *buf) {
     unsigned fi_bytepos = fi_bit / 8;
     unsigned fi_bitpos = fi_bit % 8;
     buf[fi_bytepos] ^= 0x1 << fi_bitpos;
   }
 };
 
-class StuckAt0FI: public HardwareFaultInjector {
- public:
+class StuckAt0FI : public HardwareFaultInjector {
+public:
   virtual void injectFault(long llfi_index, unsigned size, unsigned fi_bit,
-                      char *buf) {
+                           char *buf) {
     unsigned fi_bytepos = fi_bit / 8;
     unsigned fi_bitpos = fi_bit % 8;
     buf[fi_bytepos] &= ~(0x1 << fi_bitpos);
   }
 };
 
-class StuckAt1FI: public HardwareFaultInjector {
- public:
+class StuckAt1FI : public HardwareFaultInjector {
+public:
   virtual void injectFault(long llfi_index, unsigned size, unsigned fi_bit,
-                      char *buf) {
+                           char *buf) {
     unsigned fi_bytepos = fi_bit / 8;
     unsigned fi_bitpos = fi_bit % 8;
     buf[fi_bytepos] |= 0x1 << fi_bitpos;

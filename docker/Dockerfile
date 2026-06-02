@@ -98,7 +98,7 @@ RUN git clone --recursive https://github.com/DependableSystemsLab/onnx-mlir-lltf
     export MLIR_DIR=$(pwd)/llvm-project/build/lib/cmake/mlir && \
     mv onnx-mlir-lltfi onnx-mlir && \
     cd onnx-mlir && \
-    git checkout LLTFI-LLVM19 && \
+    git checkout LLTFI && \
     git submodule update --init --recursive && \
     cd .. && \
     mkdir onnx-mlir/build && cd onnx-mlir/build && \

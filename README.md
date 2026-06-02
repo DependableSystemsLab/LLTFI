@@ -41,7 +41,7 @@ sample_programs/      Example C/C++ and ML programs with input.yaml files
 architecture.md       Internal architecture reference for developers
 CODING_GUIDELINES.md  C++ and Python style rules
 CONTRIBUTING.md       How to set up a dev environment and submit changes
-migration.md          LLVM 15 → 20 upgrade log
+migration.md          LLVM 15 → 19.x upgrade log
 ```
 
 
@@ -53,18 +53,12 @@ Dependencies
 3. Python 3
 4. Python YAML library (PyYAML ≥ 5.4.1)
 5. Ninja ≥ 1.10.2
-6. **Clang and LLVM 20.x**
-
-   Easiest install on Ubuntu via the LLVM apt repository:
-   ```bash
-   wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh
-   sudo ./llvm.sh 20
-   ```
+6. **Clang and LLVM b270525f730b**
 
    To build LLVM from source (required if you also need MLIR for onnx-mlir):
    ```bash
    git clone https://github.com/llvm/llvm-project.git
-   cd llvm-project && git checkout llvmorg-20.1.0 && cd ..
+   cd llvm-project && git checkout b270525f730b && cd ..
    mkdir llvm-project/build && cd llvm-project/build
    cmake -G Ninja ../llvm \
        -DLLVM_ENABLE_PROJECTS="clang;mlir" \
@@ -117,16 +111,6 @@ Run `./setup --help` for a full option list.
 ./setup -LLFI_BUILD_ROOT <build-dir> \
         -LLVM_SRC_ROOT   <llvm-project-dir> \
         -LLVM_DST_ROOT   <llvm-install-or-build-dir>
-```
-
-On Ubuntu where LLVM is installed via apt, `clang` is only available as
-`clang-20`. Pass `-LLVM_GXX_BIN_DIR` explicitly:
-
-```bash
-./setup -LLFI_BUILD_ROOT /path/to/LLTFI-build \
-        -LLVM_SRC_ROOT   /path/to/llvm-project \
-        -LLVM_DST_ROOT   /usr/lib/llvm-20 \
-        -LLVM_GXX_BIN_DIR /usr/lib/llvm-20/bin
 ```
 
 The build root must not already exist. Delete it first when rebuilding from

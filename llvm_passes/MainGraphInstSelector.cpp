@@ -1,7 +1,7 @@
-#include "llvm/IR/Instructions.h"
-
 #include "FICustomSelectorManager.h"
 #include "FIInstSelector.h"
+
+#include "llvm/IR/Instructions.h"
 
 using namespace llvm;
 
@@ -15,7 +15,7 @@ namespace llfi {
 // config file
 class MainGraphInstSelector : public HardwareFIInstSelector {
 private:
-  virtual bool isInstFITarget(Instruction *inst) {
+  bool isInstFITarget(Instruction *inst) override {
     if (inst->getParent()->getParent()->getName() == "main_graph") {
       if (inst->getOpcode() == Instruction::FAdd ||
           inst->getOpcode() == Instruction::FMul ||
@@ -27,7 +27,7 @@ private:
   }
 
 public:
-  virtual void getCompileTimeInfo(std::map<std::string, std::string> &info) {
+  void getCompileTimeInfo(std::map<std::string, std::string> &info) override {
     info["failure_class"] = "HardwareFault";
     info["failure_mode"] = "MainGraph";
     info["targets"] = "<instructions in main_graph() function>";

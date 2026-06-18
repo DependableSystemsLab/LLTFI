@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 
 include(../config/copy_utils.cmake)
 
@@ -13,8 +13,5 @@ copy(traceunion.py traceunion)
 copy(GenerateMakefile.py GenerateMakefile)
 
 copy(zgrviewer/llfi_run.sh zgrviewer/run.sh)
-
-#FIDL tests
-copydir(FIDL/tests/ FIDL/tests/)
 
 genCopy()

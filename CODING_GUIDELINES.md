@@ -1,0 +1,374 @@
+# LLTFI Coding Guidelines
+
+These guidelines apply to all hand-written source files in the project. C++ and C sources live under `llvm_passes/`, `runtime_lib/`, and `tools/`. Python sources live under `bin/`, `test_suite/SCRIPTS/`, `tools/`, and `setup`.
+
+---
+
+## C++ Standard
+
+Target **C++17**. LLVM 20 requires it, and it provides range-based for loops, `nullptr`, `auto`, structured bindings, and other improvements used throughout the codebase.
+
+---
+
+## Naming Conventions
+
+| Construct | Style | Example |
+|-----------|-------|---------|
+| Classes / structs | `PascalCase` | `FaultInjectionPass`, `FIInstSelector` |
+| Functions / methods | `camelCase` | `getFIInsts()`, `isInstFITarget()` |
+| Local variables | `snake_case` | `fi_inst`, `reg_pos_list` |
+| Member variables | `snake_case` (no prefix) | `fi_rettype_funcname_map` |
+| Constants / macros | `ALL_CAPS` | `DST_REG_POS`, `OPTION_LENGTH` |
+| Namespaces | `lowercase` | `namespace llfi` |
+
+---
+
+## Null Pointers
+
+Use `nullptr` in all C++ code. Never use `NULL` or `0` for pointer comparisons in C++ files.
+
+```cpp
+// Good
+Value *fi_reg = nullptr;
+if (mainfunc == nullptr) { ... }
+
+// Bad
+Value *fi_reg = NULL;
+if (mainfunc == 0) { ... }
+```
+
+`NULL` remains acceptable in C files (`.c`).
+
+---
+
+## Include Guards
+
+Every header file must have an include guard. Use `#ifndef` / `#define` / `#endif`. The guard name must match the filename (upper-cased, dots and slashes replaced with underscores).
+
+```cpp
+// FaultInjectionPass.h
+#ifndef FAULT_INJECTION_PASS_H
+#define FAULT_INJECTION_PASS_H
+
+// ... contents ...
+
+#endif // FAULT_INJECTION_PASS_H
+```
+
+Do **not** use `#pragma once` — it is not part of the C++ standard and is inconsistent with the rest of the codebase.
+
+---
+
+## Memory Management
+
+Prefer stack allocation or LLVM's ownership model over manual `new`/`delete`.
+
+```cpp
+// Good — stack allocation
+LegacyProfilingPass pass;
+pass.runOnModule(M);
+
+// Also good — LLVM IR objects are owned by the module
+new AllocaInst(type, addrSpace, "", insertBefore);  // IR takes ownership
+
+// Bad — manual heap allocation for short-lived objects
+auto *obj = new LegacyProfilingPass();
+obj->runOnModule(M);
+delete obj;
+```
+
+When heap allocation is unavoidable outside of LLVM IR insertion, use `std::unique_ptr`.
+
+---
+
+## Return Statements
+
+Every non-void function must have a return statement on all code paths. Missing returns in functions returning `bool` (e.g., `runOnModule`) are undefined behaviour and generate compiler warnings.
+
+```cpp
+// Good
+bool runOnModule(Module &M) override {
+  // ... do work ...
+  return false;  // ModulePass: return true only if IR was modified
+}
+```
+
+---
+
+## Virtual Methods and `override`
+
+In derived classes, always mark overriding methods with `override` and omit the redundant `virtual` keyword. This catches signature mismatches at compile time and makes the override relationship explicit.
+
+```cpp
+// Good — override makes the intent clear and catches errors
+class MyInstSelector : public HardwareFIInstSelector {
+  bool isInstFITarget(Instruction *inst) override;
+  void getCompileTimeInfo(std::map<std::string, std::string> &info) override;
+};
+
+// Bad — virtual is redundant; override is missing
+class MyInstSelector : public HardwareFIInstSelector {
+  virtual bool isInstFITarget(Instruction *inst);
+  virtual void getCompileTimeInfo(std::map<std::string, std::string> &info);
+};
+```
+
+Any abstract base class that may be deleted through a base pointer **must** declare a virtual destructor:
+
+```cpp
+class FIInstSelector {
+public:
+  virtual ~FIInstSelector() = default;  // Required — subclass instances may be deleted via base ptr
+  virtual bool isInstFITarget(Instruction *inst) = 0;
+  ...
+};
+```
+
+---
+
+## Variable Initialisation
+
+Initialise all local variables and pointers at the point of declaration. Uninitialised variables are undefined behaviour and are caught by the static analyser.
+
+```cpp
+// Good
+Instruction *insertPoint = nullptr;
+float bitSize = 0.0f;
+std::map<Instruction *, std::list<int> *> *regs_map = nullptr;
+
+// Bad — UB if the assignment is missed on any code path
+Instruction *insertPoint;
+float bitSize;
+```
+
+---
+
+## Container Emptiness
+
+Use `.empty()` to test whether a container has elements. Do not compare `.size()` to zero — it is less readable and some container types compute `size()` in O(n).
+
+```cpp
+// Good
+assert(!exitinsts.empty() && "Program has no exit point");
+if (reglist->empty()) return;
+
+// Bad
+assert(exitinsts.size() != 0 && "Program has no exit point");
+if (reglist->size() == 0) return;
+```
+
+---
+
+## LLVM Idioms
+
+Use LLVM's type-checking utilities instead of C-style casts:
+
+```cpp
+// Good — dyn_cast when the type may not match; always check for null
+CallInst *CI = dyn_cast<CallInst>(inst);
+if (CI) { ... }
+
+// Good — cast<> when the type is guaranteed (e.g. after an opcode or isa<> check);
+// it asserts on failure rather than returning null
+if (inst->getOpcode() == Instruction::Call) {
+  CallInst *CI = cast<CallInst>(inst);  // safe: opcode already verified
+  ...
+}
+
+// Bad
+if (dynamic_cast<CallInst*>(inst)) { ... }
+CallInst *CI = (CallInst*)inst;
+```
+
+Use `llvm::errs()` for diagnostic output from passes, not `std::cerr`:
+
+```cpp
+// Good (in LLVM passes)
+errs() << "ERROR: ...\n";
+
+// Acceptable (in runtime C library)
+fprintf(stderr, "ERROR: ...\n");
+```
+
+Use `StringRef` and `.str()` when converting LLVM names to `std::string`:
+
+```cpp
+std::string name = called_func->getName().str();  // Good
+std::string name = called_func->getName();         // Bad: implicit conversion removed in LLVM 15
+```
+
+---
+
+## Error Handling
+
+- In LLVM passes: print a message with `errs()` and return early. Do not call `exit()`.
+- In the runtime C library: `exit(1)` is acceptable for unrecoverable configuration errors (e.g., missing config file at startup), but not for conditions that can be recovered from.
+- Always check the return value of `fopen` and similar system calls before using the result.
+
+```cpp
+// Good
+FILE *f = fopen(filename, "r");
+if (f == NULL) {
+  fprintf(stderr, "ERROR: cannot open %s\n", filename);
+  exit(1);
+}
+```
+
+---
+
+## Brace Style
+
+Opening brace on the **same line** as the declaration (K&R / LLVM style):
+
+```cpp
+// Good
+void FaultInjectionPass::insertInjectionFuncCall(...) {
+  for (...) {
+    if (...) {
+    }
+  }
+}
+
+// Bad (Allman style — don't use)
+void FaultInjectionPass::insertInjectionFuncCall(...)
+{
+}
+```
+
+---
+
+## Indentation
+
+Use **2 spaces**. Do not use tabs. Most editors can be configured to convert tabs to spaces automatically.
+
+---
+
+## `using namespace` in Headers
+
+Avoid `using namespace llvm;` in header files. It pollutes the namespace of every translation unit that includes the header. Existing headers use it for historical reasons; do not add it to new headers.
+
+In `.cpp` files, `using namespace llvm;` is acceptable.
+
+---
+
+## Comments
+
+- Use `//` for single-line and multi-line inline comments.
+- Use the LLVM file banner (see `FaultInjectionPass.cpp`) for files that are part of the LLFI/LLTFI distribution.
+- Remove contributor-specific annotations (e.g. `/*BEHROOZ: ...*/`, `//=== QINING @DATE ===`) before merging. Instead, document the *why* in a neutral comment or a commit message.
+- Avoid commented-out code. Use version control instead.
+
+---
+
+## Python Guidelines
+
+### Python Version
+
+All scripts must target **Python 3**. Use `#!/usr/bin/env python3` as the shebang. Do not use Python 2 syntax or shebangs.
+
+### Naming Conventions
+
+Follow **PEP 8** throughout:
+
+| Construct | Style | Example |
+|-----------|-------|---------|
+| Functions / methods | `snake_case` | `check_input_yaml()`, `parse_args()` |
+| Variables | `snake_case` | `option_list`, `base_dir` |
+| Classes | `PascalCase` | `DiffBlock`, `FaultReport` |
+| Constants (module-level) | `UPPER_CASE` | `DEFAULT_TIMEOUT` |
+
+### Exception Handling
+
+Never use a bare `except:` — it silently swallows `KeyboardInterrupt` and `SystemExit`. Use the most specific exception type available; fall back to `except Exception:` only when the exact type is genuinely unknown.
+
+```python
+# Good — specific
+try:
+    with open(path, 'r') as f:
+        doc = yaml.safe_load(f)
+except OSError:
+    print("ERROR: cannot open", path)
+    sys.exit(1)
+except yaml.YAMLError:
+    print("ERROR: invalid YAML in", path)
+    sys.exit(1)
+
+# Acceptable fallback when type is unclear
+except Exception:
+    ...
+
+# Bad — catches everything including Ctrl-C
+except:
+    ...
+```
+
+### File Handling
+
+Always use `with` statements (context managers) for file operations. This guarantees the file is closed even if an exception is raised.
+
+```python
+# Good
+with open(filename, 'r') as f:
+    data = f.read()
+
+# Bad — file may not be closed on exception
+f = open(filename, 'r')
+data = f.read()
+f.close()
+```
+
+### subprocess — Avoid `shell=True`
+
+Do not pass `shell=True` to `subprocess` functions unless strictly necessary. Use a list of arguments instead. For output redirection (which requires a shell when using `>`), pass `stdout=open(output_file, 'w')` to subprocess directly.
+
+```python
+# Good
+with open(output_file, 'w') as out:
+    subprocess.call([script, arg1, arg2], stdout=out, stderr=log)
+
+# Bad — shell injection risk, path-escaping burden
+cmd = script + " " + arg1 + " > " + output_file
+subprocess.call(cmd, shell=True)
+```
+
+### `sys.exit()` vs `exit()`
+
+Use `sys.exit()` in scripts. `exit()` is intended for the interactive interpreter and is not guaranteed to be available in all environments.
+
+```python
+import sys
+sys.exit(1)   # Good
+exit(1)       # Bad
+```
+
+### String Formatting
+
+Prefer **f-strings** for new code (Python 3.6+). Avoid `%`-formatting in new code.
+
+```python
+# Good
+print(f"ERROR: No input.yaml in {srcpath}")
+
+# Acceptable for existing code
+print("ERROR: No input.yaml in {}".format(srcpath))
+
+# Avoid in new code
+print("ERROR: No input.yaml in %s" % srcpath)
+```
+
+### Imports
+
+One import per line. Order: standard library → third-party → local. Separate each group with a blank line.
+
+```python
+import os
+import sys
+
+import yaml
+
+from config import llvm_paths
+```
+
+### `yaml.safe_load()`
+
+Always use `yaml.safe_load()`. Never use `yaml.load()` without an explicit `Loader` argument — it executes arbitrary Python and is a security risk.

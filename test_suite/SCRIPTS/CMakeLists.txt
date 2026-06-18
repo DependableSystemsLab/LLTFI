@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 
 include(../../config/copy_utils.cmake)
 
@@ -14,5 +14,8 @@ copy(inject_prog.py inject_prog.py)
 copy(test_trace_tools.py test_trace_tools.py)
 copy(llfi_test.py llfi_test)
 copy(test_generate_makefile.py test_generate_makefile.py)
+copy(test_ml_tools.py test_ml_tools.py)
+copy(test_ml_models.py test_ml_models.py)
+copy(test_instruction_duplication.py test_instruction_duplication.py)
 
 genCopy()

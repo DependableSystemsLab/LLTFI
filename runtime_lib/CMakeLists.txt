@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -15,8 +15,6 @@ add_library(llfi-rt SHARED
     InstTraceLib.c
     ProfilingLib.cpp
     Utils.c
-    #_FIDLSoftwareFaultInjectors.cpp
-    #_SoftwareFaultInjector.cpp is included in this file
 )
 
 # For ML backends. This static library is intended to be linked with the ML

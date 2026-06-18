@@ -1,7 +1,6 @@
-#include "llvm/IR/Instructions.h"
-
 #include "InstTypeFIInstSelector.h"
 
+#include "llvm/IR/Instructions.h"
 
 namespace llfi {
 bool InstTypeFIInstSelector::isInstFITarget(Instruction *inst) {
@@ -12,4 +11,4 @@ bool InstTypeFIInstSelector::isInstFITarget(Instruction *inst) {
   return false;
 }
 
-}
+} // namespace llfi

@@ -1,25 +1,26 @@
-#include <vector>
-#include <cmath>
-#include <string>
+#include "Utils.h"
 
 #include "llvm/IR/Constants.h"
-#include "llvm/IR/DerivedTypes.h"
-#include "llvm/IR/GlobalValue.h"
-#include "llvm/Pass.h"
-#include "llvm/IR/Function.h"
-#include "llvm/IR/Module.h"
-#include "llvm/IR/Instruction.h"
-#include "llvm/IR/Instructions.h"
-#include "llvm/Support/Debug.h"
-#include "llvm/IR/InstIterator.h"
-#include "llvm/Support/CommandLine.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/DebugInfoMetadata.h"
-#include "llvm/IR/Value.h"
-#include "Utils.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/GlobalValue.h"
+#include "llvm/IR/InstIterator.h"
+#include "llvm/IR/Instruction.h"
+#include "llvm/IR/Instructions.h"
 #include "llvm/IR/LegacyPassManager.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Value.h"
+#include "llvm/Pass.h"
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
+#include "llvm/Support/CommandLine.h"
+#include "llvm/Support/Debug.h"
+
+#include <cmath>
+#include <string>
+#include <vector>
 
 #define DATADEPCOLOUR "blue"
 
@@ -47,17 +48,21 @@ instNode::instNode(Instruction *target) {
   label += std::string("\\n") + target->getOpcodeName() + "\\n";
   DebugLoc dbgLoc = target->getDebugLoc();
   if (bool(dbgLoc) && dbgLoc.getLine()) {
-    label += "(Line #: " + intToString(dbgLoc.getLine()) + ")\\n";
+    label += "(Line #: " + intToString((int)dbgLoc.getLine()) + ")\\n";
     /* if (MDNode *N= target->getMetadata("dbg")){
-       label += "(In File: " + DILocation (N).getFilename().str().substr(DILocation (N).getFilename().str().find_last_of("/\\")+1)+")";
+       label += "(In File: " + DILocation
+    (N).getFilename().str().substr(DILocation
+    (N).getFilename().str().find_last_of("/\\")+1)+")";
     } */
     if (outputFile)
-      fprintf(outputFile, "%s line_%s\n", name.c_str(),intToString(target->getDebugLoc().getLine()).c_str()); 
-  } 
-  else{
+      fprintf(outputFile, "%s line_%s\n", name.c_str(),
+              intToString((int)target->getDebugLoc().getLine()).c_str());
+  } else {
     if (outputFile)
       fprintf(outputFile, "%s line_N/A\n", name.c_str());
   }
+  if (outputFile)
+    fclose(outputFile);
   label += "\"]";
 }
 
@@ -66,14 +71,14 @@ std::string instNode::dotNode() {
 }
 
 struct bBlockGraph {
-  BasicBlock* raw;
+  BasicBlock *raw;
   std::string name;
   std::string funcName;
   std::vector<instNode> instNodes;
-  Instruction* entryInst;
-  Instruction* exitInst;
+  Instruction *entryInst;
+  Instruction *exitInst;
   bBlockGraph(BasicBlock *target);
-  bool addInstruction(Instruction* inst);
+  bool addInstruction(Instruction *inst);
   bool writeToStream(std::ofstream &target);
 };
 
@@ -82,10 +87,8 @@ bBlockGraph::bBlockGraph(BasicBlock *BB) {
   name = BB->getName().str();
   funcName = BB->getParent()->getName().str();
   BasicBlock::iterator lastInst;
-  for (BasicBlock::iterator instIterator = BB->begin(),
-     lastInst = BB->end();
-     instIterator != lastInst;
-     ++instIterator) {
+  for (BasicBlock::iterator instIterator = BB->begin(), lastInst = BB->end();
+       instIterator != lastInst; ++instIterator) {
 
     Instruction *inst = &*instIterator;
 
@@ -94,7 +97,7 @@ bBlockGraph::bBlockGraph(BasicBlock *BB) {
   entryInst = &(BB->front());
   exitInst = &(BB->back());
 }
-bool bBlockGraph::addInstruction(Instruction* inst) {
+bool bBlockGraph::addInstruction(Instruction *inst) {
   instNodes.push_back(instNode(inst));
 
   return true;
@@ -108,44 +111,45 @@ bool bBlockGraph::writeToStream(std::ofstream &target) {
   }
   target << "}\n";
   for (unsigned int i = 1; i < instNodes.size(); i++) {
-    target << instNodes.at(i-1).name << " -> " << instNodes.at(i).name << ";\n";
+    target << instNodes.at(i - 1).name << " -> " << instNodes.at(i).name
+           << ";\n";
   }
   return true;
 }
 
-
 bool llfiDotGraph::runOnFunction(Function &F) {
-  //Create handles to the functions parent module and context
+  // Create handles to the functions parent module and context
   LLVMContext &context = F.getContext();
 
   std::vector<bBlockGraph> blocks;
 
   Function::iterator lastBlock;
-  //iterate through each basicblock of the function
+  // iterate through each basicblock of the function
   for (Function::iterator blockIterator = F.begin(), lastBlock = F.end();
-    blockIterator != lastBlock; ++blockIterator) {
+       blockIterator != lastBlock; ++blockIterator) {
 
-    BasicBlock* block = &*blockIterator;
+    BasicBlock *block = &*blockIterator;
 
     bBlockGraph b(block);
     blocks.push_back(b);
   }
   for (unsigned int i = 0; i < blocks.size(); i++) {
-    bBlockGraph currBlock = blocks.at(i);
+    const bBlockGraph &currBlock = blocks.at(i);
     for (unsigned int i = 0; i < currBlock.instNodes.size(); i++) {
       Instruction *inst = currBlock.instNodes.at(i).raw;
       std::string nodeName = currBlock.instNodes.at(i).name;
       instNode node = currBlock.instNodes.at(i);
       if (!inst->use_empty()) {
         // TODO: optimize the algorithm below later
-  // Iterates over the uses of instruction and finds their basic blocks and annotates them
+        // Iterates over the uses of instruction and finds their basic blocks
+        // and annotates them
         for (Value::use_iterator useIter = inst->use_begin();
              useIter != inst->use_end(); useIter++) {
-          Value* userValue = *useIter;
+          Value *userValue = *useIter;
           for (unsigned int f = 0; f < blocks.size(); f++) {
-            bBlockGraph searchBlock = blocks.at(f);
+            const bBlockGraph &searchBlock = blocks.at(f);
             for (unsigned int d = 0; d < searchBlock.instNodes.size(); d++) {
-              Instruction* targetInst = searchBlock.instNodes.at(d).raw;
+              Instruction *targetInst = searchBlock.instNodes.at(d).raw;
               if (userValue == targetInst) {
                 instNode targetNode = searchBlock.instNodes.at(d);
                 outfs << nodeName << " -> " << targetNode.name;
@@ -162,14 +166,14 @@ bool llfiDotGraph::runOnFunction(Function &F) {
     bBlockGraph block = blocks.at(i);
     block.writeToStream(outfs);
     if (block.exitInst->getOpcode() == Instruction::Br) {
-      BranchInst* exitInst = (BranchInst*)block.exitInst;
+      BranchInst *exitInst = dyn_cast<BranchInst>(block.exitInst);
       for (unsigned int s = 0; s < exitInst->getNumSuccessors(); s++) {
-        BasicBlock* succ = exitInst->getSuccessor(s);
+        BasicBlock *succ = exitInst->getSuccessor(s);
         for (unsigned int d = 0; d < blocks.size(); d++) {
           if (blocks.at(d).raw == succ) {
             std::string from = block.instNodes.back().name;
             std::string to = blocks.at(d).instNodes.front().name;
-            outfs << from << " -> "  << to << ";\n";
+            outfs << from << " -> " << to << ";\n";
           }
         }
       }
@@ -179,9 +183,10 @@ bool llfiDotGraph::runOnFunction(Function &F) {
   return false;
 }
 
-//Register the pass with the llvm
+// Register the pass with the llvm
 char llfiDotGraph::ID = 0;
-static RegisterPass<llfiDotGraph> X("dotgraphpass",
-  "Outputs a dot graph of instruction execution at runtime", false, false);
+static RegisterPass<llfiDotGraph>
+    X("dotgraphpass", "Outputs a dot graph of instruction execution at runtime",
+      false, false);
 
-}
+} // namespace llfi

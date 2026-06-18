@@ -13,14 +13,13 @@ List of options:
 
 
 --help(-h): show help information
---runTests: Add this option if you want to run all regression tests after building LLTFI.
+--runTests: Add this option if you want to run all standard regression tests after building LLTFI (equivalent to --all). Note: ML/ONNX tests require additional dependencies and must be run separately with: python3 SCRIPTS/llfi_test --all_ml
 """
 
 import sys
 import os
 import re
 import getopt
-import distutils.core
 import signal
 import subprocess
 import shutil
@@ -35,7 +34,6 @@ required_configs = {
 }
 optional_configs = {
   "LLVM_GXX_BIN_DIR": "",
-  "JAVA_HOME_DIR": "",
 }
 
 run_tests_flag = False
@@ -131,7 +129,7 @@ def checkEnvironment():
 
   try:
     import yaml
-  except:
+  except Exception:
     print(("ERROR: You need to install Python Yaml module "
                           "before building LLFI.\n"), file=sys.stderr)
     has_error = True
@@ -149,22 +147,8 @@ def build():
   llvm_paths_cmake = os.path.join(script_path, "config/llvm_paths.cmake")
   llvm_paths_py = os.path.join(script_path, "config/llvm_paths.py")
   llvm_paths_make = os.path.join(script_path, "config/llvm_paths.make")
-  java_paths_cmake = os.path.join(script_path, "config/java_paths.cmake")
-  java_paths_py = os.path.join(script_path, "config/java_paths.py")
-  
-  # build all default software failures
-  #fidl_path =  os.path.join(script_path, 'tools/FIDL/FIDL-Algorithm.py')
-  #execlist = [fidl_path, '-a', 'default']
-  #print('-- Generating default software failures with %s...' % (fidl_path))
-  #p = subprocess.call(execlist, stdout = open(os.devnull, 'wb'))
-  #if p != 0:
-  #  print('-- Failed!')
-  #  sys.exit(p)
-  #else:
-  #  print('-- Success!')
-  
+
   # write cmake config file for llvm paths
-  cmake_File = open(llvm_paths_cmake, "w")
   LLVM_DST_ROOT = os.path.realpath(required_configs['LLVM_DST_ROOT'])
   LLVM_SRC_ROOT = os.path.realpath(required_configs['LLVM_SRC_ROOT'])
   if optional_configs['LLVM_GXX_BIN_DIR'] != "":
@@ -172,23 +156,21 @@ def build():
   else:
     LLVM_GXX_BIN_DIR = ""
 
-  cmake_File.write("set(LLVM_DST_ROOT " + LLVM_DST_ROOT + ")\n")
-  cmake_File.write("set(LLVM_SRC_ROOT " + LLVM_SRC_ROOT + ")\n")
-  cmake_File.close()
+  with open(llvm_paths_cmake, "w") as cmake_File:
+    cmake_File.write("set(LLVM_DST_ROOT " + LLVM_DST_ROOT + ")\n")
+    cmake_File.write("set(LLVM_SRC_ROOT " + LLVM_SRC_ROOT + ")\n")
 
   # write python config file for llvm paths
-  py_File = open(llvm_paths_py, "w")
-  py_File.write("LLVM_DST_ROOT = " + '"' + LLVM_DST_ROOT + '"\n')
-  py_File.write("LLVM_SRC_ROOT = " + '"' + LLVM_SRC_ROOT + '"\n')
-  py_File.write("LLVM_GXX_BIN_DIR = " + '"' + LLVM_GXX_BIN_DIR + '"\n')
-  py_File.close()
+  with open(llvm_paths_py, "w") as py_File:
+    py_File.write("LLVM_DST_ROOT = " + '"' + LLVM_DST_ROOT + '"\n')
+    py_File.write("LLVM_SRC_ROOT = " + '"' + LLVM_SRC_ROOT + '"\n')
+    py_File.write("LLVM_GXX_BIN_DIR = " + '"' + LLVM_GXX_BIN_DIR + '"\n')
 
   # write unix make config file for llvm paths
-  make_File = open(llvm_paths_make, 'w')
-  make_File.write("LLVM_DST_ROOT = " + LLVM_DST_ROOT + '\n')
-  make_File.write("LLVM_SRC_ROOT = " + LLVM_SRC_ROOT + '\n')
-  make_File.write("LLVM_GXX_BIN_DIR = " + LLVM_GXX_BIN_DIR + '\n')
-  make_File.close()
+  with open(llvm_paths_make, 'w') as make_File:
+    make_File.write("LLVM_DST_ROOT = " + LLVM_DST_ROOT + '\n')
+    make_File.write("LLVM_SRC_ROOT = " + LLVM_SRC_ROOT + '\n')
+    make_File.write("LLVM_GXX_BIN_DIR = " + LLVM_GXX_BIN_DIR + '\n')
 
 
   # build
@@ -209,7 +191,7 @@ def build():
 
 
 def runTests():
-  print("Running all regression tests:\n")
+  print("Running all standard regression tests (use --all_ml separately for ML/ONNX tests):\n")
   LLFI_BUILD_DIR = os.path.realpath(required_configs['LLFI_BUILD_ROOT'])
   subprocess.call(["python3", LLFI_BUILD_DIR + "/test_suite/SCRIPTS/llfi_test", "--all", "--threads", "2", "--verbose"])
 

@@ -103,13 +103,6 @@ runOption:
         fi_type: bitflip
         window_len: 10
 
-    ## To use a custom fault injector (fault type) for this experiment:
-    ## ('BufferOverflow(API)' is an fault injector for software failures 
-    ##  shipped with LLFI)
-    - run:
-        numOfRuns: 5
-        fi_type: BufferOverflow(API)
-    
     ## To inject a maximum of 4 bit-flip errors into multiple registers.
     ## The distance between each consecutive injection is controlled by a random number representing the number of dynamic instructions that needs
     ## to be executed between the consecutive injections. The lower bound and upper bound of the random number are especified as two of the run time options.

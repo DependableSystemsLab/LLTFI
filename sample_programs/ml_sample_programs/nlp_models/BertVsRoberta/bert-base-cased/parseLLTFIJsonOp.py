@@ -1,24 +1,34 @@
 import tensorflow as tf
 from transformers import TFAutoModelForMaskedLM, AutoTokenizer
-from transformers import AutoTokenizer, AutoModel, AutoModelWithLMHead, BertTokenizer, BertForMaskedLM
+from transformers import (
+    AutoTokenizer,
+    AutoModel,
+    AutoModelWithLMHead,
+    BertTokenizer,
+    BertForMaskedLM,
+)
 import os, glob, json, pdb, sys
 from onnx import numpy_helper
 from onnxruntime import InferenceSession
 import numpy as np
 
-inputs = ["Main symptom of common flu is [MASK].",
-"Main symptom of cancer is [MASK].",
-"He is having a cough and fever, thus, he might be suffering from [MASK].",
-"He is having sickness and vomiting, thus, he might be having [MASK].",
-"Since you are having post-traumatic disorder, you should consult a [MASK].",
-"Paracetamol is used to treat a [MASK].",
-"The hereditary [MASK] protein, HFE, specifically regulates transferrin-mediated iron uptake in HeLa cells.",
-"Pelizaeus-Merzbacher disease is caused by overexpression of [MASK] gene transcripts.",
-"[MASK] is a tumor suppressor gene.",
-"[MASK] is a symptom of diabetes."]
+inputs = [
+    "Main symptom of common flu is [MASK].",
+    "Main symptom of cancer is [MASK].",
+    "He is having a cough and fever, thus, he might be suffering from [MASK].",
+    "He is having sickness and vomiting, thus, he might be having [MASK].",
+    "Since you are having post-traumatic disorder, you should consult a [MASK].",
+    "Paracetamol is used to treat a [MASK].",
+    "The hereditary [MASK] protein, HFE, specifically regulates transferrin-mediated iron uptake in HeLa cells.",
+    "Pelizaeus-Merzbacher disease is caused by overexpression of [MASK] gene transcripts.",
+    "[MASK] is a tumor suppressor gene.",
+    "[MASK] is a symptom of diabetes.",
+]
 
-def lltfi_sort(elem):                                                           
-    return int(elem.split('layeroutput')[-1].split('-')[-1].split('.txt')[0])
+
+def lltfi_sort(elem):
+    return int(elem.split("layeroutput")[-1].split("-")[-1].split(".txt")[0])
+
 
 def main(inpSample):
 
@@ -31,19 +41,19 @@ def main(inpSample):
 
     pdb.set_trace()
 
-    sequence = (inputs[inpSample])
+    sequence = inputs[inpSample]
     inputs = tokenizer(sequence, return_tensors="pt")
     inputs_np = tokenizer(sequence, return_tensors="np")
     inputs_tf = tokenizer(sequence, return_tensors="tf")
     mask_token_index = tf.where(inputs_tf["input_ids"] == tokenizer.mask_token_id)[0, 1]
 
-    #Path to LLTFI layer output
+    # Path to LLTFI layer output
     ROOT = os.getcwd()
-    LLFI_OUT = os.path.join(ROOT, 'llfi')
-    PROG_OUT = os.path.join(LLFI_OUT, 'prog_output')
-    OUT = os.path.join(ROOT, 'out')
-    pathOutput = os.path.join(OUT, 'onnx-pred')
-    filePred = os.path.join(pathOutput, 'onnx-pred.txt')
+    LLFI_OUT = os.path.join(ROOT, "llfi")
+    PROG_OUT = os.path.join(LLFI_OUT, "prog_output")
+    OUT = os.path.join(ROOT, "out")
+    pathOutput = os.path.join(OUT, "onnx-pred")
+    filePred = os.path.join(pathOutput, "onnx-pred.txt")
 
     # Read LLTFI output from llfi/prog_output and add it to 'listResArr'
     txtfiles = []
@@ -60,8 +70,8 @@ def main(inpSample):
             resultJson = json.load(read_file)
 
             for key, value in resultJson.items():
-                resforSingleInput.append(value['Data'])
-                shapeForSingleInput.append(value['Shape'])
+                resforSingleInput.append(value["Data"])
+                shapeForSingleInput.append(value["Shape"])
             listResArr.append(resforSingleInput)
             listShareApp.append(shapeForSingleInput)
 
@@ -71,7 +81,7 @@ def main(inpSample):
         modelOp = listResArr[i][0]
         modelOpShape = listShareApp[i][0]
 
-        npArr =  np.array(modelOp)
+        npArr = np.array(modelOp)
         npArr = np.reshape(npArr, modelOpShape[1:])
         maskedTokenLogits = npArr[mask_token_index.numpy()]
         top_5_tokens = tf.math.top_k(maskedTokenLogits, 5).indices.numpy()
@@ -87,7 +97,6 @@ def main(inpSample):
 
     with open(filePred, "a") as write_file:
         write_file.write(outputs)
-
 
 
 if __name__ == "__main__":

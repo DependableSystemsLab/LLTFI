@@ -1,18 +1,18 @@
-#include "llvm/IR/Value.h"
-#include "llvm/IR/Instruction.h"
-#include "llvm/IR/Constants.h"
-
-#include "FIRegSelector.h"
 #include "FICustomSelectorManager.h"
+#include "FIRegSelector.h"
+
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/Instruction.h"
+#include "llvm/IR/Value.h"
 
 namespace llfi {
 
 /**
  * This sample register selector only selects constant int as target
  */
-class SampleFIRegSelector: public HardwareFIRegSelector {
- private:
-  virtual bool isRegofInstFITarget(Value *reg, Instruction *inst) {
+class SampleFIRegSelector : public HardwareFIRegSelector {
+private:
+  bool isRegofInstFITarget(Value *reg, Instruction *inst) override {
     if (isa<ConstantInt>(reg))
       return true;
     else
@@ -22,4 +22,4 @@ class SampleFIRegSelector: public HardwareFIRegSelector {
 
 static RegisterFIRegSelector X("onlyconstint", new SampleFIRegSelector());
 
-}
+} // namespace llfi

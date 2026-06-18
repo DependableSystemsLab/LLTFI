@@ -20,16 +20,17 @@ sh compile_shrd_lib.sh
 
 ```
 # Perform instruction duplication
-$LLVM_BUILD_PATH/bin/opt -load ../../../../build/llvm_passes/instruction_duplication/SEDPasses.so \
-  --InstructionDuplicationPass -operatorName=all \
-  --enableChainDuplication --enable-new-pm=0 -S model.ll -o model_change.ll \
+$LLVM_BUILD_PATH/bin/opt \
+  -load-pass-plugin ../../../../build/llvm_passes/instruction_duplication/SEDPasses.so \
+  --passes=InstructionDuplicationPass --operatorName=all \
+  --enableChainDuplication -S model.ll -o model_change.ll \
   > /dev/null
 
 # Link the comparision checks
 llvm-link -o model_change.ll -S model_change.ll SIDHelperFunctions.ll
 
 # Inline the comparison checks
-$LLVM_BUILD_PATH/bin/opt model_change.ll -always-inline -S -o model.ll
+$LLVM_BUILD_PATH/bin/opt --passes=always-inline -S model_change.ll -o model.ll
 
 ```
 

@@ -40,15 +40,6 @@ compileOption:
             - dual_feasible
             - main
 
-## To use a specific instruction selector to select targeting instructions:
-## ('BufferOverflow(API)' is the name of a software failure instruction 
-##  selector shipped with LLFI)
-compileOption:
-    instSelMethod:
-      - customInstselector:
-          include:
-            - BufferOverflow(API)
-
     ## To use a location-based register selector to select targeting register:
     regSelMethod: regloc
     ## To select the destination register
@@ -59,14 +50,6 @@ compileOption:
     regloc: srcreg2
     ## To select the 3rd source register
     regloc: srcreg3
-
-
-    ## To use a custom register selector to select targeting register:
-    ## ('BufferOverflow(API)' is the name of a software failure register 
-    ##  selector shipped with LLFI)
-    regSelMethod: customregselector
-    customRegSelector: BufferOverflow(API)
-
 
     ## To incorporate the forward slice/backward slice of the selected instructions as injection targets: 
     includeInjectionTrace: 
@@ -115,13 +98,6 @@ runOption:
         fi_type: bitflip
         window_len: 10
 
-    ## To use a custom fault injector (fault type) for this experiment:
-    ## ('BufferOverflow(API)' is an fault injector for software failures 
-    ##  shipped with LLFI)
-    - run:
-        numOfRuns: 5
-        fi_type: BufferOverflow(API)
-    
     ## To inject a maximum of 4 bit-flip errors into multiple registers.
     ## The distance between each consecutive injection is controlled by a random number representing the number of dynamic instructions that needs
     ## to be executed between the consecutive injections. The lower bound and upper bound of the random number are especified as two of the run time options.

@@ -123,6 +123,11 @@ We provide a benchmark to run fault injections for this tutorial.
    Final prediction for eight.png is: 0.000000 0.000000 1.00000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
    ```
 
+> [!NOTE]
+> If you do not see any SDCs in any of the runs, you may rerun the experiment by calling `./runllfi.sh` (Step 5).
+> Each time you run `./runllfi.sh`, it will perform a new independent set of fault injection runs (using a new random seed) and overwrite the generated files from prior runs.
+> The number of SDCs will always be greater or equal to the number of critical SDCs. Critical SDCs are a subset of SDCs.
+
 8. Compare the output between the golden baseline and the fault injected run of interest. Modify the 3 to the desired run# number as above.
    You may ignore everything except for the final line. The previous lines include logging information such as time elapsed that expectedly changes between runs.
    ```

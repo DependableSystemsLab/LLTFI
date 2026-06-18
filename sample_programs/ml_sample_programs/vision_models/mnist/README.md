@@ -5,19 +5,35 @@ We link the LLVM IR of the model to an image processing program `image.c`, which
 This generated LLVM IR `model.ll` is instrumented, profiled, and fault injected by LLTFI.\
 All of the following steps can be replicated for `mnist-nn.py`.
 
-Running PyTorch example
+
+Pre-set Input YAML Configurations
 ---
 
-1. First ensure that PyTorch framework (v1.9.0 or greater) is installed.
+Replace `input.yaml` with `input1.yaml` (for reduced number of runs) and `input2.yaml` for greater fault intensity.
 
-2. Train CNN on MNIST and compile it to LLVM IR. The final output file is `model.ll`.
+
+
+Running a  Pre-trained Model on MNIST example
+---
+
+1. Compile a pre-trained CNN model on MNIST to LLVM IR. The final output file is `model.ll`.
 ```
-./compile-pytorch.sh
+./compile.sh
 ```
 
-3. Select one of the test image files, e.g. `eight.png` and run LLFI on it.
+2. Run LLTFI on one of the images, `eight.png` by default.
 ```
-./runllfi.sh eight.png
+./runllfi.sh
+```
+
+3. Compute the number of SDCs where the model output deviates from the golden output.
+```
+./check_sdc.sh
+```
+
+4. Compute the number of critical SDCs where the model output causes a different prediction from the golden prediction.
+```
+python check_critical_sdc.py
 ```
 
 

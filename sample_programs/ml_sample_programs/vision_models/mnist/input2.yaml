@@ -23,7 +23,7 @@ compileOption:
 
 runOption:
     - run:
-        numOfRuns: 20
+        numOfRuns: 100
         fi_type: bitflip
         window_len_multiple_startindex: 1
         window_len_multiple_endindex: 500

@@ -5,12 +5,15 @@
 You may choose from one of three choices to use LLTFI for this tutorial.
 You are also welcome to use your own installation of LLTFI, but these instructions assume you are using the Docker or Docker on VM image with specific experiment folder paths.
 
-*Note: Please have at least **18 GB** of free disk space available for this tutorial.*
+> [!NOTE]
+> Please have at least **18 GB** of free disk space available for this tutorial.
 
 
 1. If you are using either Linux or Mac OS, please use [Docker](https://docs.docker.com/engine/install/).
    If you are using Ubuntu, please follow [these specific instructions](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository).
    You will need sudo power to run Docker, unless you have been added to a [Docker group](https://docs.docker.com/engine/install/linux-postinstall/).
+
+   This Docker image is about 5GB (compressed) on Docker Hub, which will need to be downloaded over the network. Once downloaded locally, it will be extracted and expand to 18GB.
 
    ```
    sudo docker image pull abrahamchan/lltfi-dsn26
@@ -60,7 +63,7 @@ We provide a benchmark to run fault injections for this tutorial.
             fi_type: bitflip
    ```
 
-3. We modify the `input.yaml` file so that the number of runs is reduced to 20 times. The new version of this file can be copied in at `input1.yaml`.
+3. We modify the `input.yaml` file so that the number of runs is reduced to 100 times. The new version of this file can be copied in at `input1.yaml`.
    ```
    cp input1.yaml input.yaml
    ```
@@ -69,7 +72,7 @@ We provide a benchmark to run fault injections for this tutorial.
    ```
    runOption:
       - run:
-            numOfRuns: 20 (This line has changed from 1000 to 20.)
+            numOfRuns: 100 (This line has changed from 1000 to 100.)
             fi_type: bitflip
    ```
 
@@ -78,6 +81,11 @@ We provide a benchmark to run fault injections for this tutorial.
    ```
    ./compile.sh
    ```
+
+> [!NOTE]
+> You may initially see a compile error, because LLTFI attempts to compile it with `clang`, a C compiler.
+> Once that initial compile fails, it will recompile with the C++ compiler, `clang++`, which should succeed.
+
 
 5. Run LLTFI on the LLVM IR file.
    By default, an image of a handwritten eight, `eight.png`, is used as input.
@@ -97,14 +105,14 @@ We provide a benchmark to run fault injections for this tutorial.
    Note that with the default fault injection settings, it is possible to see no erroneous outputs - single bit flips may be masked by ML models.
    ```
    >>> ./check_sdc.sh
-   Total Number of Runs: 20
-   Number of SDCs: 4
+   Total Number of Runs: 100
+   Number of SDCs: 14
    ```
 
    ```
    >>> python check_critical_sdc.py
-   Total Number of Runs: 20
-   Number of Critical SDCs: 1
+   Total Number of Runs: 100
+   Number of Critical SDCs: 3
    ```
 
    You can also cycle through the run#, and examine the different fault injected runs. Modify the 3 to the desired run# number.
@@ -115,6 +123,11 @@ We provide a benchmark to run fault injections for this tutorial.
    Final prediction for eight.png is: 0.000000 0.000000 1.00000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000
    ```
 
+8. Compare the output between the golden baseline and the fault injected run of interest. Modify the 3 to the desired run# number as above.
+   You may ignore everything except for the final line. The previous lines include logging information such as time elapsed that expectedly changes between runs.
+   ```
+   vimdiff llfi/baseline/golden_std_output llfi/std_output/std_outputfile-run-0-3
+   ```
 
 ## Part 2: Specifying Specific Neural Network Layers and Increasing Fault Intensity (5 min)
 
@@ -157,53 +170,56 @@ def get_model():
    ./runllfi.sh
    ```
 
+> [!CAUTION]
+> Each time you run `./runllfi.sh`, it will perform a new independent set of fault injection runs and overwrite the generated files from prior runs.
+
 
 ```
 compileOption:
-    instSelMethod:
-      - customInstselector:
-          include:
-            - CustomTensorOperator
-          options:
-            - -layerNo=2 (Change this line)
-            - -layerName=conv (Change this line)
+    instSelMethod:
+      - customInstselector:
+          include:
+            - CustomTensorOperator
+          options:
+            - -layerNo=2 (Change this line)
+            - -layerName=conv (Change this line)
 
-    regSelMethod: regloc
-    regloc: dstreg
+    regSelMethod: regloc
+    regloc: dstreg
 
-    includeInjectionTrace:
-        - forward
+    includeInjectionTrace:
+        - forward
 
-    tracingPropagation: False # trace dynamic instruction values.
+    tracingPropagation: False # trace dynamic instruction values.
 
-    tracingPropagationOption:
-        maxTrace: 250 # max number of instructions to trace during fault injection run
-        debugTrace: False
-        mlTrace: False # enable for tracing ML programs
-        generateCDFG: True
+    tracingPropagationOption:
+        maxTrace: 250 # max number of instructions to trace during fault injection run
+        debugTrace: False
+        mlTrace: False # enable for tracing ML programs
+        generateCDFG: True
 
 runOption:
-    - run:
-        numOfRuns: 20
-        fi_type: bitflip
-        window_len_multiple_startindex: 1
-        window_len_multiple_endindex: 500
-        fi_max_multiple: 5 (Change this line)
-        fi_num_bits: 8 (Add this line)
+    - run:
+        numOfRuns: 100
+        fi_type: bitflip
+        window_len_multiple_startindex: 1
+        window_len_multiple_endindex: 500
+        fi_max_multiple: 5 (Change this line)
+        fi_num_bits: 8 (Add this line)
 ```
 
 2. Analyze the number of SDCs and critical SDCs under increased fault intensity. The values for SDCs and critical SDCs should increase compared to Part 1.
    ```
    >>> ./check_sdc.sh
    ...
-   Total Number of Runs: 20
-   Number of SDCs: 7
+   Total Number of Runs: 100
+   Number of SDCs: 28
    ```
 
    ```
    >>> python check_critical_sdc.py
    ...
-   Total Number of Runs: 20
-   Number of Critical SDCs: 3
+   Total Number of Runs: 100
+   Number of Critical SDCs: 11
    ```
 

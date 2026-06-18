@@ -41,7 +41,7 @@ This README describes an additional tutorial activity - performing fault injecti
    ```
 
   The task here is sentiment analysis and the prediction for any input is either 'Positive' or 'Negative'.
-  In this example, input 0 is chosen, which corresponds to the input: "It is a bright, sunny day".
+  In this example, input 0 is chosen, which corresponds to the input: "**It is a bright, sunny day.**"
   The expected sentiment output for this input is **Positive**.
 
 

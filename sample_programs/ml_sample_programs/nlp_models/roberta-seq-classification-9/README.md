@@ -1,4 +1,13 @@
-## Steps to execute Roberta-Seq-Clasification:
+## NLP Fault Injection Example - Roberta-Seq-Clasification Model
+
+Pre-set Input YAML Configurations
+---
+
+Replace `input.yaml` with `input1.yaml` (for reduced number of runs) and `input2.yaml` for greater fault intensity.
+
+
+Fault Injection Runtime Steps
+---
 
 1. After converting the ONNX model to LLVM IR i.e. after executig the `compile.sh` script, run fault injection experiment on the required input. Below is the command to execute the model on 'input 0'. A total of 10 different inputs (numbered 0-9) are available and can be specified in the argument.
 ```
